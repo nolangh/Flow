@@ -45,6 +45,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (err: unknown) {
       set({ error: (err as Error).message, isLoading: false });
+      throw err; // let the screen show the error and not navigate
     }
   },
 
@@ -91,6 +92,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (err: unknown) {
       set({ error: (err as Error).message, isLoading: false });
+      throw err; // let the screen show the error and not navigate
     }
   },
 

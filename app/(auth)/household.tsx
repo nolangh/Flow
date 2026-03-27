@@ -5,6 +5,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
@@ -16,6 +19,7 @@ export default function HouseholdScreen() {
   const [mode, setMode] = useState<"create" | "join">("create");
   const [householdName, setHouseholdName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     try {
@@ -32,87 +36,130 @@ export default function HouseholdScreen() {
     }
   };
 
+  const inputStyle = (field: string) => ({
+    backgroundColor: Colors.bg.surface,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    color: Colors.text.primary,
+    fontSize: 16,
+    borderWidth: 1.5,
+    borderColor: focusedField === field ? Colors.accent : Colors.border.subtle,
+    marginBottom: 6,
+  });
+
   return (
-    <View className="flex-1 bg-black justify-center px-8">
-      <Text style={{ color: Colors.neonGreen, fontSize: 30, fontWeight: "900", letterSpacing: -1, marginBottom: 6 }}>
-        Your Household
-      </Text>
-      <Text style={{ color: Colors.text.secondary, fontSize: 14, marginBottom: 32 }}>
-        Create a shared space or join your partner's.
-      </Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "#000" }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <StatusBar barStyle="light-content" />
+      <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 28 }}>
 
-      {/* Toggle */}
-      <View
-        className="flex-row rounded-full p-1 mb-8"
-        style={{ backgroundColor: Colors.bg.surface }}
-      >
-        {(["create", "join"] as const).map((m) => (
-          <TouchableOpacity
-            key={m}
-            onPress={() => setMode(m)}
-            className="flex-1 rounded-full py-3 items-center"
-            style={mode === m ? { backgroundColor: Colors.neonGreen } : undefined}
-          >
-            <Text
-              style={{
-                color: mode === m ? "#000" : Colors.text.secondary,
-                fontWeight: "600",
-                fontSize: 14,
-                textTransform: "capitalize",
-              }}
-            >
-              {m === "create" ? "Create New" : "Join Existing"}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {mode === "create" ? (
-        <TextInput
-          className="rounded-xl px-4 py-4 text-white text-base mb-6"
-          style={{ backgroundColor: Colors.bg.surface, borderColor: Colors.border.subtle, borderWidth: 1 }}
-          placeholder="e.g. The Smiths"
-          placeholderTextColor={Colors.text.muted}
-          value={householdName}
-          onChangeText={setHouseholdName}
-        />
-      ) : (
-        <View className="mb-6">
-          <TextInput
-            className="rounded-xl px-4 py-4 text-white text-base"
-            style={{ backgroundColor: Colors.bg.surface, borderColor: Colors.border.subtle, borderWidth: 1 }}
-            placeholder="6-character invite code"
-            placeholderTextColor={Colors.text.muted}
-            autoCapitalize="characters"
-            maxLength={6}
-            value={inviteCode}
-            onChangeText={setInviteCode}
-          />
-          <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 6 }}>
-            Your partner can find this code in Settings → Household.
+        {/* Header */}
+        <View style={{ marginBottom: 40 }}>
+          <View style={{
+            width: 56, height: 56, borderRadius: 16,
+            backgroundColor: Colors.accentSoft,
+            borderWidth: 1, borderColor: Colors.accentBorder,
+            alignItems: "center", justifyContent: "center",
+            marginBottom: 20,
+          }}>
+            <Text style={{ fontSize: 26, fontWeight: "900", color: Colors.accent }}>F</Text>
+          </View>
+          <Text style={{ color: Colors.text.primary, fontSize: 30, fontWeight: "800", letterSpacing: -0.8, marginBottom: 6 }}>
+            Your Household
+          </Text>
+          <Text style={{ color: Colors.text.muted, fontSize: 15, lineHeight: 22 }}>
+            Create a shared space or join your partner's.
           </Text>
         </View>
-      )}
 
-      <TouchableOpacity
-        onPress={handleSubmit}
-        disabled={isLoading}
-        className="rounded-full py-4 items-center"
-        style={{
-          backgroundColor: Colors.neonGreen,
-          borderBottomWidth: 3,
-          borderBottomColor: Colors.neonGreenDim,
-          ...pillShadow(Colors.neonGreen),
-        }}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#000" />
+        {/* Mode toggle */}
+        <View style={{
+          flexDirection: "row",
+          backgroundColor: Colors.bg.surface,
+          borderRadius: 14,
+          padding: 4,
+          marginBottom: 24,
+          borderWidth: 1,
+          borderColor: Colors.border.subtle,
+        }}>
+          {(["create", "join"] as const).map((m) => (
+            <TouchableOpacity
+              key={m}
+              onPress={() => setMode(m)}
+              style={{
+                flex: 1,
+                borderRadius: 11,
+                paddingVertical: 12,
+                alignItems: "center",
+                backgroundColor: mode === m ? Colors.accent : "transparent",
+              }}
+            >
+              <Text style={{
+                color: mode === m ? "#000" : Colors.text.secondary,
+                fontWeight: "700",
+                fontSize: 14,
+              }}>
+                {m === "create" ? "Create New" : "Join Existing"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Input */}
+        {mode === "create" ? (
+          <TextInput
+            style={inputStyle("name")}
+            placeholder="Household name, e.g. The Smiths"
+            placeholderTextColor={Colors.text.muted}
+            value={householdName}
+            onChangeText={setHouseholdName}
+            onFocus={() => setFocusedField("name")}
+            onBlur={() => setFocusedField(null)}
+          />
         ) : (
-          <Text style={{ color: "#000", fontWeight: "700", fontSize: 16 }}>
-            {mode === "create" ? "Create Household" : "Join Household"}
-          </Text>
+          <View>
+            <TextInput
+              style={inputStyle("code")}
+              placeholder="6-character invite code"
+              placeholderTextColor={Colors.text.muted}
+              autoCapitalize="characters"
+              maxLength={6}
+              value={inviteCode}
+              onChangeText={setInviteCode}
+              onFocus={() => setFocusedField("code")}
+              onBlur={() => setFocusedField(null)}
+            />
+            <Text style={{ color: Colors.text.muted, fontSize: 12, marginBottom: 20 }}>
+              Your partner can share this code from Settings.
+            </Text>
+          </View>
         )}
-      </TouchableOpacity>
-    </View>
+
+        {/* Submit button */}
+        <TouchableOpacity
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={{
+            backgroundColor: Colors.accent,
+            borderRadius: 9999,
+            paddingVertical: 17,
+            alignItems: "center",
+            marginTop: 16,
+            ...pillShadow(Colors.accent),
+          }}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+            <Text style={{ color: "#000", fontWeight: "700", fontSize: 16 }}>
+              {mode === "create" ? "Create Household" : "Join Household"}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }

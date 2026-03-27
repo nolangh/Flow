@@ -42,12 +42,14 @@ export function useCalendarEvents(month: string) {
   }, [fetchEvents]);
 
   const addEvent = async (data: Partial<CalendarEvent>) => {
-    const { data: session } = await supabase.auth.getSession();
-    const userId = session.session?.user.id;
-    const { error } = await supabase.from("calendar_events").insert({
-      ...data,
-      household_id: household?.id,
-      user_id: userId,
+    // Use a security-definer RPC to bypass RLS on insert (same pattern as households)
+    const { error } = await supabase.rpc("create_calendar_event", {
+      p_title: data.title ?? "",
+      p_start_at: data.start_at ?? new Date().toISOString(),
+      p_end_at: data.end_at ?? null,
+      p_all_day: data.all_day ?? true,
+      p_source: data.source ?? "manual",
+      p_description: data.description ?? null,
     });
     if (error) throw error;
     await fetchEvents();

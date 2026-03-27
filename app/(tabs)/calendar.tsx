@@ -23,6 +23,45 @@ import type { CalendarEvent } from "@/types";
 
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
+function TimeInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
+        {label}
+      </Text>
+      <TextInput
+        style={{
+          backgroundColor: Colors.bg.surface,
+          borderRadius: 12, padding: 14,
+          color: Colors.text.primary,
+          borderWidth: 1.5, borderColor: Colors.border.subtle,
+          fontSize: 18, fontWeight: "600", textAlign: "center",
+        }}
+        placeholder="9:00 AM"
+        placeholderTextColor={Colors.text.muted}
+        value={value}
+        onChangeText={onChange}
+        keyboardType="default"
+        autoCapitalize="none"
+      />
+    </View>
+  );
+}
+
+function parseTime(raw: string): string | null {
+  // Accept "9:00 AM", "09:00", "9:00 am", "900", "9am" etc and return "HH:MM"
+  const s = raw.trim().toUpperCase();
+  const match = s.match(/^(\d{1,2}):?(\d{2})?\s*(AM|PM)?$/);
+  if (!match) return null;
+  let hours = parseInt(match[1]);
+  const mins = parseInt(match[2] ?? "0");
+  const meridiem = match[3];
+  if (meridiem === "PM" && hours < 12) hours += 12;
+  if (meridiem === "AM" && hours === 12) hours = 0;
+  if (hours > 23 || mins > 59) return null;
+  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+}
+
 export default function CalendarScreen() {
   const [viewMonth, setViewMonth] = useState(currentYearMonth());
   const { events, isLoading, addEvent, deleteEvent } = useCalendarEvents(viewMonth);
@@ -31,7 +70,8 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [newTime, setNewTime] = useState("12:00");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [allDay, setAllDay] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -84,13 +124,39 @@ export default function CalendarScreen() {
     setSelectedDate(selectedDate === dateStr ? null : dateStr);
   };
 
+  const resetModal = () => {
+    setNewTitle(""); setStartTime(""); setEndTime(""); setAllDay(true);
+  };
+
   const handleAddEvent = async () => {
-    if (!newTitle.trim() || !selectedDate) return;
+    if (!newTitle.trim()) return Alert.alert("Enter an event title.");
+    if (!selectedDate) return Alert.alert("Select a date first.");
+
+    let startAt = `${selectedDate}T00:00:00`;
+    let endAt: string | undefined;
+
+    if (!allDay) {
+      const parsedStart = parseTime(startTime);
+      if (!parsedStart) return Alert.alert("Enter a valid start time (e.g. 9:00 AM).");
+      startAt = `${selectedDate}T${parsedStart}:00`;
+
+      if (endTime.trim()) {
+        const parsedEnd = parseTime(endTime);
+        if (!parsedEnd) return Alert.alert("Enter a valid end time (e.g. 10:30 AM).");
+        endAt = `${selectedDate}T${parsedEnd}:00`;
+      }
+    }
+
     setSaving(true);
     try {
-      const startAt = allDay ? `${selectedDate}T00:00:00` : `${selectedDate}T${newTime}:00`;
-      await addEvent({ title: newTitle.trim(), start_at: startAt, all_day: allDay, source: "manual" });
-      setNewTitle(""); setNewTime("12:00"); setAllDay(true);
+      await addEvent({
+        title: newTitle.trim(),
+        start_at: startAt,
+        end_at: endAt ?? null,
+        all_day: allDay,
+        source: "manual",
+      });
+      resetModal();
       setShowAddModal(false);
     } catch (err: unknown) {
       Alert.alert("Error", (err as Error).message);
@@ -120,7 +186,6 @@ export default function CalendarScreen() {
           <Text style={{ color: Colors.text.primary, fontSize: 26, fontWeight: "800", letterSpacing: -0.5 }}>
             Calendar
           </Text>
-          {/* Month nav */}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: Colors.bg.surface, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: Colors.border.subtle }}>
             <TouchableOpacity onPress={handlePrevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="chevron-back" size={14} color={Colors.text.muted} />
@@ -134,9 +199,8 @@ export default function CalendarScreen() {
           </View>
         </View>
 
-        {/* Calendar */}
+        {/* Calendar grid */}
         <View style={{ marginHorizontal: 16 }}>
-          {/* Day headers */}
           <View style={{ flexDirection: "row", marginBottom: 6 }}>
             {DAY_LABELS.map((d) => (
               <View key={d} style={{ flex: 1, alignItems: "center", paddingBottom: 6 }}>
@@ -145,7 +209,6 @@ export default function CalendarScreen() {
             ))}
           </View>
 
-          {/* Weeks */}
           {Array.from({ length: calendarDays.length / 7 }, (_, row) => (
             <View key={row} style={{ flexDirection: "row", marginBottom: 2 }}>
               {calendarDays.slice(row * 7, row * 7 + 7).map((day, col) => {
@@ -167,11 +230,7 @@ export default function CalendarScreen() {
                     <View style={{
                       width: 36, height: 36, borderRadius: 18,
                       alignItems: "center", justifyContent: "center",
-                      backgroundColor: isSelected
-                        ? Colors.accent
-                        : isToday
-                        ? Colors.accentSoft
-                        : "transparent",
+                      backgroundColor: isSelected ? Colors.accent : isToday ? Colors.accentSoft : "transparent",
                       borderWidth: isToday && !isSelected ? 1.5 : 0,
                       borderColor: Colors.accentBorder,
                     }}>
@@ -198,25 +257,20 @@ export default function CalendarScreen() {
           ))}
         </View>
 
-        {/* Divider */}
         <View style={{ height: 1, backgroundColor: Colors.border.dim, marginVertical: 20, marginHorizontal: 20 }} />
 
-        {/* Selected day */}
+        {/* Selected day events */}
         <View style={{ paddingHorizontal: 20 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <Text style={{ color: selectedDate ? Colors.text.primary : Colors.text.muted, fontSize: 15, fontWeight: "600" }}>
-              {selectedDate
-                ? format(parseISO(selectedDate), "EEEE, MMMM d")
-                : "Select a day"}
+              {selectedDate ? format(parseISO(selectedDate), "EEEE, MMMM d") : "Select a day"}
             </Text>
             {selectedDate && (
               <TouchableOpacity
                 onPress={() => setShowAddModal(true)}
                 style={{
-                  backgroundColor: Colors.accent,
-                  borderRadius: 20,
-                  paddingHorizontal: 14,
-                  paddingVertical: 7,
+                  backgroundColor: Colors.accent, borderRadius: 20,
+                  paddingHorizontal: 14, paddingVertical: 7,
                   ...pillShadow(Colors.accent),
                 }}
               >
@@ -233,15 +287,10 @@ export default function CalendarScreen() {
             <View
               key={ev.id}
               style={{
-                backgroundColor: Colors.bg.surface,
-                borderRadius: 16,
-                padding: 14,
-                marginBottom: 10,
+                backgroundColor: Colors.bg.surface, borderRadius: 16, padding: 14, marginBottom: 10,
                 borderWidth: 1,
                 borderColor: ev.source === "budget_bill" ? Colors.dangerBorder : Colors.border.subtle,
-                flexDirection: "row",
-                alignItems: "flex-start",
-                gap: 12,
+                flexDirection: "row", alignItems: "flex-start", gap: 12,
               }}
             >
               <View style={{
@@ -260,9 +309,10 @@ export default function CalendarScreen() {
                 {ev.description && (
                   <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }}>{ev.description}</Text>
                 )}
-                {!ev.all_day && (
+                {!ev.all_day && ev.start_at && (
                   <Text style={{ color: Colors.text.secondary, fontSize: 12, marginTop: 2 }}>
                     {format(parseISO(ev.start_at), "h:mm a")}
+                    {ev.end_at ? ` – ${format(parseISO(ev.end_at), "h:mm a")}` : ""}
                   </Text>
                 )}
                 {ev.amount && (
@@ -290,59 +340,47 @@ export default function CalendarScreen() {
       </ScrollView>
 
       {/* Add event modal */}
-      <Modal visible={showAddModal} transparent animationType="slide" onRequestClose={() => setShowAddModal(false)}>
+      <Modal visible={showAddModal} transparent animationType="slide" onRequestClose={() => { setShowAddModal(false); resetModal(); }}>
         <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
           <View style={{
             backgroundColor: Colors.bg.raised,
             borderTopLeftRadius: 28, borderTopRightRadius: 28,
             borderTopWidth: 1, borderColor: Colors.border.subtle,
-            padding: 24,
-            paddingBottom: Platform.OS === "ios" ? 44 : 28,
+            padding: 24, paddingBottom: Platform.OS === "ios" ? 44 : 28,
             gap: 14,
           }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-              <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>
-                New Event
-              </Text>
+            {/* Handle */}
+            <View style={{ alignItems: "center", marginTop: -8, marginBottom: 4 }}>
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>New Event</Text>
               <Text style={{ color: Colors.text.muted, fontSize: 14 }}>
                 {selectedDate ? format(parseISO(selectedDate), "MMM d") : ""}
               </Text>
             </View>
+
+            {/* Title */}
             <TextInput
               style={{
-                backgroundColor: Colors.bg.surface,
-                borderRadius: 14, padding: 16,
-                color: Colors.text.primary,
-                borderWidth: 1.5, borderColor: Colors.border.subtle,
-                fontSize: 15,
+                backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16,
+                color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 15,
               }}
               placeholder="Event title"
               placeholderTextColor={Colors.text.muted}
               value={newTitle}
               onChangeText={setNewTitle}
+              returnKeyType="next"
             />
-            {!allDay && (
-              <TextInput
-                style={{
-                  backgroundColor: Colors.bg.surface,
-                  borderRadius: 14, padding: 16,
-                  color: Colors.text.primary,
-                  borderWidth: 1.5, borderColor: Colors.border.subtle,
-                  fontSize: 15,
-                }}
-                placeholder="Time (HH:MM)"
-                placeholderTextColor={Colors.text.muted}
-                value={newTime}
-                onChangeText={setNewTime}
-              />
-            )}
+
+            {/* All day toggle */}
             <TouchableOpacity
               onPress={() => setAllDay(!allDay)}
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <View style={{
-                width: 22, height: 22, borderRadius: 6,
-                borderWidth: 1.5,
+                width: 22, height: 22, borderRadius: 6, borderWidth: 1.5,
                 borderColor: allDay ? Colors.accent : Colors.border.subtle,
                 backgroundColor: allDay ? Colors.accentSoft : "transparent",
                 alignItems: "center", justifyContent: "center",
@@ -351,8 +389,23 @@ export default function CalendarScreen() {
               </View>
               <Text style={{ color: Colors.text.secondary, fontSize: 14 }}>All day</Text>
             </TouchableOpacity>
+
+            {/* Start + end time — only shown when not all day */}
+            {!allDay && (
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <TimeInput label="Start time" value={startTime} onChange={setStartTime} />
+                <TimeInput label="End time" value={endTime} onChange={setEndTime} />
+              </View>
+            )}
+
+            {!allDay && (
+              <Text style={{ color: Colors.text.muted, fontSize: 12 }}>
+                Enter times like "9:00 AM", "14:30", or "2 PM"
+              </Text>
+            )}
+
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <Button label="Cancel" variant="ghost" onPress={() => setShowAddModal(false)} style={{ flex: 1 }} />
+              <Button label="Cancel" variant="ghost" onPress={() => { setShowAddModal(false); resetModal(); }} style={{ flex: 1 }} />
               <Button label="Add Event" variant="primary" loading={saving} onPress={handleAddEvent} style={{ flex: 1 }} />
             </View>
           </View>

@@ -23,6 +23,7 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import CategoryCard from "@/components/budget/CategoryCard";
 import AddTransactionModal from "@/components/budget/AddTransactionModal";
 import AddCategoryModal from "@/components/budget/AddCategoryModal";
+import EditCategoryModal from "@/components/budget/EditCategoryModal";
 import TransactionItem from "@/components/dashboard/TransactionItem";
 import EmptyState from "@/components/ui/EmptyState";
 
@@ -39,6 +40,7 @@ export default function BudgetScreen() {
   const [showAddCat, setShowAddCat] = useState(false);
   const [showBudgetEdit, setShowBudgetEdit] = useState(false);
   const [budgetInput, setBudgetInput] = useState("");
+  const [editingCategory, setEditingCategory] = useState<import("@/types").BudgetCategory | null>(null);
 
   const load = async () => {
     await Promise.all([fetchMonthlyBudget(currentMonth), fetchTransactions(currentMonth)]);
@@ -287,7 +289,7 @@ export default function BudgetScreen() {
                 }}>
                   {fixedCategories.map((cat, idx) => (
                     <View key={cat.id}>
-                      <CategoryCard category={cat} />
+                      <CategoryCard category={cat} onPress={setEditingCategory} />
                       {idx < fixedCategories.length - 1 && (
                         <View style={{ height: 1, backgroundColor: Colors.border.subtle, marginHorizontal: 16 }} />
                       )}
@@ -308,7 +310,7 @@ export default function BudgetScreen() {
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
                   {spendCategories.map((cat) => (
                     <View key={cat.id} style={{ width: "47.5%" }}>
-                      <CategoryCard category={cat} />
+                      <CategoryCard category={cat} onPress={setEditingCategory} />
                     </View>
                   ))}
                 </View>
@@ -324,7 +326,7 @@ export default function BudgetScreen() {
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
                   {incomeCategories.map((cat) => (
                     <View key={cat.id} style={{ width: "47.5%" }}>
-                      <CategoryCard category={cat} />
+                      <CategoryCard category={cat} onPress={setEditingCategory} />
                     </View>
                   ))}
                 </View>
@@ -407,6 +409,21 @@ export default function BudgetScreen() {
         visible={showAddCat}
         onClose={() => setShowAddCat(false)}
         onAdd={async (data) => { await createCategory(data); }}
+      />
+
+      <EditCategoryModal
+        visible={editingCategory !== null}
+        category={editingCategory}
+        onClose={() => setEditingCategory(null)}
+        onSave={async (id, data) => {
+          await updateCategory(id, data);
+          await fetchMonthlyBudget(currentMonth);
+          setEditingCategory(null);
+        }}
+        onDelete={async (id) => {
+          await deleteCategory(id);
+          setEditingCategory(null);
+        }}
       />
     </SafeAreaView>
   );

@@ -2,87 +2,82 @@ import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Flag: true when real credentials are present
+export const supabaseConfigured =
+  supabaseUrl.length > 0 &&
+  !supabaseUrl.includes("placeholder") &&
+  supabaseAnonKey.length > 0 &&
+  !supabaseAnonKey.includes("placeholder");
+
+const effectiveUrl = supabaseConfigured
+  ? supabaseUrl
+  : "https://placeholder.supabase.co";
+const effectiveKey = supabaseConfigured
+  ? supabaseAnonKey
+  : "placeholder-anon-key";
+
+export const supabase = createClient(effectiveUrl, effectiveKey, {
   auth: {
     storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
+    autoRefreshToken: supabaseConfigured,
+    persistSession: supabaseConfigured,
     detectSessionInUrl: false,
   },
   realtime: {
-    params: {
-      eventsPerSecond: 10,
-    },
+    params: { eventsPerSecond: 10 },
+  },
+  global: {
+    fetch: supabaseConfigured
+      ? undefined
+      : () => Promise.reject(new Error("Supabase not configured")),
   },
 });
 
 // ─── Realtime channel helpers ──────────────────────────────────────────────
 
-/**
- * Subscribe to all transaction inserts/updates for a household.
- * Calls `onUpdate` whenever a new row arrives so that UI can refresh.
- */
 export function subscribeToTransactions(
   householdId: string,
   onUpdate: (payload: Record<string, unknown>) => void
 ) {
+  if (!supabaseConfigured) return { unsubscribe: () => {} } as ReturnType<typeof supabase.channel>;
   return supabase
     .channel(`transactions:${householdId}`)
     .on(
       "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "transactions",
-        filter: `household_id=eq.${householdId}`,
-      },
+      { event: "*", schema: "public", table: "transactions", filter: `household_id=eq.${householdId}` },
       onUpdate
     )
     .subscribe();
 }
 
-/**
- * Subscribe to calendar event changes for a household.
- */
 export function subscribeToCalendarEvents(
   householdId: string,
   onUpdate: (payload: Record<string, unknown>) => void
 ) {
+  if (!supabaseConfigured) return { unsubscribe: () => {} } as ReturnType<typeof supabase.channel>;
   return supabase
     .channel(`calendar_events:${householdId}`)
     .on(
       "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "calendar_events",
-        filter: `household_id=eq.${householdId}`,
-      },
+      { event: "*", schema: "public", table: "calendar_events", filter: `household_id=eq.${householdId}` },
       onUpdate
     )
     .subscribe();
 }
 
-/**
- * Subscribe to budget category changes.
- */
 export function subscribeToBudgetCategories(
   householdId: string,
   onUpdate: (payload: Record<string, unknown>) => void
 ) {
+  if (!supabaseConfigured) return { unsubscribe: () => {} } as ReturnType<typeof supabase.channel>;
   return supabase
     .channel(`budget_categories:${householdId}`)
     .on(
       "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "budget_categories",
-        filter: `household_id=eq.${householdId}`,
-      },
+      { event: "*", schema: "public", table: "budget_categories", filter: `household_id=eq.${householdId}` },
       onUpdate
     )
     .subscribe();

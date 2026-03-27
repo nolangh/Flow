@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { generateInviteCode } from "@/lib/utils";
 import type { AuthState, User, Household } from "@/types";
 
@@ -71,7 +71,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   refreshSession: async () => {
-    const { data } = await supabase.auth.getSession();
+    if (!supabaseConfigured) return;
+    const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
     if (!data.session) return;
 
     const profile = await fetchProfile(data.session.user.id);

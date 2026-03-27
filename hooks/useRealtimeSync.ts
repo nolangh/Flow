@@ -8,7 +8,7 @@
  */
 import { useEffect, useRef } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { supabase, subscribeToTransactions, subscribeToCalendarEvents, subscribeToBudgetCategories } from "@/lib/supabase";
+import { supabase, supabaseConfigured, subscribeToTransactions, subscribeToCalendarEvents, subscribeToBudgetCategories } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetStore } from "@/store/budgetStore";
@@ -20,7 +20,7 @@ export function useRealtimeSync() {
   const channelsRef = useRef<RealtimeChannel[]>([]);
 
   useEffect(() => {
-    if (!household?.id) return;
+    if (!household?.id || !supabaseConfigured) return;
 
     const txChannel = subscribeToTransactions(household.id, () => {
       fetchTransactions(currentMonth);

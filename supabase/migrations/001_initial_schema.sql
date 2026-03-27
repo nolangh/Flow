@@ -234,7 +234,10 @@ begin
 end;
 $$;
 
--- Households: members can read/update their own household
+-- Households: any signed-in user can create; members can read/update their own
+create policy "authenticated_insert_household" on public.households
+  for insert with check (auth.uid() is not null);
+
 create policy "members_read_household" on public.households
   for select using (id = public.my_household_id());
 

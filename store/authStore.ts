@@ -16,13 +16,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      const profile = await fetchProfile(data.user.id);
-      const household = profile?.household_id
-        ? await fetchHousehold(profile.household_id)
-        : null;
+      const fallbackUser: User = {
+        id: data.user.id,
+        email,
+        full_name: data.user.user_metadata?.full_name ?? null,
+        household_id: null,
+        avatar_url: null,
+        created_at: data.user.created_at,
+      };
+
+      let profile: User | null = null;
+      let household = null;
+      try {
+        profile = await fetchProfile(data.user.id);
+        household = profile?.household_id ? await fetchHousehold(profile.household_id) : null;
+      } catch {
+        // DB tables may not be set up yet; fall back to auth data
+      }
 
       set({
-        user: profile,
+        user: profile ?? fallbackUser,
         household,
         session: {
           access_token: data.session.access_token,
@@ -41,22 +54,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { full_name: fullName },
-        },
+        options: { data: { full_name: fullName } },
       });
       if (error) throw error;
       if (!data.user) throw new Error("No user returned");
 
-      // Insert profile row (ignore conflict if trigger already created it)
-      await supabase
-        .from("profiles")
-        .upsert({ id: data.user.id, email, full_name: fullName }, { onConflict: "id" });
-
-      // Fetch the newly created profile so user is set in the store.
-      // Fall back to a minimal object if RLS / email-confirm blocks the read.
-      const profile = await fetchProfile(data.user.id);
-      const resolvedUser: User = profile ?? {
+      // Build a user object from auth data immediately — DB may not exist yet
+      const fallbackUser: User = {
         id: data.user.id,
         email,
         full_name: fullName,
@@ -65,8 +69,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         created_at: new Date().toISOString(),
       };
 
+      // Try to upsert profile row — silently skip if table doesn't exist yet
+      const profile = await (async () => {
+        try {
+          await supabase
+            .from("profiles")
+            .upsert({ id: data.user!.id, email, full_name: fullName }, { onConflict: "id" });
+          const fetched = await fetchProfile(data.user!.id);
+          return fetched ?? fallbackUser;
+        } catch {
+          return fallbackUser;
+        }
+      })();
+
       set({
-        user: resolvedUser,
+        user: profile,
         session: data.session
           ? { access_token: data.session.access_token, refresh_token: data.session.refresh_token }
           : null,
@@ -103,8 +120,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   createHousehold: async (name) => {
-    const user = get().user;
-    if (!user) throw new Error("Not authenticated");
+    // Prefer store user; fall back to live Supabase session
+    let user = get().user;
+    if (!user) {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) throw new Error("Not authenticated");
+      user = {
+        id: data.session.user.id,
+        email: data.session.user.email ?? "",
+        full_name: data.session.user.user_metadata?.full_name ?? null,
+        household_id: null,
+        avatar_url: null,
+        created_at: data.session.user.created_at,
+      };
+      set({ user });
+    }
 
     set({ isLoading: true, error: null });
     try {

@@ -157,6 +157,7 @@ export interface BudgetState {
   updateCategory: (id: string, data: Partial<BudgetCategory>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   setCurrentMonth: (month: string) => void;
+  setTotalLimit: (limit: number) => Promise<void>;
 }
 
 export interface TransactionState {

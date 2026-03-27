@@ -153,4 +153,19 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
       categories: state.categories.filter((c) => c.id !== id),
     }));
   },
+
+  setTotalLimit: async (limit: number) => {
+    const { monthlyBudget } = get();
+    if (!monthlyBudget) return;
+    const { error } = await supabase
+      .from("monthly_budgets")
+      .update({ total_limit: limit })
+      .eq("id", monthlyBudget.id);
+    if (error) throw error;
+    set((state) => ({
+      monthlyBudget: state.monthlyBudget
+        ? { ...state.monthlyBudget, total_limit: limit }
+        : null,
+    }));
+  },
 }));

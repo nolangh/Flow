@@ -35,9 +35,15 @@ export function useBudgetSummary(): BudgetSummary {
       .filter((c) => c.is_income)
       .reduce((sum, c) => sum + c.monthly_limit, 0);
 
-    const totalLimit = categories
+    // Use the manually set total_limit if the user has configured one,
+    // otherwise fall back to summing all spending category limits.
+    const categorySum = categories
       .filter((c) => !c.is_income)
       .reduce((sum, c) => sum + c.monthly_limit, 0);
+    const totalLimit =
+      monthlyBudget && monthlyBudget.total_limit > 0
+        ? monthlyBudget.total_limit
+        : categorySum;
 
     const debits = transactions.filter((tx) => tx.type === "debit");
     const totalSpent = debits.reduce((sum, tx) => sum + tx.amount, 0);

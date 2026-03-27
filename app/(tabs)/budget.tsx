@@ -5,6 +5,10 @@ import {
   RefreshControl,
   TouchableOpacity,
   StatusBar,
+  TextInput,
+  Alert,
+  Modal,
+  Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -25,7 +29,7 @@ import EmptyState from "@/components/ui/EmptyState";
 type BudgetTab = "overview" | "transactions";
 
 export default function BudgetScreen() {
-  const { categories, currentMonth, setCurrentMonth, fetchMonthlyBudget, createCategory } = useBudgetStore();
+  const { categories, currentMonth, setCurrentMonth, fetchMonthlyBudget, createCategory, monthlyBudget, setTotalLimit } = useBudgetStore();
   const { transactions, fetchTransactions, addManualTransaction } = useTransactionStore();
   const summary = useBudgetSummary();
 
@@ -33,6 +37,8 @@ export default function BudgetScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showAddTx, setShowAddTx] = useState(false);
   const [showAddCat, setShowAddCat] = useState(false);
+  const [showBudgetEdit, setShowBudgetEdit] = useState(false);
+  const [budgetInput, setBudgetInput] = useState("");
 
   const load = async () => {
     await Promise.all([fetchMonthlyBudget(currentMonth), fetchTransactions(currentMonth)]);
@@ -94,8 +100,46 @@ export default function BudgetScreen() {
           padding: 16,
           borderWidth: 1,
           borderColor: summary.isOverBudget ? Colors.dangerBorder : Colors.border.subtle,
+          gap: 12,
         }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+          {/* Monthly budget row — tappable to edit */}
+          <TouchableOpacity
+            onPress={() => {
+              setBudgetInput(
+                monthlyBudget?.total_limit && monthlyBudget.total_limit > 0
+                  ? monthlyBudget.total_limit.toString()
+                  : ""
+              );
+              setShowBudgetEdit(true);
+            }}
+            style={{
+              flexDirection: "row", alignItems: "center",
+              justifyContent: "space-between",
+              backgroundColor: Colors.bg.overlay,
+              borderRadius: 12, padding: 12,
+            }}
+          >
+            <View>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Monthly Budget
+              </Text>
+              <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "800", letterSpacing: -0.5, marginTop: 2 }}>
+                {summary.totalLimit > 0 ? formatCurrency(summary.totalLimit) : "Not set"}
+              </Text>
+            </View>
+            <View style={{
+              flexDirection: "row", alignItems: "center", gap: 4,
+              backgroundColor: Colors.neonGreenGlow,
+              borderWidth: 1, borderColor: Colors.neonGreenBorder,
+              borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
+            }}>
+              <Ionicons name="pencil" size={12} color={Colors.accent} />
+              <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: "600" }}>Edit</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Stats row */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             {[
               { label: "Income", value: summary.totalIncome, color: Colors.accent },
               { label: "Spent", value: summary.totalSpent, color: activeColor },
@@ -109,12 +153,87 @@ export default function BudgetScreen() {
               </View>
             ))}
           </View>
+
           <ProgressBar spent={summary.totalSpent} limit={summary.totalLimit} height={5} />
-          <Text style={{ color: Colors.text.muted, fontSize: 11, marginTop: 8 }}>
-            {summary.percentUsed.toFixed(0)}% of {formatCurrency(summary.totalLimit)} used
+          <Text style={{ color: Colors.text.muted, fontSize: 11 }}>
+            {summary.totalLimit > 0
+              ? `${summary.percentUsed.toFixed(0)}% of ${formatCurrency(summary.totalLimit)} used`
+              : "Set a monthly budget to track progress"}
           </Text>
         </View>
       </View>
+
+      {/* Budget limit edit modal */}
+      <Modal visible={showBudgetEdit} transparent animationType="fade" onRequestClose={() => setShowBudgetEdit(false)}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.75)" }}>
+          <View style={{
+            backgroundColor: Colors.bg.raised,
+            borderRadius: 20,
+            padding: 24,
+            width: "85%",
+            borderWidth: 1,
+            borderColor: Colors.border.subtle,
+            gap: 16,
+          }}>
+            <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700" }}>
+              Set Monthly Budget
+            </Text>
+            <Text style={{ color: Colors.text.muted, fontSize: 13, lineHeight: 18 }}>
+              Enter your total monthly spending limit. This is what the progress bars track against.
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: Colors.bg.surface,
+                borderRadius: 12, padding: 16,
+                color: Colors.text.primary,
+                fontSize: 28, fontWeight: "700", letterSpacing: -0.5,
+                borderWidth: 1, borderColor: Colors.accentBorder,
+                textAlign: "center",
+              }}
+              placeholder="0.00"
+              placeholderTextColor={Colors.text.muted}
+              keyboardType="decimal-pad"
+              value={budgetInput}
+              onChangeText={setBudgetInput}
+              autoFocus
+            />
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setShowBudgetEdit(false)}
+                style={{
+                  flex: 1, borderRadius: 9999, paddingVertical: 14,
+                  alignItems: "center", backgroundColor: Colors.bg.surface,
+                  borderWidth: 1, borderColor: Colors.border.subtle,
+                }}
+              >
+                <Text style={{ color: Colors.text.secondary, fontWeight: "600" }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={async () => {
+                  const val = parseFloat(budgetInput);
+                  if (isNaN(val) || val <= 0) {
+                    Alert.alert("Enter a valid amount.");
+                    return;
+                  }
+                  try {
+                    await setTotalLimit(val);
+                    setShowBudgetEdit(false);
+                  } catch (e: unknown) {
+                    Alert.alert("Error", (e as Error).message);
+                  }
+                }}
+                style={{
+                  flex: 1, borderRadius: 9999, paddingVertical: 14,
+                  alignItems: "center", backgroundColor: Colors.accent,
+                  ...pillShadow(Colors.accent),
+                }}
+              >
+                <Text style={{ color: "#000", fontWeight: "700" }}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Tab pills */}
       <View style={{ flexDirection: "row", paddingHorizontal: 20, marginBottom: 14, gap: 8 }}>

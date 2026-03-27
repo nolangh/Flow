@@ -7,27 +7,21 @@ import {
   TextInput,
   Alert,
   Platform,
+  StatusBar,
 } from "react-native";
 import { useState, useMemo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { getDaysInMonth, getDay, parseISO, format, isSameDay } from "date-fns";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useBudgetStore } from "@/store/budgetStore";
 import { Colors, pillShadow } from "@/constants/theme";
 import { formatCurrency, formatMonth, currentYearMonth } from "@/lib/utils";
-import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import Divider from "@/components/ui/Divider";
 import EmptyState from "@/components/ui/EmptyState";
 import type { CalendarEvent } from "@/types";
 
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-const EVENT_SOURCE_EMOJI: Record<string, string> = {
-  manual: "📅",
-  google: "🗓",
-  budget_bill: "💳",
-  recurring: "🔁",
-};
 
 export default function CalendarScreen() {
   const [viewMonth, setViewMonth] = useState(currentYearMonth());
@@ -52,7 +46,6 @@ export default function CalendarScreen() {
     setViewMonth(month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`);
   };
 
-  // Build map of date → events for fast lookup
   const eventsByDate = useMemo(() => {
     const map: Record<string, CalendarEvent[]> = {};
     for (const ev of events) {
@@ -60,7 +53,6 @@ export default function CalendarScreen() {
       if (!map[d]) map[d] = [];
       map[d].push(ev);
     }
-    // Also inject fixed budget bills as virtual calendar events
     for (const cat of categories.filter((c) => c.is_fixed && c.fixed_day_of_month)) {
       const d = `${viewMonth}-${String(cat.fixed_day_of_month!).padStart(2, "0")}`;
       if (!map[d]) map[d] = [];
@@ -69,7 +61,7 @@ export default function CalendarScreen() {
         household_id: "",
         user_id: null,
         title: cat.name,
-        description: `Fixed bill: ${formatCurrency(cat.monthly_limit)}`,
+        description: `Fixed bill · ${formatCurrency(cat.monthly_limit)}`,
         start_at: `${d}T00:00:00`,
         end_at: null,
         all_day: true,
@@ -77,7 +69,7 @@ export default function CalendarScreen() {
         google_event_id: null,
         budget_category_id: cat.id,
         amount: cat.monthly_limit,
-        color: Colors.dangerPink,
+        color: Colors.danger,
         created_at: "",
         updated_at: "",
       });
@@ -96,9 +88,7 @@ export default function CalendarScreen() {
     if (!newTitle.trim() || !selectedDate) return;
     setSaving(true);
     try {
-      const startAt = allDay
-        ? `${selectedDate}T00:00:00`
-        : `${selectedDate}T${newTime}:00`;
+      const startAt = allDay ? `${selectedDate}T00:00:00` : `${selectedDate}T${newTime}:00`;
       await addEvent({ title: newTitle.trim(), start_at: startAt, all_day: allDay, source: "manual" });
       setNewTitle(""); setNewTime("12:00"); setAllDay(true);
       setShowAddModal(false);
@@ -113,48 +103,51 @@ export default function CalendarScreen() {
     ...Array(firstDayOfWeek).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
-  // Pad to complete last row
   while (calendarDays.length % 7 !== 0) calendarDays.push(null);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
+      <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+
         {/* Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 }}>
+        <View style={{
+          flexDirection: "row", justifyContent: "space-between",
+          alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 20,
+        }}>
           <Text style={{ color: Colors.text.primary, fontSize: 26, fontWeight: "800", letterSpacing: -0.5 }}>
             Calendar
           </Text>
+          {/* Month nav */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: Colors.bg.surface, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: Colors.border.subtle }}>
+            <TouchableOpacity onPress={handlePrevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="chevron-back" size={14} color={Colors.text.muted} />
+            </TouchableOpacity>
+            <Text style={{ color: Colors.text.secondary, fontSize: 13, fontWeight: "600", marginHorizontal: 6 }}>
+              {formatMonth(`${viewMonth}-01`)}
+            </Text>
+            <TouchableOpacity onPress={handleNextMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="chevron-forward" size={14} color={Colors.text.muted} />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Month nav */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 10, gap: 20 }}>
-          <TouchableOpacity onPress={handlePrevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={{ color: Colors.text.secondary, fontSize: 20 }}>‹</Text>
-          </TouchableOpacity>
-          <Text style={{ color: Colors.text.primary, fontSize: 16, fontWeight: "700" }}>
-            {formatMonth(`${viewMonth}-01`)}
-          </Text>
-          <TouchableOpacity onPress={handleNextMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={{ color: Colors.text.secondary, fontSize: 20 }}>›</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Calendar grid */}
-        <View style={{ paddingHorizontal: 16 }}>
-          {/* Day-of-week headers */}
+        {/* Calendar */}
+        <View style={{ marginHorizontal: 16 }}>
+          {/* Day headers */}
           <View style={{ flexDirection: "row", marginBottom: 6 }}>
             {DAY_LABELS.map((d) => (
-              <View key={d} style={{ flex: 1, alignItems: "center" }}>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600" }}>{d}</Text>
+              <View key={d} style={{ flex: 1, alignItems: "center", paddingBottom: 6 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "700" }}>{d}</Text>
               </View>
             ))}
           </View>
 
           {/* Weeks */}
           {Array.from({ length: calendarDays.length / 7 }, (_, row) => (
-            <View key={row} style={{ flexDirection: "row", marginBottom: 4 }}>
+            <View key={row} style={{ flexDirection: "row", marginBottom: 2 }}>
               {calendarDays.slice(row * 7, row * 7 + 7).map((day, col) => {
                 const dateStr = day ? `${viewMonth}-${String(day).padStart(2, "0")}` : null;
                 const isToday = dateStr === todayStr;
@@ -169,33 +162,33 @@ export default function CalendarScreen() {
                     key={col}
                     onPress={() => day && handleDayPress(day)}
                     disabled={!day}
-                    style={{ flex: 1, alignItems: "center", paddingVertical: 6 }}
+                    style={{ flex: 1, alignItems: "center", paddingVertical: 5 }}
                   >
-                    <View
-                      style={{
-                        width: 34, height: 34, borderRadius: 17,
-                        alignItems: "center", justifyContent: "center",
-                        backgroundColor: isSelected
-                          ? Colors.neonGreen
-                          : isToday
-                          ? Colors.neonGreenGlow
-                          : "transparent",
-                        borderWidth: isToday && !isSelected ? 1 : 0,
-                        borderColor: Colors.neonGreenBorder,
-                      }}
-                    >
+                    <View style={{
+                      width: 36, height: 36, borderRadius: 18,
+                      alignItems: "center", justifyContent: "center",
+                      backgroundColor: isSelected
+                        ? Colors.accent
+                        : isToday
+                        ? Colors.accentSoft
+                        : "transparent",
+                      borderWidth: isToday && !isSelected ? 1.5 : 0,
+                      borderColor: Colors.accentBorder,
+                    }}>
                       <Text style={{
-                        color: isSelected ? "#000" : isToday ? Colors.neonGreen : day ? Colors.text.primary : "transparent",
+                        color: isSelected ? "#000" : isToday ? Colors.accent : day ? Colors.text.primary : "transparent",
                         fontSize: 14,
                         fontWeight: isToday || isSelected ? "700" : "400",
                       }}>
                         {day ?? ""}
                       </Text>
                     </View>
-                    {/* Event dots */}
                     {hasEvents && (
                       <View style={{ flexDirection: "row", gap: 2, marginTop: 2 }}>
-                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: hasBill ? Colors.dangerPink : Colors.neonGreen }} />
+                        <View style={{
+                          width: 4, height: 4, borderRadius: 2,
+                          backgroundColor: hasBill ? Colors.danger : Colors.accent,
+                        }} />
                       </View>
                     )}
                   </TouchableOpacity>
@@ -205,12 +198,13 @@ export default function CalendarScreen() {
           ))}
         </View>
 
-        <Divider mt={8} mb={16} />
+        {/* Divider */}
+        <View style={{ height: 1, backgroundColor: Colors.border.dim, marginVertical: 20, marginHorizontal: 20 }} />
 
-        {/* Selected day events */}
+        {/* Selected day */}
         <View style={{ paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <Text style={{ color: Colors.text.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <Text style={{ color: selectedDate ? Colors.text.primary : Colors.text.muted, fontSize: 15, fontWeight: "600" }}>
               {selectedDate
                 ? format(parseISO(selectedDate), "EEEE, MMMM d")
                 : "Select a day"}
@@ -219,65 +213,109 @@ export default function CalendarScreen() {
               <TouchableOpacity
                 onPress={() => setShowAddModal(true)}
                 style={{
-                  backgroundColor: Colors.neonGreenGlow,
-                  borderRadius: 9999,
-                  paddingHorizontal: 12,
-                  paddingVertical: 5,
-                  borderWidth: 1,
-                  borderColor: Colors.neonGreenBorder,
+                  backgroundColor: Colors.accent,
+                  borderRadius: 20,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  ...pillShadow(Colors.accent),
                 }}
               >
-                <Text style={{ color: Colors.neonGreen, fontSize: 12, fontWeight: "600" }}>+ Event</Text>
+                <Text style={{ color: "#000", fontSize: 12, fontWeight: "700" }}>+ Add</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {selectedDate && selectedEvents.length === 0 && (
-            <EmptyState icon="📅" title="Nothing scheduled" subtitle="Tap + Event to add one." />
+            <EmptyState title="Nothing scheduled" subtitle="Tap + Add to create an event." />
           )}
 
           {selectedEvents.map((ev) => (
-            <Card key={ev.id} padding={14} style={{ marginBottom: 8 }}
-              glow={ev.source === "budget_bill" ? "pink" : null}
+            <View
+              key={ev.id}
+              style={{
+                backgroundColor: Colors.bg.surface,
+                borderRadius: 16,
+                padding: 14,
+                marginBottom: 10,
+                borderWidth: 1,
+                borderColor: ev.source === "budget_bill" ? Colors.dangerBorder : Colors.border.subtle,
+                flexDirection: "row",
+                alignItems: "flex-start",
+                gap: 12,
+              }}
             >
-              <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
-                <Text style={{ fontSize: 20 }}>{EVENT_SOURCE_EMOJI[ev.source] ?? "📅"}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "600" }}>{ev.title}</Text>
-                  {ev.description && (
-                    <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }}>{ev.description}</Text>
-                  )}
-                  {!ev.all_day && (
-                    <Text style={{ color: Colors.text.secondary, fontSize: 12, marginTop: 2 }}>
-                      {format(parseISO(ev.start_at), "h:mm a")}
-                    </Text>
-                  )}
-                  {ev.amount && (
-                    <Text style={{ color: Colors.dangerPink, fontSize: 13, fontWeight: "600", marginTop: 4 }}>
-                      {formatCurrency(ev.amount)}
-                    </Text>
-                  )}
-                </View>
-                {ev.source === "manual" && (
-                  <TouchableOpacity onPress={() => deleteEvent(ev.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                    <Text style={{ color: Colors.text.muted, fontSize: 16 }}>×</Text>
-                  </TouchableOpacity>
+              <View style={{
+                width: 36, height: 36, borderRadius: 18,
+                backgroundColor: ev.source === "budget_bill" ? Colors.dangerSoft : Colors.bg.overlay,
+                alignItems: "center", justifyContent: "center",
+              }}>
+                <Ionicons
+                  name={ev.source === "budget_bill" ? "repeat" : ev.source === "recurring" ? "sync" : "calendar-outline"}
+                  size={16}
+                  color={ev.source === "budget_bill" ? Colors.danger : Colors.accent}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "600" }}>{ev.title}</Text>
+                {ev.description && (
+                  <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }}>{ev.description}</Text>
+                )}
+                {!ev.all_day && (
+                  <Text style={{ color: Colors.text.secondary, fontSize: 12, marginTop: 2 }}>
+                    {format(parseISO(ev.start_at), "h:mm a")}
+                  </Text>
+                )}
+                {ev.amount && (
+                  <Text style={{ color: Colors.danger, fontSize: 13, fontWeight: "700", marginTop: 4 }}>
+                    {formatCurrency(ev.amount)}
+                  </Text>
                 )}
               </View>
-            </Card>
+              {ev.source === "manual" && (
+                <TouchableOpacity
+                  onPress={() => deleteEvent(ev.id)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={{
+                    width: 28, height: 28, borderRadius: 14,
+                    backgroundColor: Colors.bg.overlay,
+                    alignItems: "center", justifyContent: "center",
+                  }}
+                >
+                  <Ionicons name="close" size={14} color={Colors.text.muted} />
+                </TouchableOpacity>
+              )}
+            </View>
           ))}
         </View>
       </ScrollView>
 
       {/* Add event modal */}
       <Modal visible={showAddModal} transparent animationType="slide" onRequestClose={() => setShowAddModal(false)}>
-        <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.7)" }}>
-          <View style={{ backgroundColor: Colors.bg.raised, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1, borderColor: Colors.border.subtle, padding: 20, paddingBottom: Platform.OS === "ios" ? 44 : 24, gap: 14 }}>
-            <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>
-              New Event · {selectedDate ? format(parseISO(selectedDate), "MMM d") : ""}
-            </Text>
+        <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <View style={{
+            backgroundColor: Colors.bg.raised,
+            borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            borderTopWidth: 1, borderColor: Colors.border.subtle,
+            padding: 24,
+            paddingBottom: Platform.OS === "ios" ? 44 : 28,
+            gap: 14,
+          }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>
+                New Event
+              </Text>
+              <Text style={{ color: Colors.text.muted, fontSize: 14 }}>
+                {selectedDate ? format(parseISO(selectedDate), "MMM d") : ""}
+              </Text>
+            </View>
             <TextInput
-              style={{ backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14, color: Colors.text.primary, borderWidth: 1, borderColor: Colors.border.subtle, fontSize: 15 }}
+              style={{
+                backgroundColor: Colors.bg.surface,
+                borderRadius: 14, padding: 16,
+                color: Colors.text.primary,
+                borderWidth: 1.5, borderColor: Colors.border.subtle,
+                fontSize: 15,
+              }}
               placeholder="Event title"
               placeholderTextColor={Colors.text.muted}
               value={newTitle}
@@ -285,22 +323,37 @@ export default function CalendarScreen() {
             />
             {!allDay && (
               <TextInput
-                style={{ backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14, color: Colors.text.primary, borderWidth: 1, borderColor: Colors.border.subtle, fontSize: 15 }}
+                style={{
+                  backgroundColor: Colors.bg.surface,
+                  borderRadius: 14, padding: 16,
+                  color: Colors.text.primary,
+                  borderWidth: 1.5, borderColor: Colors.border.subtle,
+                  fontSize: 15,
+                }}
                 placeholder="Time (HH:MM)"
                 placeholderTextColor={Colors.text.muted}
                 value={newTime}
                 onChangeText={setNewTime}
               />
             )}
-            <TouchableOpacity onPress={() => setAllDay(!allDay)} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <View style={{ width: 20, height: 20, borderRadius: 4, borderWidth: 1, borderColor: allDay ? Colors.neonGreen : Colors.border.subtle, backgroundColor: allDay ? Colors.neonGreenGlow : "transparent", alignItems: "center", justifyContent: "center" }}>
-                {allDay && <Text style={{ color: Colors.neonGreen, fontSize: 12 }}>✓</Text>}
+            <TouchableOpacity
+              onPress={() => setAllDay(!allDay)}
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <View style={{
+                width: 22, height: 22, borderRadius: 6,
+                borderWidth: 1.5,
+                borderColor: allDay ? Colors.accent : Colors.border.subtle,
+                backgroundColor: allDay ? Colors.accentSoft : "transparent",
+                alignItems: "center", justifyContent: "center",
+              }}>
+                {allDay && <Ionicons name="checkmark" size={13} color={Colors.accent} />}
               </View>
               <Text style={{ color: Colors.text.secondary, fontSize: 14 }}>All day</Text>
             </TouchableOpacity>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Button label="Cancel" variant="ghost" onPress={() => setShowAddModal(false)} style={{ flex: 1 }} />
-              <Button label="Add" variant="primary" loading={saving} onPress={handleAddEvent} style={{ flex: 1 }} />
+              <Button label="Add Event" variant="primary" loading={saving} onPress={handleAddEvent} style={{ flex: 1 }} />
             </View>
           </View>
         </View>

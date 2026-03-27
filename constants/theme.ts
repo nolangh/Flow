@@ -1,64 +1,73 @@
 /**
- * Flow Design System — Robinhood-inspired dark fintech theme.
- *
- * Color semantics:
- *   NEON_GREEN  → positive: income, under-budget, gains
- *   DANGER_PINK → negative: expense, over-budget, losses
+ * Flow Design System — Cash App / Chime inspired premium fintech theme.
  */
 
 export const Colors = {
-  // Backgrounds
   bg: {
-    app: "#000000",       // pure black canvas
-    surface: "#0D0D0D",   // slight lift for cards
-    raised: "#141414",    // modals / bottom sheets
-    overlay: "#1A1A1A",   // hover / pressed state
+    app: "#000000",
+    surface: "#141414",
+    raised: "#1C1C1E",
+    overlay: "#2C2C2E",
+    card: "#111111",
   },
 
-  // Borders
   border: {
-    subtle: "#1F2937",    // gray-800 — thin dividers
-    dim: "#111827",       // gray-900 — near-invisible
+    subtle: "#2C2C2E",
+    dim: "#1C1C1E",
   },
 
-  // State colors
-  neonGreen: "#00FF00",
-  neonGreenDim: "#00CC00",
-  neonGreenGlow: "rgba(0, 255, 0, 0.15)",
-  neonGreenBorder: "rgba(0, 255, 0, 0.30)",
+  // Primary accent — Cash App green
+  accent: "#00D632",
+  accentDim: "#00A828",
+  accentSoft: "rgba(0, 214, 50, 0.12)",
+  accentBorder: "rgba(0, 214, 50, 0.25)",
 
-  dangerPink: "#FF4D6D",
-  dangerPinkDim: "#CC3D57",
-  dangerPinkGlow: "rgba(255, 77, 109, 0.15)",
-  dangerPinkBorder: "rgba(255, 77, 109, 0.30)",
+  // Danger
+  danger: "#FF453A",
+  dangerDim: "#CC372F",
+  dangerSoft: "rgba(255, 69, 58, 0.12)",
+  dangerBorder: "rgba(255, 69, 58, 0.25)",
+
+  // Warning
+  warning: "#FF9F0A",
+  warningSoft: "rgba(255, 159, 10, 0.12)",
 
   // Text
   text: {
     primary: "#FFFFFF",
-    secondary: "#9CA3AF",  // gray-400
-    muted: "#4B5563",      // gray-600
-    inverse: "#000000",    // on-colored buttons
+    secondary: "#AFAFB8",
+    muted: "#636366",
+    inverse: "#000000",
   },
 
-  // Semantic helpers
-  income: "#00FF00",
-  expense: "#FF4D6D",
-  neutral: "#9CA3AF",
+  // Semantic aliases (keep backward compat)
+  neonGreen: "#00D632",
+  neonGreenDim: "#00A828",
+  neonGreenGlow: "rgba(0, 214, 50, 0.12)",
+  neonGreenBorder: "rgba(0, 214, 50, 0.25)",
+  dangerPink: "#FF453A",
+  dangerPinkDim: "#CC372F",
+  dangerPinkGlow: "rgba(255, 69, 58, 0.12)",
+  dangerPinkBorder: "rgba(255, 69, 58, 0.25)",
+  income: "#00D632",
+  expense: "#FF453A",
+  neutral: "#AFAFB8",
 } as const;
 
-/** Returns the active theme color based on budget health (0–1+ ratio). */
 export function getBudgetColor(spent: number, limit: number): string {
-  if (limit === 0) return Colors.neonGreen;
-  return spent / limit >= 1 ? Colors.dangerPink : Colors.neonGreen;
+  if (limit === 0) return Colors.accent;
+  const ratio = spent / limit;
+  if (ratio >= 1) return Colors.danger;
+  if (ratio >= 0.8) return Colors.warning;
+  return Colors.accent;
 }
 
 export function getBudgetGlow(spent: number, limit: number): string {
-  if (limit === 0) return Colors.neonGreenGlow;
-  return spent / limit >= 1 ? Colors.dangerPinkGlow : Colors.neonGreenGlow;
+  if (limit === 0) return Colors.accentSoft;
+  return spent / limit >= 1 ? Colors.dangerSoft : Colors.accentSoft;
 }
 
 export const Typography = {
-  // Scale
   xs: 11,
   sm: 13,
   base: 15,
@@ -69,7 +78,6 @@ export const Typography = {
   "4xl": 36,
   "5xl": 48,
 
-  // Weights
   regular: "400" as const,
   medium: "500" as const,
   semibold: "600" as const,
@@ -89,20 +97,19 @@ export const Spacing = {
 } as const;
 
 export const Radius = {
-  sm: 6,
-  md: 10,
-  lg: 14,
-  xl: 20,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
   full: 9999,
 } as const;
 
-/** Pill-button 3D shadow — darker bottom border for depth illusion. */
 export function pillShadow(color: string) {
   return {
     shadowColor: color,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
   };
 }

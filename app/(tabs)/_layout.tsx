@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/theme";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
@@ -8,21 +8,21 @@ type IconName = keyof typeof Ionicons.glyphMap;
 
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
   return (
-    <View style={{ alignItems: "center", justifyContent: "center" }}>
+    <View style={{ alignItems: "center", justifyContent: "center", paddingTop: 2 }}>
       <Ionicons
         name={name}
-        size={24}
-        color={focused ? Colors.neonGreen : Colors.text.muted}
+        size={23}
+        color={focused ? Colors.accent : Colors.text.muted}
       />
       {focused && (
         <View
           style={{
             position: "absolute",
-            bottom: -8,
+            bottom: -6,
             width: 4,
             height: 4,
             borderRadius: 2,
-            backgroundColor: Colors.neonGreen,
+            backgroundColor: Colors.accent,
           }}
         />
       )}
@@ -31,7 +31,6 @@ function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
 }
 
 export default function TabsLayout() {
-  // Boot real-time subscriptions for all tabs
   useRealtimeSync();
 
   return (
@@ -39,44 +38,41 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.bg.surface,
+          backgroundColor: Colors.bg.raised,
           borderTopColor: Colors.border.subtle,
-          borderTopWidth: 1,
-          height: 72,
-          paddingBottom: 16,
-          paddingTop: 8,
+          borderTopWidth: 0.5,
+          height: Platform.OS === "ios" ? 84 : 68,
+          paddingBottom: Platform.OS === "ios" ? 28 : 10,
+          paddingTop: 10,
         },
-        tabBarActiveTintColor: Colors.neonGreen,
+        tabBarActiveTintColor: Colors.accent,
         tabBarInactiveTintColor: Colors.text.muted,
         tabBarLabelStyle: { fontSize: 10, fontWeight: "600", marginTop: 2 },
+        tabBarShowLabel: false,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
-          tabBarIcon: ({ focused }) => <TabIcon name={focused ? "grid" : "grid-outline"} focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name={focused ? "home" : "home-outline"} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="budget"
         options={{
-          title: "Budget",
           tabBarIcon: ({ focused }) => <TabIcon name={focused ? "wallet" : "wallet-outline"} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
-          title: "Calendar",
           tabBarIcon: ({ focused }) => <TabIcon name={focused ? "calendar" : "calendar-outline"} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
-          tabBarIcon: ({ focused }) => <TabIcon name={focused ? "person" : "person-outline"} focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon name={focused ? "person-circle" : "person-circle-outline"} focused={focused} />,
         }}
       />
     </Tabs>

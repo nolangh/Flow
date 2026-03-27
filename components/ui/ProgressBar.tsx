@@ -8,16 +8,15 @@ interface ProgressBarProps {
   height?: number;
 }
 
-export default function ProgressBar({ spent, limit, showLabel = false, height = 6 }: ProgressBarProps) {
+export default function ProgressBar({ spent, limit, showLabel = false, height = 5 }: ProgressBarProps) {
   const pct = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
   const overBudget = limit > 0 && spent > limit;
-  const activeColor = overBudget ? Colors.dangerPink : Colors.neonGreen;
-  // Overflow indicator: shows how far over (capped at 100% of the bar visually)
-  const overflowPct = limit > 0 ? Math.min(((spent - limit) / limit) * 100, 100) : 0;
+  const nearBudget = limit > 0 && spent / limit >= 0.8 && !overBudget;
+
+  const fillColor = overBudget ? Colors.danger : nearBudget ? Colors.warning : Colors.accent;
 
   return (
     <View>
-      {/* Track */}
       <View
         style={{
           height,
@@ -26,7 +25,6 @@ export default function ProgressBar({ spent, limit, showLabel = false, height = 
           overflow: "hidden",
         }}
       >
-        {/* Fill */}
         <View
           style={{
             position: "absolute",
@@ -35,33 +33,14 @@ export default function ProgressBar({ spent, limit, showLabel = false, height = 
             bottom: 0,
             width: `${pct}%`,
             borderRadius: height,
-            backgroundColor: activeColor,
-            shadowColor: activeColor,
-            shadowOpacity: 0.6,
-            shadowRadius: 6,
-            shadowOffset: { width: 0, height: 0 },
+            backgroundColor: fillColor,
           }}
         />
-        {/* Over-budget overflow bleed (pulses from 100%) */}
-        {overBudget && (
-          <View
-            style={{
-              position: "absolute",
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: `${overflowPct}%`,
-              backgroundColor: Colors.dangerPink,
-              opacity: 0.35,
-              borderRadius: height,
-            }}
-          />
-        )}
       </View>
 
       {showLabel && (
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
-          <Text style={{ color: activeColor, fontSize: 11, fontWeight: "600" }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 5 }}>
+          <Text style={{ color: fillColor, fontSize: 11, fontWeight: "600" }}>
             ${spent.toFixed(0)} spent
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 11 }}>

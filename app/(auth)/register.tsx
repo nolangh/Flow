@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  StatusBar,
 } from "react-native";
 import { useState } from "react";
 import { Link, router } from "expo-router";
@@ -20,6 +21,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleRegister = async () => {
     if (!fullName || !email || !password) {
@@ -27,11 +29,11 @@ export default function RegisterScreen() {
       return;
     }
     if (password !== confirm) {
-      Alert.alert("Passwords do not match");
+      Alert.alert("Passwords don't match");
       return;
     }
     if (password.length < 8) {
-      Alert.alert("Weak password", "Password must be at least 8 characters.");
+      Alert.alert("Weak password", "Use at least 8 characters.");
       return;
     }
     try {
@@ -42,56 +44,102 @@ export default function RegisterScreen() {
     }
   };
 
+  const inputStyle = (field: string) => ({
+    backgroundColor: Colors.bg.surface,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    color: Colors.text.primary,
+    fontSize: 16,
+    borderWidth: 1.5,
+    borderColor: focusedField === field ? Colors.accent : Colors.border.subtle,
+    marginBottom: 12,
+  });
+
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-black"
+      style={{ flex: 1, backgroundColor: "#000" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <StatusBar barStyle="light-content" />
       <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ justifyContent: "center", paddingHorizontal: 32, paddingVertical: 60 }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ justifyContent: "center", paddingHorizontal: 28, paddingVertical: 60 }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View className="mb-10">
-          <Text style={{ color: Colors.neonGreen, fontSize: 32, fontWeight: "900", letterSpacing: -1 }}>
+        {/* Header */}
+        <View style={{ marginBottom: 40 }}>
+          <View style={{
+            width: 56, height: 56, borderRadius: 16,
+            backgroundColor: Colors.accentSoft,
+            borderWidth: 1, borderColor: Colors.accentBorder,
+            alignItems: "center", justifyContent: "center",
+            marginBottom: 20,
+          }}>
+            <Text style={{ fontSize: 26, fontWeight: "900", color: Colors.accent }}>F</Text>
+          </View>
+          <Text style={{ color: Colors.text.primary, fontSize: 30, fontWeight: "800", letterSpacing: -0.8 }}>
             Create account
           </Text>
-          <Text style={{ color: Colors.text.secondary, fontSize: 15, marginTop: 4 }}>
-            Set up your Flow profile.
+          <Text style={{ color: Colors.text.muted, fontSize: 15, marginTop: 6 }}>
+            Set up your Flow profile
           </Text>
         </View>
 
-        <View className="gap-3 mb-6">
-          {[
-            { label: "Full Name", value: fullName, setter: setFullName, keyboard: "default" as const },
-            { label: "Email", value: email, setter: setEmail, keyboard: "email-address" as const },
-            { label: "Password", value: password, setter: setPassword, secure: true },
-            { label: "Confirm Password", value: confirm, setter: setConfirm, secure: true },
-          ].map(({ label, value, setter, keyboard, secure }) => (
-            <TextInput
-              key={label}
-              className="rounded-xl px-4 py-4 text-white text-base"
-              style={{ backgroundColor: Colors.bg.surface, borderColor: Colors.border.subtle, borderWidth: 1 }}
-              placeholder={label}
-              placeholderTextColor={Colors.text.muted}
-              keyboardType={keyboard}
-              autoCapitalize={secure || keyboard === "email-address" ? "none" : "words"}
-              secureTextEntry={secure}
-              value={value}
-              onChangeText={setter}
-            />
-          ))}
-        </View>
+        <TextInput
+          style={inputStyle("name")}
+          placeholder="Full name"
+          placeholderTextColor={Colors.text.muted}
+          autoCapitalize="words"
+          value={fullName}
+          onChangeText={setFullName}
+          onFocus={() => setFocusedField("name")}
+          onBlur={() => setFocusedField(null)}
+        />
+        <TextInput
+          style={inputStyle("email")}
+          placeholder="Email address"
+          placeholderTextColor={Colors.text.muted}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={email}
+          onChangeText={setEmail}
+          onFocus={() => setFocusedField("email")}
+          onBlur={() => setFocusedField(null)}
+        />
+        <TextInput
+          style={inputStyle("password")}
+          placeholder="Password"
+          placeholderTextColor={Colors.text.muted}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          onFocus={() => setFocusedField("password")}
+          onBlur={() => setFocusedField(null)}
+        />
+        <TextInput
+          style={inputStyle("confirm")}
+          placeholder="Confirm password"
+          placeholderTextColor={Colors.text.muted}
+          secureTextEntry
+          value={confirm}
+          onChangeText={setConfirm}
+          onFocus={() => setFocusedField("confirm")}
+          onBlur={() => setFocusedField(null)}
+        />
 
         <TouchableOpacity
           onPress={handleRegister}
           disabled={isLoading}
-          className="rounded-full py-4 items-center justify-center mb-4"
           style={{
-            backgroundColor: Colors.neonGreen,
-            borderBottomWidth: 3,
-            borderBottomColor: Colors.neonGreenDim,
-            ...pillShadow(Colors.neonGreen),
+            backgroundColor: Colors.accent,
+            borderRadius: 9999,
+            paddingVertical: 17,
+            alignItems: "center",
+            marginTop: 8,
+            ...pillShadow(Colors.accent),
           }}
         >
           {isLoading ? (
@@ -101,10 +149,10 @@ export default function RegisterScreen() {
           )}
         </TouchableOpacity>
 
-        <View className="flex-row justify-center gap-1">
-          <Text style={{ color: Colors.text.secondary }}>Already have an account?</Text>
+        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 24, gap: 4 }}>
+          <Text style={{ color: Colors.text.muted, fontSize: 14 }}>Already have an account?</Text>
           <Link href="/(auth)/login">
-            <Text style={{ color: Colors.neonGreen, fontWeight: "600" }}>Sign in</Text>
+            <Text style={{ color: Colors.accent, fontWeight: "600", fontSize: 14 }}>Sign in</Text>
           </Link>
         </View>
       </ScrollView>

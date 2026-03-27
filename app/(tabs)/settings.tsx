@@ -6,44 +6,91 @@ import {
   Alert,
   Share,
   Switch,
+  StatusBar,
 } from "react-native";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { Colors, pillShadow } from "@/constants/theme";
-import Card from "@/components/ui/Card";
 import Divider from "@/components/ui/Divider";
+
+type IoniconsName = keyof typeof Ionicons.glyphMap;
 
 interface SettingRowProps {
   label: string;
   value?: string;
-  icon?: string;
+  icon?: IoniconsName;
+  iconBg?: string;
   onPress?: () => void;
   rightElement?: React.ReactNode;
   destructive?: boolean;
+  showChevron?: boolean;
 }
 
-function SettingRow({ label, value, icon, onPress, rightElement, destructive }: SettingRowProps) {
+function SettingRow({ label, value, icon, iconBg, onPress, rightElement, destructive, showChevron = true }: SettingRowProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={!onPress && !rightElement}
-      activeOpacity={0.7}
-      style={{ flexDirection: "row", alignItems: "center", paddingVertical: 13, gap: 12 }}
+      activeOpacity={0.65}
+      style={{ flexDirection: "row", alignItems: "center", paddingVertical: 14, gap: 14 }}
     >
       {icon && (
-        <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: Colors.bg.overlay, alignItems: "center", justifyContent: "center" }}>
-          <Text style={{ fontSize: 16 }}>{icon}</Text>
+        <View style={{
+          width: 36, height: 36, borderRadius: 10,
+          backgroundColor: iconBg ?? Colors.bg.overlay,
+          alignItems: "center", justifyContent: "center",
+        }}>
+          <Ionicons name={icon} size={18} color={destructive ? Colors.danger : Colors.text.secondary} />
         </View>
       )}
       <View style={{ flex: 1 }}>
-        <Text style={{ color: destructive ? Colors.dangerPink : Colors.text.primary, fontSize: 15 }}>{label}</Text>
-        {value && <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 1 }}>{value}</Text>}
+        <Text style={{ color: destructive ? Colors.danger : Colors.text.primary, fontSize: 15, fontWeight: "500" }}>
+          {label}
+        </Text>
+        {value && (
+          <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 1 }}>{value}</Text>
+        )}
       </View>
-      {rightElement ?? (onPress && <Text style={{ color: Colors.text.muted, fontSize: 18 }}>›</Text>)}
+      {rightElement ?? (onPress && showChevron && (
+        <Ionicons name="chevron-forward" size={16} color={Colors.text.muted} />
+      ))}
     </TouchableOpacity>
+  );
+}
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <Text style={{
+      color: Colors.text.muted,
+      fontSize: 11, fontWeight: "600",
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+      marginBottom: 8,
+      paddingHorizontal: 20,
+    }}>
+      {children}
+    </Text>
+  );
+}
+
+function SettingsCard({ children }: { children: React.ReactNode }) {
+  return (
+    <View style={{
+      marginHorizontal: 20,
+      marginBottom: 28,
+      backgroundColor: Colors.bg.surface,
+      borderRadius: 20,
+      paddingHorizontal: 16,
+      borderWidth: 1,
+      borderColor: Colors.border.subtle,
+      overflow: "hidden",
+    }}>
+      {children}
+    </View>
   );
 }
 
@@ -55,13 +102,11 @@ export default function SettingsScreen() {
 
   const handleShareInvite = async () => {
     if (!household?.invite_code) return;
-    await Share.share({
-      message: `Join my household on Flow! Use invite code: ${household.invite_code}`,
-    });
+    await Share.share({ message: `Join my household on Flow! Invite code: ${household.invite_code}` });
   };
 
   const handleSignOut = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+    Alert.alert("Sign Out", "Are you sure?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Sign Out",
@@ -78,144 +123,144 @@ export default function SettingsScreen() {
   const handleDeleteCategory = (catId: string, catName: string) => {
     Alert.alert(`Delete "${catName}"?`, "This will also remove it from all transactions.", [
       { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => deleteCategory(catId),
-      },
+      { text: "Delete", style: "destructive", onPress: () => deleteCategory(catId) },
     ]);
   };
 
   const fixedBills = categories.filter((c) => c.is_fixed);
+  const firstName = user?.full_name?.split(" ")[0] ?? "?";
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
+      <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+
         {/* Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20 }}>
+        <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 24 }}>
           <Text style={{ color: Colors.text.primary, fontSize: 26, fontWeight: "800", letterSpacing: -0.5 }}>
-            Settings
+            Profile
           </Text>
         </View>
 
-        {/* Profile card */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <Card padding={16}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.neonGreenGlow, borderWidth: 1, borderColor: Colors.neonGreenBorder, alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ fontSize: 22 }}>
-                  {user?.full_name?.charAt(0).toUpperCase() ?? "?"}
-                </Text>
-              </View>
-              <View>
-                <Text style={{ color: Colors.text.primary, fontSize: 17, fontWeight: "700" }}>
-                  {user?.full_name ?? "—"}
-                </Text>
-                <Text style={{ color: Colors.text.muted, fontSize: 13, marginTop: 2 }}>{user?.email}</Text>
-              </View>
+        {/* Profile hero card */}
+        <View style={{ marginHorizontal: 20, marginBottom: 28 }}>
+          <View style={{
+            backgroundColor: Colors.bg.surface,
+            borderRadius: 20,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: Colors.border.subtle,
+            alignItems: "center",
+          }}>
+            <View style={{
+              width: 72, height: 72, borderRadius: 36,
+              backgroundColor: Colors.accentSoft,
+              borderWidth: 2, borderColor: Colors.accentBorder,
+              alignItems: "center", justifyContent: "center",
+              marginBottom: 12,
+            }}>
+              <Text style={{ fontSize: 30, fontWeight: "800", color: Colors.accent }}>
+                {firstName.charAt(0).toUpperCase()}
+              </Text>
             </View>
-          </Card>
-        </View>
-
-        {/* Household section */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <Text style={{ color: Colors.text.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-            Household
-          </Text>
-          <Card padding={0} style={{ paddingHorizontal: 14 }}>
-            <SettingRow
-              icon="🏠"
-              label={household?.name ?? "No household"}
-              value="Your shared space"
-            />
-            <Divider />
-            <SettingRow
-              icon="🔑"
-              label="Invite Code"
-              value={household?.invite_code ?? "—"}
-              onPress={handleShareInvite}
-              rightElement={
-                <TouchableOpacity
-                  onPress={handleShareInvite}
-                  style={{ backgroundColor: Colors.neonGreenGlow, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: Colors.neonGreenBorder }}
-                >
-                  <Text style={{ color: Colors.neonGreen, fontSize: 12, fontWeight: "600" }}>Share</Text>
-                </TouchableOpacity>
-              }
-            />
-            <Divider />
-            <SettingRow
-              icon="👥"
-              label="Members"
-              value={`${(household?.members?.length ?? 1)} member${(household?.members?.length ?? 1) === 1 ? "" : "s"}`}
-            />
-          </Card>
-        </View>
-
-        {/* Fixed Bills section */}
-        {fixedBills.length > 0 && (
-          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-            <Text style={{ color: Colors.text.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-              Recurring Bills
+            <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700", marginBottom: 2 }}>
+              {user?.full_name ?? "—"}
             </Text>
-            <Card padding={0} style={{ paddingHorizontal: 14 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 13 }}>{user?.email}</Text>
+          </View>
+        </View>
+
+        {/* Household */}
+        <SectionLabel>Household</SectionLabel>
+        <SettingsCard>
+          <SettingRow
+            icon="home-outline"
+            label={household?.name ?? "No household"}
+            value="Your shared space"
+          />
+          <Divider />
+          <SettingRow
+            icon="key-outline"
+            label="Invite Code"
+            value={household?.invite_code ?? "—"}
+            onPress={handleShareInvite}
+            showChevron={false}
+            rightElement={
+              <TouchableOpacity
+                onPress={handleShareInvite}
+                style={{
+                  backgroundColor: Colors.accentSoft,
+                  borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6,
+                  borderWidth: 1, borderColor: Colors.accentBorder,
+                }}
+              >
+                <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: "700" }}>Share</Text>
+              </TouchableOpacity>
+            }
+          />
+          <Divider />
+          <SettingRow
+            icon="people-outline"
+            label="Members"
+            value={`${(household?.members?.length ?? 1)} member${(household?.members?.length ?? 1) === 1 ? "" : "s"}`}
+          />
+        </SettingsCard>
+
+        {/* Fixed Bills */}
+        {fixedBills.length > 0 && (
+          <>
+            <SectionLabel>Recurring Bills</SectionLabel>
+            <SettingsCard>
               {fixedBills.map((bill, idx) => (
                 <View key={bill.id}>
                   <SettingRow
-                    icon={bill.emoji ?? "💳"}
+                    icon="repeat-outline"
                     label={bill.name}
-                    value={`$${bill.monthly_limit.toFixed(2)} · Day ${bill.fixed_day_of_month ?? "—"}`}
+                    value={`${formatCurrencySimple(bill.monthly_limit)} · Day ${bill.fixed_day_of_month ?? "—"}`}
                     onPress={() => handleDeleteCategory(bill.id, bill.name)}
-                    destructive={false}
                   />
                   {idx < fixedBills.length - 1 && <Divider />}
                 </View>
               ))}
-            </Card>
-          </View>
+            </SettingsCard>
+          </>
         )}
 
         {/* Preferences */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <Text style={{ color: Colors.text.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-            Preferences
-          </Text>
-          <Card padding={0} style={{ paddingHorizontal: 14 }}>
-            <SettingRow
-              icon="🔔"
-              label="Budget Alerts"
-              value="Get notified when you're near a limit"
-              rightElement={
-                <Switch
-                  value={notifications}
-                  onValueChange={setNotifications}
-                  trackColor={{ false: Colors.bg.overlay, true: Colors.neonGreenDim }}
-                  thumbColor={notifications ? Colors.neonGreen : Colors.text.muted}
-                />
-              }
-            />
-            <Divider />
-            <SettingRow
-              icon="🔗"
-              label="Connect Bank Account"
-              value="Plaid integration — coming soon"
-            />
-          </Card>
-        </View>
+        <SectionLabel>Preferences</SectionLabel>
+        <SettingsCard>
+          <SettingRow
+            icon="notifications-outline"
+            label="Budget Alerts"
+            value="Notify when near spending limit"
+            showChevron={false}
+            rightElement={
+              <Switch
+                value={notifications}
+                onValueChange={setNotifications}
+                trackColor={{ false: Colors.bg.overlay, true: Colors.accentDim }}
+                thumbColor={notifications ? Colors.accent : Colors.text.muted}
+              />
+            }
+          />
+          <Divider />
+          <SettingRow
+            icon="link-outline"
+            label="Connect Bank Account"
+            value="Plaid integration — coming soon"
+            iconBg={Colors.warningSoft}
+          />
+        </SettingsCard>
 
         {/* About */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <Text style={{ color: Colors.text.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-            About
-          </Text>
-          <Card padding={0} style={{ paddingHorizontal: 14 }}>
-            <SettingRow icon="📄" label="Terms of Service" onPress={() => {}} />
-            <Divider />
-            <SettingRow icon="🔒" label="Privacy Policy" onPress={() => {}} />
-            <Divider />
-            <SettingRow icon="ℹ️" label="Version" value="1.0.0" />
-          </Card>
-        </View>
+        <SectionLabel>About</SectionLabel>
+        <SettingsCard>
+          <SettingRow icon="document-text-outline" label="Terms of Service" onPress={() => {}} />
+          <Divider />
+          <SettingRow icon="lock-closed-outline" label="Privacy Policy" onPress={() => {}} />
+          <Divider />
+          <SettingRow icon="information-circle-outline" label="Version" value="1.0.0" showChevron={false} />
+        </SettingsCard>
 
         {/* Sign out */}
         <View style={{ paddingHorizontal: 20 }}>
@@ -223,18 +268,15 @@ export default function SettingsScreen() {
             onPress={handleSignOut}
             disabled={signingOut}
             style={{
-              backgroundColor: Colors.dangerPinkGlow,
+              backgroundColor: Colors.dangerSoft,
               borderRadius: 9999,
-              paddingVertical: 15,
+              paddingVertical: 16,
               alignItems: "center",
               borderWidth: 1,
-              borderColor: Colors.dangerPinkBorder,
-              borderBottomWidth: 3,
-              borderBottomColor: Colors.dangerPinkDim,
-              ...pillShadow(Colors.dangerPink),
+              borderColor: Colors.dangerBorder,
             }}
           >
-            <Text style={{ color: Colors.dangerPink, fontWeight: "700", fontSize: 15 }}>
+            <Text style={{ color: Colors.danger, fontWeight: "700", fontSize: 15 }}>
               {signingOut ? "Signing out…" : "Sign Out"}
             </Text>
           </TouchableOpacity>
@@ -242,4 +284,8 @@ export default function SettingsScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function formatCurrencySimple(amount: number): string {
+  return "$" + amount.toFixed(2);
 }

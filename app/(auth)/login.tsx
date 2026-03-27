@@ -7,6 +7,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  StatusBar,
 } from "react-native";
 import { useState } from "react";
 import { Link, router } from "expo-router";
@@ -17,6 +18,7 @@ export default function LoginScreen() {
   const { signIn, isLoading } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleLogin = async () => {
     if (!email || !password) return;
@@ -28,71 +30,97 @@ export default function LoginScreen() {
     }
   };
 
+  const inputStyle = (field: string) => ({
+    backgroundColor: Colors.bg.surface,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    color: Colors.text.primary,
+    fontSize: 16,
+    borderWidth: 1.5,
+    borderColor: focusedField === field ? Colors.accent : Colors.border.subtle,
+    marginBottom: 12,
+  });
+
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-black"
+      style={{ flex: 1, backgroundColor: "#000" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View className="flex-1 justify-center px-8">
-        {/* Logo / wordmark */}
-        <View className="mb-12">
-          <Text
-            style={{ color: Colors.neonGreen, fontSize: 42, fontWeight: "900", letterSpacing: -1 }}
-          >
-            Flow
+      <StatusBar barStyle="light-content" />
+      <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 28 }}>
+
+        {/* Wordmark */}
+        <View style={{ marginBottom: 48 }}>
+          <View style={{
+            width: 56, height: 56, borderRadius: 16,
+            backgroundColor: Colors.accentSoft,
+            borderWidth: 1, borderColor: Colors.accentBorder,
+            alignItems: "center", justifyContent: "center",
+            marginBottom: 20,
+          }}>
+            <Text style={{ fontSize: 26, fontWeight: "900", color: Colors.accent }}>F</Text>
+          </View>
+          <Text style={{ color: Colors.text.primary, fontSize: 32, fontWeight: "800", letterSpacing: -1 }}>
+            Welcome back
           </Text>
-          <Text style={{ color: Colors.text.secondary, fontSize: 15, marginTop: 4 }}>
-            Your shared financial hub.
+          <Text style={{ color: Colors.text.muted, fontSize: 15, marginTop: 6, lineHeight: 22 }}>
+            Sign in to your Flow account
           </Text>
         </View>
 
         {/* Inputs */}
-        <View className="gap-3 mb-6">
-          <TextInput
-            className="rounded-xl px-4 py-4 text-white text-base"
-            style={{ backgroundColor: Colors.bg.surface, borderColor: Colors.border.subtle, borderWidth: 1 }}
-            placeholder="Email"
-            placeholderTextColor={Colors.text.muted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <TextInput
-            className="rounded-xl px-4 py-4 text-white text-base"
-            style={{ backgroundColor: Colors.bg.surface, borderColor: Colors.border.subtle, borderWidth: 1 }}
-            placeholder="Password"
-            placeholderTextColor={Colors.text.muted}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
+        <TextInput
+          style={inputStyle("email")}
+          placeholder="Email address"
+          placeholderTextColor={Colors.text.muted}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={email}
+          onChangeText={setEmail}
+          onFocus={() => setFocusedField("email")}
+          onBlur={() => setFocusedField(null)}
+        />
+        <TextInput
+          style={inputStyle("password")}
+          placeholder="Password"
+          placeholderTextColor={Colors.text.muted}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          onFocus={() => setFocusedField("password")}
+          onBlur={() => setFocusedField(null)}
+        />
 
         {/* Sign in button */}
         <TouchableOpacity
           onPress={handleLogin}
-          disabled={isLoading}
-          className="rounded-full py-4 items-center justify-center mb-4"
+          disabled={isLoading || !email || !password}
           style={{
-            backgroundColor: Colors.neonGreen,
-            borderBottomWidth: 3,
-            borderBottomColor: Colors.neonGreenDim,
-            ...pillShadow(Colors.neonGreen),
+            backgroundColor: Colors.accent,
+            borderRadius: 9999,
+            paddingVertical: 17,
+            alignItems: "center",
+            marginTop: 8,
+            opacity: (!email || !password) ? 0.5 : 1,
+            ...pillShadow(Colors.accent),
           }}
         >
           {isLoading ? (
             <ActivityIndicator color="#000" />
           ) : (
-            <Text style={{ color: "#000", fontWeight: "700", fontSize: 16 }}>Sign In</Text>
+            <Text style={{ color: "#000", fontWeight: "700", fontSize: 16, letterSpacing: 0.1 }}>
+              Sign In
+            </Text>
           )}
         </TouchableOpacity>
 
         {/* Register link */}
-        <View className="flex-row justify-center gap-1 mt-2">
-          <Text style={{ color: Colors.text.secondary }}>No account?</Text>
+        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 24, gap: 4 }}>
+          <Text style={{ color: Colors.text.muted, fontSize: 14 }}>Don't have an account?</Text>
           <Link href="/(auth)/register">
-            <Text style={{ color: Colors.neonGreen, fontWeight: "600" }}>Create one</Text>
+            <Text style={{ color: Colors.accent, fontWeight: "600", fontSize: 14 }}>Sign up</Text>
           </Link>
         </View>
       </View>

@@ -8,21 +8,21 @@ interface CardProps extends ViewProps {
 
 export default function Card({ children, glow, padding = 16, style, ...rest }: CardProps) {
   const glowColor =
-    glow === "green" ? Colors.neonGreenBorder : glow === "pink" ? Colors.dangerPinkBorder : undefined;
+    glow === "green" ? Colors.accentBorder : glow === "pink" ? Colors.dangerBorder : undefined;
 
   return (
     <View
       style={[
         {
           backgroundColor: Colors.bg.surface,
-          borderRadius: 16,
+          borderRadius: 20,
           padding,
           borderWidth: 1,
           borderColor: glowColor ?? Colors.border.subtle,
           ...(glow === "green"
-            ? { shadowColor: Colors.neonGreen, shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 0 } }
+            ? { shadowColor: Colors.accent, shadowOpacity: 0.2, shadowRadius: 16, shadowOffset: { width: 0, height: 2 } }
             : glow === "pink"
-            ? { shadowColor: Colors.dangerPink, shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 0 } }
+            ? { shadowColor: Colors.danger, shadowOpacity: 0.2, shadowRadius: 16, shadowOffset: { width: 0, height: 2 } }
             : {}),
         },
         style,

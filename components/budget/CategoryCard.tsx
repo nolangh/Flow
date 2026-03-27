@@ -15,27 +15,28 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
   const activeColor = getBudgetColor(spent, limit);
   const remaining = limit - spent;
   const overBudget = spent > limit;
+  const pct = limit > 0 ? Math.min(Math.round((spent / limit) * 100), 100) : 0;
 
   if (cat.is_income) {
     return (
       <TouchableOpacity
         onPress={() => onPress?.(cat)}
-        activeOpacity={0.75}
+        activeOpacity={0.7}
         style={{
           backgroundColor: Colors.bg.surface,
-          borderRadius: 14,
+          borderRadius: 16,
           padding: 14,
           borderWidth: 1,
-          borderColor: Colors.neonGreenBorder,
+          borderColor: Colors.accentBorder,
           gap: 2,
         }}
       >
-        <Text style={{ fontSize: 20 }}>{cat.emoji ?? "💵"}</Text>
-        <Text style={{ color: Colors.text.secondary, fontSize: 12, marginTop: 6 }}>{cat.name}</Text>
-        <Text style={{ color: Colors.neonGreen, fontSize: 16, fontWeight: "700" }}>
+        <Text style={{ fontSize: 22, marginBottom: 4 }}>{cat.emoji ?? "💵"}</Text>
+        <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "500" }}>{cat.name}</Text>
+        <Text style={{ color: Colors.accent, fontSize: 17, fontWeight: "700", letterSpacing: -0.3 }}>
           {formatCurrency(limit)}
         </Text>
-        <Text style={{ color: Colors.text.muted, fontSize: 11 }}>/ month</Text>
+        <Text style={{ color: Colors.text.muted, fontSize: 11 }}>per month</Text>
       </TouchableOpacity>
     );
   }
@@ -43,47 +44,38 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
   return (
     <TouchableOpacity
       onPress={() => onPress?.(cat)}
-      activeOpacity={0.75}
+      activeOpacity={0.7}
       style={{
         backgroundColor: Colors.bg.surface,
-        borderRadius: 14,
+        borderRadius: 16,
         padding: 14,
         borderWidth: 1,
-        borderColor: overBudget ? Colors.dangerPinkBorder : Colors.border.subtle,
-        gap: 6,
+        borderColor: overBudget ? Colors.dangerBorder : Colors.border.subtle,
+        gap: 8,
       }}
     >
-      {/* Header */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <Text style={{ fontSize: 20 }}>{cat.emoji ?? "📦"}</Text>
-        {overBudget && (
-          <View
-            style={{
-              backgroundColor: Colors.dangerPinkGlow,
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-              borderRadius: 6,
-            }}
-          >
-            <Text style={{ color: Colors.dangerPink, fontSize: 10, fontWeight: "700" }}>OVER</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <Text style={{ fontSize: 22 }}>{cat.emoji ?? "📦"}</Text>
+        {overBudget ? (
+          <View style={{ backgroundColor: Colors.dangerSoft, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 }}>
+            <Text style={{ color: Colors.danger, fontSize: 10, fontWeight: "700" }}>OVER</Text>
           </View>
+        ) : (
+          <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{pct}%</Text>
         )}
       </View>
 
-      <Text style={{ color: Colors.text.secondary, fontSize: 12 }}>{cat.name}</Text>
+      <Text style={{ color: Colors.text.secondary, fontSize: 12, fontWeight: "500" }}>{cat.name}</Text>
 
-      {/* Spent amount */}
-      <Text style={{ color: activeColor, fontSize: 16, fontWeight: "700" }}>
+      <Text style={{ color: activeColor, fontSize: 17, fontWeight: "700", letterSpacing: -0.5 }}>
         {formatCurrency(spent)}
       </Text>
 
-      {/* Progress bar */}
       <ProgressBar spent={spent} limit={limit} />
 
-      {/* Remaining */}
       <Text style={{ color: Colors.text.muted, fontSize: 11 }}>
         {overBudget
-          ? `${formatCurrency(Math.abs(remaining))} over`
+          ? `${formatCurrency(Math.abs(remaining))} over limit`
           : `${formatCurrency(remaining)} left`}
       </Text>
     </TouchableOpacity>

@@ -14,22 +14,22 @@ interface ButtonProps extends TouchableOpacityProps {
 
 const SIZE_STYLES: Record<Size, { paddingVertical: number; fontSize: number }> = {
   sm: { paddingVertical: 10, fontSize: 13 },
-  md: { paddingVertical: 14, fontSize: 15 },
+  md: { paddingVertical: 15, fontSize: 15 },
   lg: { paddingVertical: 17, fontSize: 17 },
 };
 
 const VARIANT_STYLES: Record<Variant, { bg: string; border: string; text: string; shadow: object }> = {
   primary: {
-    bg: Colors.neonGreen,
-    border: Colors.neonGreenDim,
+    bg: Colors.accent,
+    border: Colors.accentDim,
     text: "#000000",
-    shadow: pillShadow(Colors.neonGreen),
+    shadow: pillShadow(Colors.accent),
   },
   danger: {
-    bg: Colors.dangerPink,
-    border: Colors.dangerPinkDim,
-    text: "#000000",
-    shadow: pillShadow(Colors.dangerPink),
+    bg: Colors.danger,
+    border: Colors.dangerDim,
+    text: "#FFFFFF",
+    shadow: pillShadow(Colors.danger),
   },
   ghost: {
     bg: Colors.bg.surface,
@@ -68,14 +68,12 @@ export default function Button({
           borderRadius: 9999,
           paddingVertical: s.paddingVertical,
           paddingHorizontal: 28,
-          borderBottomWidth: variant === "primary" || variant === "danger" ? 3 : 1,
-          borderBottomColor: v.border,
+          borderWidth: variant === "outline" ? 1 : 0,
           borderColor: variant === "outline" ? Colors.border.subtle : undefined,
-          borderWidth: variant === "outline" ? 1 : undefined,
           alignItems: "center",
           justifyContent: "center",
           alignSelf: fullWidth ? "stretch" : "flex-start",
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled ? 0.45 : 1,
           ...v.shadow,
         },
         style,
@@ -84,11 +82,11 @@ export default function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "primary" || variant === "danger" ? "#000" : Colors.text.primary}
+          color={variant === "primary" ? "#000" : Colors.text.primary}
           size="small"
         />
       ) : (
-        <Text style={{ color: v.text, fontWeight: "700", fontSize: s.fontSize, letterSpacing: 0.2 }}>
+        <Text style={{ color: v.text, fontWeight: "700", fontSize: s.fontSize, letterSpacing: 0.1 }}>
           {label}
         </Text>
       )}

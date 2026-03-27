@@ -1,14 +1,3 @@
-/**
- * Dashboard Screen
- *
- * The main hub. Design rules strictly followed:
- *   - Pure black (#000000) canvas
- *   - Neon green for under-budget / positive states
- *   - Danger pink for over-budget / negative states
- *   - 3D pill-shaped buttons (filled + darker bottom border shadow)
- *   - Bezier curve chart with glowing leading-edge dot
- *   - All colors shift dynamically based on budget health
- */
 import {
   View,
   Text,
@@ -16,26 +5,24 @@ import {
   TouchableOpacity,
   RefreshControl,
   useWindowDimensions,
-  Platform,
+  StatusBar,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { format } from "date-fns";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetSummary } from "@/hooks/useBudgetSummary";
-import { Colors, getBudgetColor, getBudgetGlow, pillShadow } from "@/constants/theme";
+import { Colors, getBudgetColor, pillShadow } from "@/constants/theme";
 import { formatCurrency, currentYearMonth, formatMonth } from "@/lib/utils";
 import BezierChart from "@/components/ui/BezierChart";
 import ProgressBar from "@/components/ui/ProgressBar";
-import Card from "@/components/ui/Card";
 import Divider from "@/components/ui/Divider";
 import TransactionItem from "@/components/dashboard/TransactionItem";
 import AddTransactionModal from "@/components/budget/AddTransactionModal";
 import EmptyState from "@/components/ui/EmptyState";
-import type { Transaction } from "@/types";
 
 export default function DashboardScreen() {
   const { width } = useWindowDimensions();
@@ -46,25 +33,22 @@ export default function DashboardScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [showAddTx, setShowAddTx] = useState(false);
+  const [balanceVisible, setBalanceVisible] = useState(true);
 
   const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit);
-  const activeGlow = getBudgetGlow(summary.totalSpent, summary.totalLimit);
-  const cardGlow = summary.isOverBudget ? "pink" : "green";
 
   const greeting = () => {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
+    if (h < 12) return "Morning";
+    if (h < 17) return "Afternoon";
+    return "Evening";
   };
 
   const load = async () => {
     await Promise.all([fetchMonthlyBudget(currentMonth), fetchTransactions(currentMonth)]);
   };
 
-  useEffect(() => {
-    load();
-  }, [currentMonth]);
+  useEffect(() => { load(); }, [currentMonth]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -85,183 +69,194 @@ export default function DashboardScreen() {
   };
 
   const recentTxs = transactions.slice(0, 6);
+  const firstName = user?.full_name?.split(" ")[0] ?? "there";
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
+      <StatusBar barStyle="light-content" />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.neonGreen} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} />
         }
       >
-        {/* ── Header ─────────────────────────────────────────────── */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <View>
-              <Text style={{ color: Colors.text.muted, fontSize: 13 }}>
-                {greeting()}, {user?.full_name?.split(" ")[0] ?? "there"}
-              </Text>
-              <Text style={{ color: Colors.text.primary, fontSize: 22, fontWeight: "800", letterSpacing: -0.5, marginTop: 2 }}>
-                {household?.name ?? "My Household"}
-              </Text>
-            </View>
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: Colors.neonGreenGlow,
-                borderWidth: 1,
-                borderColor: Colors.neonGreenBorder,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+        {/* ── Header ── */}
+        <View style={{
+          flexDirection: "row", justifyContent: "space-between",
+          alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 20,
+        }}>
+          <View>
+            <Text style={{ color: Colors.text.muted, fontSize: 13 }}>
+              Good {greeting()}, {firstName}
+            </Text>
+            <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700", letterSpacing: -0.5, marginTop: 1 }}>
+              {household?.name ?? "My Household"}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={{
+              width: 40, height: 40, borderRadius: 20,
+              backgroundColor: Colors.bg.surface,
+              borderWidth: 1, borderColor: Colors.border.subtle,
+              alignItems: "center", justifyContent: "center",
+            }}
+            onPress={() => router.push("/(tabs)/settings")}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "700", color: Colors.accent }}>
+              {firstName.charAt(0).toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Balance Hero ── */}
+        <View style={{
+          marginHorizontal: 20, marginBottom: 16,
+          backgroundColor: Colors.bg.surface,
+          borderRadius: 24,
+          padding: 22,
+          borderWidth: 1,
+          borderColor: Colors.border.subtle,
+        }}>
+          {/* Month nav */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <TouchableOpacity onPress={handlePrevMonth} style={{ padding: 4 }}>
+              <Ionicons name="chevron-back" size={18} color={Colors.text.muted} />
+            </TouchableOpacity>
+            <Text style={{ color: Colors.text.secondary, fontSize: 13, fontWeight: "600" }}>
+              {formatMonth(`${currentMonth}-01`)}
+            </Text>
+            <TouchableOpacity
+              onPress={handleNextMonth}
+              disabled={currentMonth >= currentYearMonth()}
+              style={{ padding: 4 }}
             >
-              <Text style={{ fontSize: 18 }}>🌿</Text>
-            </View>
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color={currentMonth >= currentYearMonth() ? Colors.text.muted : Colors.text.secondary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Big balance */}
+          <View style={{ alignItems: "center", marginBottom: 20 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 12, fontWeight: "600", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>
+              Total Spent
+            </Text>
+            <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)}>
+              <Text style={{
+                color: activeColor,
+                fontSize: 48,
+                fontWeight: "800",
+                letterSpacing: -2,
+                lineHeight: 54,
+              }}>
+                {balanceVisible ? formatCurrency(summary.totalSpent) : "••••••"}
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ color: Colors.text.muted, fontSize: 13, marginTop: 4 }}>
+              {balanceVisible
+                ? `${formatCurrency(Math.abs(summary.totalRemaining))} ${summary.isOverBudget ? "over budget" : "remaining"}`
+                : "tap to reveal"}
+            </Text>
+          </View>
+
+          {/* Progress bar */}
+          <ProgressBar spent={summary.totalSpent} limit={summary.totalLimit} height={6} />
+
+          {/* Stats row */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: Colors.border.dim }}>
+            {[
+              { label: "Income", value: summary.totalIncome, color: Colors.accent },
+              { label: "Spent", value: summary.totalSpent, color: activeColor },
+              { label: "Budget", value: summary.totalLimit, color: Colors.text.secondary },
+            ].map(({ label, value, color }) => (
+              <View key={label} style={{ alignItems: "center" }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>{label}</Text>
+                <Text style={{ color, fontSize: 15, fontWeight: "700", letterSpacing: -0.3 }}>
+                  {formatCurrency(value)}
+                </Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* ── Month Selector ──────────────────────────────────────── */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14, gap: 20 }}>
-          <TouchableOpacity onPress={handlePrevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={{ color: Colors.text.secondary, fontSize: 20 }}>‹</Text>
-          </TouchableOpacity>
-          <Text style={{ color: Colors.text.primary, fontSize: 15, fontWeight: "600" }}>
-            {formatMonth(`${currentMonth}-01`)}
-          </Text>
-          <TouchableOpacity
-            onPress={handleNextMonth}
-            disabled={currentMonth >= currentYearMonth()}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={{
-              color: currentMonth >= currentYearMonth() ? Colors.text.muted : Colors.text.secondary,
-              fontSize: 20,
-            }}>›</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ── Hero — Dynamic spending total ───────────────────────── */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 6 }}>
-          <Card glow={cardGlow} padding={20}>
-            {/* Spent / Remaining labels */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-              <Text style={{ color: Colors.text.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8 }}>
-                Spent
-              </Text>
-              <Text style={{ color: Colors.text.muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8 }}>
-                {summary.isOverBudget ? "Over Budget" : "Remaining"}
-              </Text>
-            </View>
-
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
-              {/* Big spent number */}
-              <Text
-                style={{
-                  color: activeColor,
-                  fontSize: 42,
-                  fontWeight: "900",
-                  letterSpacing: -2,
-                  lineHeight: 46,
-                  textShadowColor: activeColor,
-                  textShadowOffset: { width: 0, height: 0 },
-                  textShadowRadius: 12,
-                }}
-              >
-                {formatCurrency(summary.totalSpent)}
-              </Text>
-
-              {/* Remaining */}
-              <View style={{ alignItems: "flex-end" }}>
-                <Text
-                  style={{
-                    color: summary.isOverBudget ? Colors.dangerPink : Colors.neonGreen,
-                    fontSize: 22,
-                    fontWeight: "700",
-                    letterSpacing: -0.5,
-                  }}
-                >
-                  {summary.isOverBudget ? "-" : ""}{formatCurrency(Math.abs(summary.totalRemaining))}
-                </Text>
-                <Text style={{ color: Colors.text.muted, fontSize: 11 }}>
-                  of {formatCurrency(summary.totalLimit)} budget
-                </Text>
-              </View>
-            </View>
-
-            {/* Overall progress bar */}
-            <ProgressBar spent={summary.totalSpent} limit={summary.totalLimit} height={8} />
-
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
-              <Text style={{ color: Colors.text.muted, fontSize: 11 }}>
-                {summary.percentUsed.toFixed(0)}% used
-              </Text>
-              <Text style={{ color: Colors.neonGreen, fontSize: 11 }}>
-                Income: {formatCurrency(summary.totalIncome)}
-              </Text>
-            </View>
-          </Card>
-        </View>
-
-        {/* ── Bezier Spending Chart ───────────────────────────────── */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-          <Card padding={12}>
-            <Text style={{ color: Colors.text.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4, paddingLeft: 4 }}>
-              Spending This Month
+        {/* ── Spending Chart ── */}
+        <View style={{ marginHorizontal: 20, marginBottom: 16 }}>
+          <View style={{
+            backgroundColor: Colors.bg.surface,
+            borderRadius: 20,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: Colors.border.subtle,
+          }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+              Spending Trend
             </Text>
             {summary.spendingData.length > 1 ? (
               <BezierChart
                 data={summary.spendingData}
                 limit={summary.totalLimit}
-                width={width - 64}
-                height={120}
+                width={width - 72}
+                height={110}
               />
             ) : (
-              <View style={{ height: 120, alignItems: "center", justifyContent: "center" }}>
+              <View style={{ height: 110, alignItems: "center", justifyContent: "center" }}>
                 <Text style={{ color: Colors.text.muted, fontSize: 13 }}>No spending data yet</Text>
               </View>
             )}
-          </Card>
+          </View>
         </View>
 
-        {/* ── Category pills ──────────────────────────────────────── */}
-        <View style={{ marginBottom: 8 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 10 }}>
-            <Text style={{ color: Colors.text.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8 }}>
+        {/* ── Category pills ── */}
+        <View style={{ marginBottom: 16 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 12 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
               Categories
             </Text>
             <TouchableOpacity onPress={() => router.push("/(tabs)/budget")}>
-              <Text style={{ color: Colors.neonGreen, fontSize: 12, fontWeight: "600" }}>See All</Text>
+              <Text style={{ color: Colors.accent, fontSize: 13, fontWeight: "600" }}>See All</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+          >
             {categories.filter((c) => !c.is_income).slice(0, 8).map((cat) => {
               const spent = cat.spent ?? 0;
               const color = getBudgetColor(spent, cat.monthly_limit);
               const pct = cat.monthly_limit > 0 ? Math.min((spent / cat.monthly_limit) * 100, 100) : 0;
+              const over = spent > cat.monthly_limit;
               return (
                 <TouchableOpacity
                   key={cat.id}
                   onPress={() => router.push("/(tabs)/budget")}
                   style={{
                     backgroundColor: Colors.bg.surface,
-                    borderRadius: 14,
-                    padding: 12,
-                    width: 110,
+                    borderRadius: 16,
+                    padding: 14,
+                    width: 116,
                     borderWidth: 1,
-                    borderColor: pct >= 100 ? Colors.dangerPinkBorder : Colors.border.subtle,
+                    borderColor: over ? Colors.dangerBorder : Colors.border.subtle,
                   }}
                 >
-                  <Text style={{ fontSize: 20, marginBottom: 6 }}>{cat.emoji ?? "📦"}</Text>
-                  <Text style={{ color: Colors.text.secondary, fontSize: 11 }} numberOfLines={1}>{cat.name}</Text>
-                  <Text style={{ color, fontSize: 14, fontWeight: "700", marginTop: 2 }}>
+                  <Text style={{ fontSize: 22, marginBottom: 8 }}>{cat.emoji ?? "📦"}</Text>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "500" }} numberOfLines={1}>
+                    {cat.name}
+                  </Text>
+                  <Text style={{ color, fontSize: 15, fontWeight: "700", marginTop: 2, letterSpacing: -0.3 }}>
                     {formatCurrency(spent)}
                   </Text>
-                  <ProgressBar spent={spent} limit={cat.monthly_limit} height={3} />
+                  <View style={{ marginTop: 8 }}>
+                    <ProgressBar spent={spent} limit={cat.monthly_limit} height={3} />
+                  </View>
+                  <Text style={{ color: Colors.text.muted, fontSize: 10, marginTop: 4 }}>
+                    {Math.round(pct)}%
+                  </Text>
                 </TouchableOpacity>
               );
             })}
@@ -271,40 +266,49 @@ export default function DashboardScreen() {
                 onPress={() => router.push("/(tabs)/budget")}
                 style={{
                   backgroundColor: Colors.bg.surface,
-                  borderRadius: 14,
+                  borderRadius: 16,
                   padding: 14,
                   borderWidth: 1,
-                  borderColor: Colors.neonGreenBorder,
+                  borderColor: Colors.accentBorder,
                   borderStyle: "dashed",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 110,
-                  gap: 4,
+                  width: 116,
+                  height: 116,
+                  gap: 6,
                 }}
               >
-                <Text style={{ fontSize: 22 }}>+</Text>
-                <Text style={{ color: Colors.neonGreen, fontSize: 11, fontWeight: "600" }}>Add Category</Text>
+                <Ionicons name="add-circle-outline" size={24} color={Colors.accent} />
+                <Text style={{ color: Colors.accent, fontSize: 11, fontWeight: "600", textAlign: "center" }}>
+                  Add Category
+                </Text>
               </TouchableOpacity>
             )}
           </ScrollView>
         </View>
 
-        {/* ── Recent Transactions ─────────────────────────────────── */}
+        {/* ── Recent Transactions ── */}
         <View style={{ paddingHorizontal: 20 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-            <Text style={{ color: Colors.text.secondary, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8 }}>
-              Recent
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+              Recent Activity
             </Text>
             <TouchableOpacity onPress={() => router.push("/(tabs)/budget")}>
-              <Text style={{ color: Colors.neonGreen, fontSize: 12, fontWeight: "600" }}>See All</Text>
+              <Text style={{ color: Colors.accent, fontSize: 13, fontWeight: "600" }}>See All</Text>
             </TouchableOpacity>
           </View>
 
-          <Card padding={0}>
+          <View style={{
+            backgroundColor: Colors.bg.surface,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: Colors.border.subtle,
+            overflow: "hidden",
+          }}>
             {recentTxs.length === 0 ? (
-              <EmptyState icon="💸" title="No transactions yet" subtitle="Add your first transaction below." />
+              <EmptyState title="No transactions yet" subtitle="Add your first transaction below." />
             ) : (
-              <View style={{ paddingHorizontal: 14 }}>
+              <View style={{ paddingHorizontal: 16 }}>
                 {recentTxs.map((tx, idx) => (
                   <View key={tx.id}>
                     <TransactionItem transaction={tx} />
@@ -313,21 +317,19 @@ export default function DashboardScreen() {
                 ))}
               </View>
             )}
-          </Card>
+          </View>
         </View>
 
-        {/* ── Add Transaction CTA ─────────────────────────────────── */}
+        {/* ── Add Transaction ── */}
         <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
           <TouchableOpacity
             onPress={() => setShowAddTx(true)}
             style={{
-              backgroundColor: activeColor,
+              backgroundColor: Colors.accent,
               borderRadius: 9999,
-              paddingVertical: 16,
+              paddingVertical: 17,
               alignItems: "center",
-              borderBottomWidth: 3,
-              borderBottomColor: summary.isOverBudget ? Colors.dangerPinkDim : Colors.neonGreenDim,
-              ...pillShadow(activeColor),
+              ...pillShadow(Colors.accent),
             }}
           >
             <Text style={{ color: "#000", fontWeight: "700", fontSize: 16 }}>+ Add Transaction</Text>

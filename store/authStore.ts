@@ -104,13 +104,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
     if (!data.session) return;
 
-    const profile = await fetchProfile(data.session.user.id);
-    const household = profile?.household_id
-      ? await fetchHousehold(profile.household_id)
-      : null;
+    const authUser = data.session.user;
+    const fallbackUser: User = {
+      id: authUser.id,
+      email: authUser.email ?? "",
+      full_name: authUser.user_metadata?.full_name ?? null,
+      household_id: null,
+      avatar_url: null,
+      created_at: authUser.created_at,
+    };
+
+    let profile: User | null = null;
+    let household = null;
+    try {
+      profile = await fetchProfile(authUser.id);
+      household = profile?.household_id ? await fetchHousehold(profile.household_id) : null;
+    } catch {
+      // DB tables not set up yet — use auth data as fallback
+    }
 
     set({
-      user: profile,
+      user: profile ?? fallbackUser,
       household,
       session: {
         access_token: data.session.access_token,
@@ -120,18 +134,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   createHousehold: async (name) => {
-    // Prefer store user; fall back to live Supabase session
+    // Prefer store user; fall back to live session or getUser() call
     let user = get().user;
     if (!user) {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) throw new Error("Not authenticated");
+      // Try session first, then getUser() (works even when email confirm is pending)
+      const { data: sessionData } = await supabase.auth.getSession();
+      const authUser = sessionData.session?.user ?? (await supabase.auth.getUser()).data.user;
+      if (!authUser) throw new Error("Not authenticated");
       user = {
-        id: data.session.user.id,
-        email: data.session.user.email ?? "",
-        full_name: data.session.user.user_metadata?.full_name ?? null,
+        id: authUser.id,
+        email: authUser.email ?? "",
+        full_name: authUser.user_metadata?.full_name ?? null,
         household_id: null,
         avatar_url: null,
-        created_at: data.session.user.created_at,
+        created_at: authUser.created_at,
       };
       set({ user });
     }
@@ -158,12 +174,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (err: unknown) {
       set({ error: (err as Error).message, isLoading: false });
+      throw err; // bubble up so household.tsx can show the real error
     }
   },
 
   joinHousehold: async (inviteCode) => {
-    const user = get().user;
-    if (!user) throw new Error("Not authenticated");
+    let user = get().user;
+    if (!user) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const authUser = sessionData.session?.user ?? (await supabase.auth.getUser()).data.user;
+      if (!authUser) throw new Error("Not authenticated");
+      user = {
+        id: authUser.id,
+        email: authUser.email ?? "",
+        full_name: authUser.user_metadata?.full_name ?? null,
+        household_id: null,
+        avatar_url: null,
+        created_at: authUser.created_at,
+      };
+      set({ user });
+    }
 
     set({ isLoading: true, error: null });
     try {
@@ -186,6 +216,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
     } catch (err: unknown) {
       set({ error: (err as Error).message, isLoading: false });
+      throw err; // bubble up so household.tsx can show the real error
     }
   },
 }));

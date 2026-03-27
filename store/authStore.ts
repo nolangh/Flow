@@ -156,22 +156,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      const inviteCode = generateInviteCode();
+      // Use a security-definer RPC to bypass RLS on the first household insert
       const { data, error } = await supabase
-        .from("households")
-        .insert({ name, invite_code: inviteCode })
-        .select()
-        .single();
+        .rpc("create_household", { p_name: name });
       if (error) throw error;
 
-      await supabase
-        .from("profiles")
-        .update({ household_id: data.id })
-        .eq("id", user.id);
+      const household = typeof data === "string" ? JSON.parse(data) : data;
 
       set({
-        household: data as Household,
-        user: { ...user, household_id: data.id },
+        household: household as Household,
+        user: { ...user, household_id: household.id },
         isLoading: false,
       });
     } catch (err: unknown) {
@@ -200,20 +194,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
-        .from("households")
-        .select()
-        .eq("invite_code", inviteCode.toUpperCase())
-        .single();
-      if (error || !data) throw new Error("Invalid invite code");
+        .rpc("join_household", { p_invite_code: inviteCode });
+      if (error) throw error;
 
-      await supabase
-        .from("profiles")
-        .update({ household_id: data.id })
-        .eq("id", user.id);
+      const household = typeof data === "string" ? JSON.parse(data) : data;
 
       set({
-        household: data as Household,
-        user: { ...user, household_id: data.id },
+        household: household as Household,
+        user: { ...user, household_id: household.id },
         isLoading: false,
       });
     } catch (err: unknown) {

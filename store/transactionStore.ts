@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 import { monthBounds } from "@/lib/utils";
 import type { TransactionState, Transaction } from "@/types";
+import { useBudgetStore } from "@/store/budgetStore";
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
@@ -65,6 +66,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
       const month = (data.date ?? new Date().toISOString()).substring(0, 7);
       await get().fetchTransactions(month);
+      // Refresh budget category spent totals so the home screen updates immediately
+      await useBudgetStore.getState().fetchMonthlyBudget(month);
     } catch (err: unknown) {
       set({ error: (err as Error).message, isLoading: false });
     }

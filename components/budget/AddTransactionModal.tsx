@@ -43,6 +43,20 @@ export default function AddTransactionModal({
 
   const spendCategories = categories.filter((c) => !c.is_income);
 
+  const handleSelectCategory = (cat: BudgetCategory | null) => {
+    if (!cat) {
+      setSelectedCategory(null);
+      return;
+    }
+    setSelectedCategory(cat.id);
+    // Auto-fill name from the category so the user doesn't have to retype it
+    setName(cat.name);
+    // For fixed bills, pre-fill the exact monthly amount too
+    if (cat.is_fixed && cat.monthly_limit > 0) {
+      setAmount(cat.monthly_limit.toString());
+    }
+  };
+
   const reset = () => {
     setName(""); setAmount(""); setType("debit");
     setDate(new Date().toISOString().split("T")[0]);
@@ -138,7 +152,7 @@ export default function AddTransactionModal({
                   borderColor: Colors.border.subtle,
                   fontSize: 15,
                 }}
-                placeholder="Name (e.g. Whole Foods)"
+                placeholder={selectedCategory ? "Auto-filled from category" : "Name (e.g. Whole Foods)"}
                 placeholderTextColor={Colors.text.muted}
                 value={name}
                 onChangeText={setName}
@@ -189,7 +203,7 @@ export default function AddTransactionModal({
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       <TouchableOpacity
-                        onPress={() => setSelectedCategory(null)}
+                        onPress={() => handleSelectCategory(null)}
                         style={{
                           borderRadius: 9999,
                           paddingHorizontal: 14,
@@ -204,7 +218,7 @@ export default function AddTransactionModal({
                       {spendCategories.map((cat) => (
                         <TouchableOpacity
                           key={cat.id}
-                          onPress={() => setSelectedCategory(cat.id)}
+                          onPress={() => handleSelectCategory(cat)}
                           style={{
                             borderRadius: 9999,
                             paddingHorizontal: 14,

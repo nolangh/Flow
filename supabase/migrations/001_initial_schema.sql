@@ -53,7 +53,10 @@ create table if not exists public.budget_categories (
 -- =============================================================================
 -- 4. TRANSACTIONS
 -- =============================================================================
-create type public.transaction_type as enum ('debit', 'credit');
+do $$ begin
+  create type public.transaction_type as enum ('debit', 'credit');
+exception when duplicate_object then null;
+end $$;
 
 create table if not exists public.transactions (
   id                    uuid primary key default uuid_generate_v4(),
@@ -98,7 +101,10 @@ create table if not exists public.monthly_budgets (
 -- =============================================================================
 -- 6. CALENDAR EVENTS
 -- =============================================================================
-create type public.event_source as enum ('manual', 'google', 'budget_bill', 'recurring');
+do $$ begin
+  create type public.event_source as enum ('manual', 'google', 'budget_bill', 'recurring');
+exception when duplicate_object then null;
+end $$;
 
 create table if not exists public.calendar_events (
   id                  uuid primary key default uuid_generate_v4(),
@@ -182,6 +188,7 @@ begin
     'monthly_budgets','calendar_events','plaid_items'
   ]
   loop
+    execute format('drop trigger if exists set_updated_at on public.%I', t);
     execute format(
       'create trigger set_updated_at before update on public.%I
        for each row execute function public.set_updated_at()',
@@ -194,13 +201,13 @@ $$;
 -- =============================================================================
 -- 9. ROW-LEVEL SECURITY
 -- =============================================================================
-alter table public.households       enable row level security;
-alter table public.profiles         enable row level security;
+alter table public.households        enable row level security;
+alter table public.profiles          enable row level security;
 alter table public.budget_categories enable row level security;
-alter table public.transactions     enable row level security;
-alter table public.monthly_budgets  enable row level security;
-alter table public.calendar_events  enable row level security;
-alter table public.plaid_items      enable row level security;
+alter table public.transactions      enable row level security;
+alter table public.monthly_budgets   enable row level security;
+alter table public.calendar_events   enable row level security;
+alter table public.plaid_items       enable row level security;
 
 -- Helper: returns the household_id for the current authenticated user
 create or replace function public.my_household_id()
@@ -208,14 +215,33 @@ returns uuid language sql stable security definer as $$
   select household_id from public.profiles where id = auth.uid();
 $$;
 
--- Households: members can read their own household
+-- Drop all policies first so this script is safe to re-run
+drop policy if exists "members_read_household"  on public.households;
+drop policy if exists "owner_update_household"  on public.households;
+drop policy if exists "household_read_profiles" on public.profiles;
+drop policy if exists "own_profile_write"        on public.profiles;
+
+do $$
+declare t text;
+begin
+  foreach t in array array[
+    'budget_categories','transactions','monthly_budgets',
+    'calendar_events','plaid_items'
+  ]
+  loop
+    execute format('drop policy if exists "household_access" on public.%I', t);
+  end loop;
+end;
+$$;
+
+-- Households: members can read/update their own household
 create policy "members_read_household" on public.households
   for select using (id = public.my_household_id());
 
 create policy "owner_update_household" on public.households
   for update using (id = public.my_household_id());
 
--- Profiles: users can read all profiles in same household
+-- Profiles: users can read all profiles in same household; write own row
 create policy "household_read_profiles" on public.profiles
   for select using (
     household_id = public.my_household_id()
@@ -225,11 +251,9 @@ create policy "household_read_profiles" on public.profiles
 create policy "own_profile_write" on public.profiles
   for all using (id = auth.uid());
 
--- Budget categories, transactions, monthly_budgets, calendar_events, plaid_items:
--- all scoped to the user's household
+-- Budget categories, transactions, monthly_budgets, calendar_events, plaid_items
 do $$
-declare
-  t text;
+declare t text;
 begin
   foreach t in array array[
     'budget_categories','transactions','monthly_budgets',
@@ -248,10 +272,22 @@ $$;
 -- =============================================================================
 -- 10. REALTIME — enable publications for live-sync tables
 -- =============================================================================
-alter publication supabase_realtime add table public.transactions;
-alter publication supabase_realtime add table public.calendar_events;
-alter publication supabase_realtime add table public.budget_categories;
-alter publication supabase_realtime add table public.monthly_budgets;
+do $$
+begin
+  alter publication supabase_realtime add table public.transactions;
+exception when others then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table public.calendar_events;
+exception when others then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table public.budget_categories;
+exception when others then null; end $$;
+do $$
+begin
+  alter publication supabase_realtime add table public.monthly_budgets;
+exception when others then null; end $$;
 
 -- =============================================================================
 -- 11. SEED — default budget categories for new households (example)

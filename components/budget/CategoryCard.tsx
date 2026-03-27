@@ -41,6 +41,50 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
     );
   }
 
+  if (cat.is_fixed) {
+    return (
+      <TouchableOpacity
+        onPress={() => onPress?.(cat)}
+        activeOpacity={0.75}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+          gap: 12,
+        }}
+      >
+        <View style={{
+          width: 40, height: 40, borderRadius: 12,
+          backgroundColor: Colors.bg.surface,
+          alignItems: "center", justifyContent: "center",
+          borderWidth: 1, borderColor: Colors.border.subtle,
+        }}>
+          <Text style={{ fontSize: 20 }}>{cat.emoji ?? "📋"}</Text>
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "600" }}>
+            {cat.name}
+          </Text>
+          {cat.fixed_day_of_month ? (
+            <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 1 }}>
+              Due the {cat.fixed_day_of_month}{ordinal(cat.fixed_day_of_month)} each month
+            </Text>
+          ) : (
+            <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 1 }}>
+              Monthly bill
+            </Text>
+          )}
+        </View>
+
+        <Text style={{ color: Colors.text.primary, fontSize: 16, fontWeight: "700", letterSpacing: -0.3 }}>
+          {formatCurrency(limit)}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <TouchableOpacity
       onPress={() => onPress?.(cat)}
@@ -80,4 +124,14 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
       </Text>
     </TouchableOpacity>
   );
+}
+
+function ordinal(n: number): string {
+  if (n >= 11 && n <= 13) return "th";
+  switch (n % 10) {
+    case 1: return "st";
+    case 2: return "nd";
+    case 3: return "rd";
+    default: return "th";
+  }
 }

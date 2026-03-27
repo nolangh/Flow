@@ -125,21 +125,36 @@ export default function AddCategoryModal({ visible, onClose, onAdd }: AddCategor
                 onChangeText={setLimit}
               />
 
-              {/* Toggles */}
-              {[
-                { label: "This is income", value: isIncome, setter: setIsIncome },
-                { label: "Fixed recurring bill", value: isFixed, setter: setIsFixed },
-              ].map(({ label, value, setter }) => (
-                <View key={label} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={{ color: Colors.text.secondary, fontSize: 14 }}>{label}</Text>
-                  <Switch
-                    value={value}
-                    onValueChange={setter}
-                    trackColor={{ false: Colors.bg.overlay, true: Colors.neonGreenDim }}
-                    thumbColor={value ? Colors.neonGreen : Colors.text.muted}
-                  />
+              {/* Type toggles */}
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: Colors.text.secondary, fontSize: 14 }}>Fixed monthly bill</Text>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, marginTop: 2 }}>
+                    e.g. mortgage, car insurance, utilities
+                  </Text>
                 </View>
-              ))}
+                <Switch
+                  value={isFixed && !isIncome}
+                  onValueChange={(v) => { setIsFixed(v); if (v) setIsIncome(false); }}
+                  trackColor={{ false: Colors.bg.overlay, true: Colors.neonGreenDim }}
+                  thumbColor={isFixed ? Colors.neonGreen : Colors.text.muted}
+                />
+              </View>
+
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: Colors.text.secondary, fontSize: 14 }}>This is income</Text>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, marginTop: 2 }}>
+                    e.g. paycheck, side income
+                  </Text>
+                </View>
+                <Switch
+                  value={isIncome}
+                  onValueChange={(v) => { setIsIncome(v); if (v) setIsFixed(false); }}
+                  trackColor={{ false: Colors.bg.overlay, true: Colors.neonGreenDim }}
+                  thumbColor={isIncome ? Colors.neonGreen : Colors.text.muted}
+                />
+              </View>
 
               {isFixed && (
                 <TextInput

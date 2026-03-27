@@ -53,7 +53,9 @@ export default function BudgetScreen() {
   };
 
   const incomeCategories = categories.filter((c) => c.is_income);
-  const spendCategories = categories.filter((c) => !c.is_income);
+  const fixedCategories = categories.filter((c) => !c.is_income && c.is_fixed);
+  const spendCategories = categories.filter((c) => !c.is_income && !c.is_fixed);
+  const totalFixed = fixedCategories.reduce((sum, c) => sum + c.monthly_limit, 0);
   const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit);
 
   return (
@@ -144,7 +146,57 @@ export default function BudgetScreen() {
         showsVerticalScrollIndicator={false}
       >
         {tab === "overview" ? (
-          <View style={{ gap: 20 }}>
+          <View style={{ gap: 24 }}>
+
+            {/* ── Fixed Bills ─────────────────────────────────────── */}
+            {fixedCategories.length > 0 && (
+              <View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                    Fixed Bills
+                  </Text>
+                  <Text style={{ color: Colors.text.secondary, fontSize: 13, fontWeight: "700" }}>
+                    {formatCurrency(totalFixed)}/mo
+                  </Text>
+                </View>
+                <View style={{
+                  backgroundColor: Colors.bg.surface,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: Colors.border.subtle,
+                  overflow: "hidden",
+                }}>
+                  {fixedCategories.map((cat, idx) => (
+                    <View key={cat.id}>
+                      <CategoryCard category={cat} />
+                      {idx < fixedCategories.length - 1 && (
+                        <View style={{ height: 1, backgroundColor: Colors.border.subtle, marginHorizontal: 16 }} />
+                      )}
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* ── Spending Budgets ─────────────────────────────────── */}
+            <View>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
+                Spending
+              </Text>
+              {spendCategories.length === 0 ? (
+                <EmptyState title="No budget categories" subtitle='Add a spending budget like "Food" or "Gas" using the button below.' />
+              ) : (
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                  {spendCategories.map((cat) => (
+                    <View key={cat.id} style={{ width: "47.5%" }}>
+                      <CategoryCard category={cat} />
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* ── Income ───────────────────────────────────────────── */}
             {incomeCategories.length > 0 && (
               <View>
                 <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
@@ -160,24 +212,7 @@ export default function BudgetScreen() {
               </View>
             )}
 
-            <View>
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
-                Spending
-              </Text>
-              {spendCategories.length === 0 ? (
-                <EmptyState title="No categories yet" subtitle="Add a budget category to start tracking your spending." />
-              ) : (
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-                  {spendCategories.map((cat) => (
-                    <View key={cat.id} style={{ width: "47.5%" }}>
-                      <CategoryCard category={cat} />
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            {/* Add category */}
+            {/* ── Add category ─────────────────────────────────────── */}
             <TouchableOpacity
               onPress={() => setShowAddCat(true)}
               style={{

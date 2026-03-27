@@ -42,7 +42,10 @@
           "image": "./assets/images/splash.png",
           "imageWidth": 200
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

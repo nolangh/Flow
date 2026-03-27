@@ -5,7 +5,14 @@ module.exports = function (api) {
       ["babel-preset-expo", { jsxImportSource: "nativewind" }],
     ],
     plugins: [
-      "nativewind/babel",
+      require("./node_modules/react-native-css-interop/dist/babel-plugin").default,
+      [
+        "@babel/plugin-transform-react-jsx",
+        {
+          runtime: "automatic",
+          importSource: "react-native-css-interop",
+        },
+      ],
       "react-native-reanimated/plugin",
     ],
   };

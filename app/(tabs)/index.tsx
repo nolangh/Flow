@@ -228,9 +228,20 @@ export default function DashboardScreen() {
           >
             {categories.filter((c) => !c.is_income).slice(0, 8).map((cat) => {
               const spent = cat.spent ?? 0;
-              const color = getBudgetColor(spent, cat.monthly_limit);
-              const pct = cat.monthly_limit > 0 ? Math.min((spent / cat.monthly_limit) * 100, 100) : 0;
-              const over = spent > cat.monthly_limit;
+              const limit = cat.monthly_limit;
+
+              // Fixed bills: green when paid, neutral when not yet paid — never red
+              const isFixed = cat.is_fixed;
+              const paid = isFixed && spent >= limit && limit > 0;
+              const color = isFixed
+                ? paid ? Colors.accent : Colors.text.secondary
+                : getBudgetColor(spent, limit);
+              const borderColor = isFixed
+                ? paid ? Colors.accentBorder : Colors.border.subtle
+                : spent > limit ? Colors.dangerBorder : Colors.border.subtle;
+
+              const pct = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
+
               return (
                 <TouchableOpacity
                   key={cat.id}
@@ -241,22 +252,35 @@ export default function DashboardScreen() {
                     padding: 14,
                     width: 116,
                     borderWidth: 1,
-                    borderColor: over ? Colors.dangerBorder : Colors.border.subtle,
+                    borderColor,
                   }}
                 >
                   <Text style={{ fontSize: 22, marginBottom: 8 }}>{cat.emoji ?? "📦"}</Text>
                   <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "500" }} numberOfLines={1}>
                     {cat.name}
                   </Text>
-                  <Text style={{ color, fontSize: 15, fontWeight: "700", marginTop: 2, letterSpacing: -0.3 }}>
-                    {formatCurrency(spent)}
-                  </Text>
-                  <View style={{ marginTop: 8 }}>
-                    <ProgressBar spent={spent} limit={cat.monthly_limit} height={3} />
-                  </View>
-                  <Text style={{ color: Colors.text.muted, fontSize: 10, marginTop: 4 }}>
-                    {Math.round(pct)}%
-                  </Text>
+                  {isFixed ? (
+                    <>
+                      <Text style={{ color, fontSize: 15, fontWeight: "700", marginTop: 2, letterSpacing: -0.3 }}>
+                        {formatCurrency(limit)}
+                      </Text>
+                      <Text style={{ color: paid ? Colors.accent : Colors.text.muted, fontSize: 10, marginTop: 6 }}>
+                        {paid ? "✓ Paid" : "Unpaid"}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ color, fontSize: 15, fontWeight: "700", marginTop: 2, letterSpacing: -0.3 }}>
+                        {formatCurrency(spent)}
+                      </Text>
+                      <View style={{ marginTop: 8 }}>
+                        <ProgressBar spent={spent} limit={limit} height={3} />
+                      </View>
+                      <Text style={{ color: Colors.text.muted, fontSize: 10, marginTop: 4 }}>
+                        {Math.round(pct)}%
+                      </Text>
+                    </>
+                  )}
                 </TouchableOpacity>
               );
             })}

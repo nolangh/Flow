@@ -48,13 +48,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (error) throw error;
       if (!data.user) throw new Error("No user returned");
 
-      // Insert profile row
-      const { error: profileError } = await supabase
+      // Insert profile row (ignore conflict if trigger already created it)
+      await supabase
         .from("profiles")
-        .insert({ id: data.user.id, email, full_name: fullName });
-      if (profileError) throw profileError;
+        .upsert({ id: data.user.id, email, full_name: fullName }, { onConflict: "id" });
+
+      // Fetch the newly created profile so user is set in the store.
+      // Fall back to a minimal object if RLS / email-confirm blocks the read.
+      const profile = await fetchProfile(data.user.id);
+      const resolvedUser: User = profile ?? {
+        id: data.user.id,
+        email,
+        full_name: fullName,
+        household_id: null,
+        avatar_url: null,
+        created_at: new Date().toISOString(),
+      };
 
       set({
+        user: resolvedUser,
         session: data.session
           ? { access_token: data.session.access_token, refresh_token: data.session.refresh_token }
           : null,

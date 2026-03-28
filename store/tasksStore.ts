@@ -6,6 +6,7 @@ export interface Task {
   household_id: string;
   created_by: string;
   assigned_to: string | null;
+  parent_task_id: string | null;
   title: string;
   notes: string | null;
   due_date: string | null;
@@ -24,11 +25,12 @@ interface TasksState {
     household_id: string;
     created_by: string;
     assigned_to?: string | null;
+    parent_task_id?: string | null;
     title: string;
     notes?: string | null;
     due_date?: string | null;
     priority?: "low" | "medium" | "high";
-  }) => Promise<void>;
+  }) => Promise<Task>;
   updateTask: (id: string, updates: {
     title?: string;
     notes?: string | null;
@@ -52,8 +54,9 @@ export const useTasksStore = create<TasksState>((set, get) => ({
         .from("tasks")
         .select("*")
         .eq("household_id", householdId)
+        .order("parent_task_id", { ascending: true, nullsFirst: true })
         .order("due_date", { ascending: true, nullsFirst: false })
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
       set({ tasks: (data as Task[]) ?? [] });
@@ -65,13 +68,14 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   },
 
   addTask: async (payload) => {
-    if (!supabaseConfigured) return;
+    if (!supabaseConfigured) throw new Error("Supabase not configured");
     const { data, error } = await supabase
       .from("tasks")
       .insert({
         household_id: payload.household_id,
         created_by: payload.created_by,
         assigned_to: payload.assigned_to ?? null,
+        parent_task_id: payload.parent_task_id ?? null,
         title: payload.title.trim(),
         notes: payload.notes?.trim() ?? null,
         due_date: payload.due_date ?? null,
@@ -82,7 +86,9 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       .single();
 
     if (error) throw error;
-    set((s) => ({ tasks: [data as Task, ...s.tasks] }));
+    const task = data as Task;
+    set((s) => ({ tasks: [...s.tasks, task] }));
+    return task;
   },
 
   toggleTask: async (id, currentValue) => {
@@ -99,7 +105,6 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       .eq("id", id);
 
     if (error) {
-      // revert on failure
       set((s) => ({
         tasks: s.tasks.map((t) =>
           t.id === id ? { ...t, is_completed: currentValue, completed_at: null } : t
@@ -121,7 +126,10 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   },
 
   deleteTask: async (id) => {
-    set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) }));
+    // Optimistically remove the task AND its subtasks
+    set((s) => ({
+      tasks: s.tasks.filter((t) => t.id !== id && t.parent_task_id !== id),
+    }));
     const { error } = await supabase.from("tasks").delete().eq("id", id);
     if (error) throw error;
   },

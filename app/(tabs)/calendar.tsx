@@ -1,6 +1,7 @@
 import {
   View, Text, ScrollView, TouchableOpacity,
   Modal, TextInput, Alert, Platform, StatusBar,
+  KeyboardAvoidingView, ActivityIndicator,
 } from "react-native";
 import { useState, useMemo, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -120,6 +121,12 @@ export default function CalendarScreen() {
   const [editDueDate, setEditDueDate] = useState<string | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
 
+  // Subtask state
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [showSubtaskInput, setShowSubtaskInput] = useState(false);
+  const [savingSubtask, setSavingSubtask] = useState(false);
+
   const members: Array<{ id: string; full_name: string | null; email: string }> =
     (household as any)?.members ?? (user ? [user] : []);
 
@@ -169,11 +176,12 @@ export default function CalendarScreen() {
     return map;
   }, [tasks]);
 
-  // Group tasks for the list view
+  // Group tasks for the list view — top-level only (subtasks shown inline under parent)
   const taskGroups = useMemo(() => {
     const today = format(new Date(), "yyyy-MM-dd");
-    const pending = tasks.filter((t) => !t.is_completed);
-    const completed = tasks.filter((t) => t.is_completed);
+    const topLevel = tasks.filter((t) => !t.parent_task_id);
+    const pending = topLevel.filter((t) => !t.is_completed);
+    const completed = topLevel.filter((t) => t.is_completed);
 
     const overdue = pending.filter((t) => t.due_date && t.due_date < today);
     const todayTasks = pending.filter((t) => t.due_date === today);
@@ -183,7 +191,9 @@ export default function CalendarScreen() {
   }, [tasks]);
 
   const selectedEvents = selectedDate ? (eventsByDate[selectedDate] ?? []) : [];
-  const selectedTasks = selectedDate ? tasks.filter((t) => t.due_date === selectedDate && !t.is_completed) : [];
+  const selectedTasks = selectedDate
+    ? tasks.filter((t) => t.due_date === selectedDate && !t.is_completed && !t.parent_task_id)
+    : [];
 
   const handleDayPress = (day: number) => {
     const dateStr = `${viewMonth}-${String(day).padStart(2, "0")}`;
@@ -201,7 +211,30 @@ export default function CalendarScreen() {
     setEditPriority(task.priority);
     setEditAssignee(task.assigned_to);
     setEditDueDate(task.due_date);
+    setNewSubtaskTitle("");
+    setShowSubtaskInput(false);
     setShowEditTask(true);
+  };
+
+  const handleAddSubtask = async () => {
+    if (!newSubtaskTitle.trim() || !editingTask || !user) return;
+    setSavingSubtask(true);
+    try {
+      await addTask({
+        household_id: household?.id ?? "",
+        created_by: user.id,
+        parent_task_id: editingTask.id,
+        title: newSubtaskTitle.trim(),
+        priority: "medium",
+        due_date: editingTask.due_date,
+      });
+      setNewSubtaskTitle("");
+      setShowSubtaskInput(false);
+    } catch (err: unknown) {
+      Alert.alert("Error", (err as Error).message);
+    } finally {
+      setSavingSubtask(false);
+    }
   };
 
   const handleUpdateTask = async () => {
@@ -291,68 +324,157 @@ export default function CalendarScreen() {
   const TaskRow = ({ task }: { task: typeof tasks[number] }) => {
     const assigneeName = getMemberName(task.assigned_to);
     const isOverdue = task.due_date && task.due_date < todayStr && !task.is_completed;
+    const subtasks = tasks.filter((t) => t.parent_task_id === task.id);
+    const completedSubs = subtasks.filter((t) => t.is_completed).length;
+    const hasSubtasks = subtasks.length > 0;
+    const isExpanded = expandedTasks.has(task.id);
+    const allDone = hasSubtasks && completedSubs === subtasks.length;
+
+    const toggleExpand = () => {
+      setExpandedTasks((prev) => {
+        const next = new Set(prev);
+        if (next.has(task.id)) next.delete(task.id); else next.add(task.id);
+        return next;
+      });
+    };
+
+    const mainBorderColor = task.is_completed
+      ? Colors.border.dim
+      : isOverdue ? Colors.dangerBorder : Colors.border.subtle;
 
     return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => openEditTask(task)}
-        style={{
-          flexDirection: "row", alignItems: "center", gap: 12,
-          backgroundColor: Colors.bg.surface, borderRadius: 16, padding: 14,
-          borderWidth: 1,
-          borderColor: task.is_completed ? Colors.border.dim : isOverdue ? Colors.dangerBorder : Colors.border.subtle,
-          marginBottom: 8,
-        }}
-      >
-        {/* Checkbox — tap stops propagation to prevent opening edit */}
+      <View style={{ marginBottom: 8 }}>
+        {/* ── Main row ────────────────────────────────────────────── */}
         <TouchableOpacity
-          onPress={(e) => { e.stopPropagation?.(); toggleTask(task.id, task.is_completed); }}
+          activeOpacity={0.7}
+          onPress={() => openEditTask(task)}
           style={{
-            width: 26, height: 26, borderRadius: 13,
-            borderWidth: 2,
-            borderColor: task.is_completed ? Colors.accent : PRIORITY_COLORS[task.priority],
-            backgroundColor: task.is_completed ? Colors.accentSoft : "transparent",
-            alignItems: "center", justifyContent: "center",
+            flexDirection: "row", alignItems: "center", gap: 12,
+            backgroundColor: Colors.bg.surface, padding: 14,
+            borderWidth: 1,
+            borderColor: mainBorderColor,
+            borderRadius: 16,
+            borderBottomLeftRadius: hasSubtasks && isExpanded ? 0 : 16,
+            borderBottomRightRadius: hasSubtasks && isExpanded ? 0 : 16,
+            borderBottomWidth: hasSubtasks && isExpanded ? 0 : 1,
           }}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          {task.is_completed && <Ionicons name="checkmark" size={14} color={Colors.accent} />}
+          {/* Checkbox */}
+          <TouchableOpacity
+            onPress={(e) => { e.stopPropagation?.(); toggleTask(task.id, task.is_completed); }}
+            style={{
+              width: 26, height: 26, borderRadius: 13,
+              borderWidth: 2,
+              borderColor: task.is_completed ? Colors.accent : PRIORITY_COLORS[task.priority],
+              backgroundColor: task.is_completed ? Colors.accentSoft : "transparent",
+              alignItems: "center", justifyContent: "center",
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            {task.is_completed && <Ionicons name="checkmark" size={14} color={Colors.accent} />}
+          </TouchableOpacity>
+
+          {/* Content */}
+          <View style={{ flex: 1 }}>
+            <Text style={{
+              color: task.is_completed ? Colors.text.muted : Colors.text.primary,
+              fontSize: 14, fontFamily: Fonts.semiBold,
+              textDecorationLine: task.is_completed ? "line-through" : "none",
+            }} numberOfLines={2}>
+              {task.title}
+            </Text>
+            {task.notes ? (
+              <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{task.notes}</Text>
+            ) : null}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+              {task.due_date && (
+                <Text style={{ color: isOverdue ? Colors.danger : Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
+                  {isOverdue ? "⚠ " : ""}{format(parseISO(task.due_date), "MMM d")}
+                </Text>
+              )}
+              <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: PRIORITY_COLORS[task.priority] }} />
+              <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{PRIORITY_LABELS[task.priority]}</Text>
+              {/* Subtask progress pill */}
+              {hasSubtasks && (
+                <View style={{
+                  flexDirection: "row", alignItems: "center", gap: 3,
+                  backgroundColor: allDone ? Colors.accentSoft : Colors.bg.raised,
+                  borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2,
+                  borderWidth: 1, borderColor: allDone ? Colors.accentBorder : Colors.border.subtle,
+                }}>
+                  <Ionicons name="list-outline" size={10} color={allDone ? Colors.accent : Colors.text.muted} />
+                  <Text style={{ color: allDone ? Colors.accent : Colors.text.muted, fontSize: 10, fontFamily: Fonts.bold }}>
+                    {completedSubs}/{subtasks.length}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Assignee */}
+          {task.assigned_to && (
+            <AssigneeChip name={assigneeName} color={task.assigned_to === user?.id ? Colors.accent : TASK_PURPLE} />
+          )}
+
+          {/* Expand toggle or plain caret */}
+          {hasSubtasks ? (
+            <TouchableOpacity
+              onPress={(e) => { e.stopPropagation?.(); toggleExpand(); }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name={isExpanded ? "chevron-down" : "chevron-forward"} size={16} color={Colors.text.muted} />
+            </TouchableOpacity>
+          ) : (
+            <Ionicons name="chevron-forward" size={14} color={Colors.text.muted} />
+          )}
         </TouchableOpacity>
 
-        {/* Content */}
-        <View style={{ flex: 1 }}>
-          <Text style={{
-            color: task.is_completed ? Colors.text.muted : Colors.text.primary,
-            fontSize: 14, fontFamily: Fonts.semiBold,
-            textDecorationLine: task.is_completed ? "line-through" : "none",
-          }} numberOfLines={2}>
-            {task.title}
-          </Text>
-          {task.notes ? (
-            <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{task.notes}</Text>
-          ) : null}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
-            {task.due_date && (
-              <Text style={{ color: isOverdue ? Colors.danger : Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
-                {isOverdue ? "⚠ " : ""}{format(parseISO(task.due_date), "MMM d")}
-              </Text>
-            )}
-            <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: PRIORITY_COLORS[task.priority] }} />
-            <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{PRIORITY_LABELS[task.priority]}</Text>
+        {/* ── Subtask list (expanded) ──────────────────────────── */}
+        {hasSubtasks && isExpanded && (
+          <View style={{
+            backgroundColor: Colors.bg.raised,
+            borderWidth: 1, borderTopWidth: 0,
+            borderColor: mainBorderColor,
+            borderBottomLeftRadius: 16, borderBottomRightRadius: 16,
+            overflow: "hidden",
+          }}>
+            {subtasks.map((sub) => (
+              <View
+                key={sub.id}
+                style={{
+                  flexDirection: "row", alignItems: "center", gap: 10,
+                  paddingHorizontal: 14, paddingVertical: 11,
+                  borderTopWidth: 1, borderTopColor: Colors.border.subtle,
+                }}
+              >
+                {/* Subtask checkbox */}
+                <TouchableOpacity
+                  onPress={() => toggleTask(sub.id, sub.is_completed)}
+                  style={{
+                    width: 22, height: 22, borderRadius: 11,
+                    borderWidth: 1.5,
+                    borderColor: sub.is_completed ? Colors.accent : Colors.border.strong,
+                    backgroundColor: sub.is_completed ? Colors.accentSoft : "transparent",
+                    alignItems: "center", justifyContent: "center",
+                  }}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                >
+                  {sub.is_completed && <Ionicons name="checkmark" size={11} color={Colors.accent} />}
+                </TouchableOpacity>
+
+                <Text style={{
+                  flex: 1,
+                  color: sub.is_completed ? Colors.text.muted : Colors.text.secondary,
+                  fontSize: 13, fontFamily: Fonts.medium,
+                  textDecorationLine: sub.is_completed ? "line-through" : "none",
+                }} numberOfLines={2}>
+                  {sub.title}
+                </Text>
+              </View>
+            ))}
           </View>
-        </View>
-
-        {/* Assignee */}
-        {task.assigned_to && (
-          <AssigneeChip
-            name={assigneeName}
-            color={task.assigned_to === user?.id ? Colors.accent : TASK_PURPLE}
-          />
         )}
-
-        {/* Edit caret */}
-        <Ionicons name="chevron-forward" size={14} color={Colors.text.muted} />
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -640,133 +762,260 @@ export default function CalendarScreen() {
 
       {/* ── EDIT TASK MODAL ── */}
       <Modal visible={showEditTask} transparent animationType="slide" onRequestClose={() => { setShowEditTask(false); setEditingTask(null); }}>
-        <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
-          <View style={{
-            backgroundColor: Colors.bg.raised, borderTopLeftRadius: 28, borderTopRightRadius: 28,
-            borderTopWidth: 1, borderColor: Colors.border.subtle,
-            padding: 24, paddingBottom: Platform.OS === "ios" ? 44 : 28, gap: 16,
-          }}>
-            <View style={{ alignItems: "center", marginTop: -8, marginBottom: 4 }}>
-              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
-            </View>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, justifyContent: "flex-end" }}>
+          <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
+            <View style={{
+              backgroundColor: Colors.bg.raised, borderTopLeftRadius: 28, borderTopRightRadius: 28,
+              borderTopWidth: 1, borderColor: Colors.border.subtle,
+              maxHeight: "92%",
+            }}>
+              {/* Drag handle */}
+              <View style={{ alignItems: "center", paddingTop: 14, paddingBottom: 6 }}>
+                <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
+              </View>
 
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>Edit Task</Text>
-              <TouchableOpacity
-                onPress={() => Alert.alert("Delete Task", "Remove this task permanently?", [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Delete", style: "destructive", onPress: async () => {
-                    if (editingTask) { await deleteTask(editingTask.id); setShowEditTask(false); setEditingTask(null); }
-                  }},
-                ])}
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: Platform.OS === "ios" ? 44 : 28, gap: 16 }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: Colors.dangerSoft, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: Colors.dangerBorder }}>
-                  <Ionicons name="trash-outline" size={13} color={Colors.danger} />
-                  <Text style={{ color: Colors.danger, fontSize: 12, fontFamily: Fonts.semiBold }}>Delete</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Mark complete inline toggle */}
-            {editingTask && (
-              <TouchableOpacity
-                onPress={() => { toggleTask(editingTask.id, editingTask.is_completed); setEditingTask({ ...editingTask, is_completed: !editingTask.is_completed }); }}
-                style={{
-                  flexDirection: "row", alignItems: "center", gap: 10,
-                  backgroundColor: editingTask.is_completed ? Colors.accentSoft : Colors.bg.surface,
-                  borderRadius: 14, padding: 14,
-                  borderWidth: 1.5,
-                  borderColor: editingTask.is_completed ? Colors.accentBorder : Colors.border.subtle,
-                }}
-              >
-                <View style={{
-                  width: 24, height: 24, borderRadius: 12,
-                  borderWidth: 2, borderColor: editingTask.is_completed ? Colors.accent : Colors.text.muted,
-                  backgroundColor: editingTask.is_completed ? Colors.accentSoft : "transparent",
-                  alignItems: "center", justifyContent: "center",
-                }}>
-                  {editingTask.is_completed && <Ionicons name="checkmark" size={13} color={Colors.accent} />}
-                </View>
-                <Text style={{ color: editingTask.is_completed ? Colors.accent : Colors.text.secondary, fontSize: 14, fontFamily: Fonts.semiBold }}>
-                  {editingTask.is_completed ? "Completed" : "Mark as complete"}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            <TextInput
-              style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 15 }}
-              placeholder="Task title"
-              placeholderTextColor={Colors.text.muted}
-              value={editTitle}
-              onChangeText={setEditTitle}
-            />
-            <TextInput
-              style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 14, minHeight: 60 }}
-              placeholder="Notes (optional)"
-              placeholderTextColor={Colors.text.muted}
-              value={editNotes}
-              onChangeText={setEditNotes}
-              multiline
-            />
-
-            {/* Priority */}
-            <View>
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Priority</Text>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                {(["low", "medium", "high"] as Priority[]).map((p) => (
+                {/* Header */}
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>Edit Task</Text>
                   <TouchableOpacity
-                    key={p}
-                    onPress={() => setEditPriority(p)}
+                    onPress={() => Alert.alert("Delete Task", "Remove this task permanently?", [
+                      { text: "Cancel", style: "cancel" },
+                      { text: "Delete", style: "destructive", onPress: async () => {
+                        if (editingTask) { await deleteTask(editingTask.id); setShowEditTask(false); setEditingTask(null); }
+                      }},
+                    ])}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: Colors.dangerSoft, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: Colors.dangerBorder }}>
+                      <Ionicons name="trash-outline" size={13} color={Colors.danger} />
+                      <Text style={{ color: Colors.danger, fontSize: 12, fontFamily: Fonts.semiBold }}>Delete</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Mark complete inline toggle */}
+                {editingTask && (
+                  <TouchableOpacity
+                    onPress={() => { toggleTask(editingTask.id, editingTask.is_completed); setEditingTask({ ...editingTask, is_completed: !editingTask.is_completed }); }}
                     style={{
-                      flex: 1, paddingVertical: 9, borderRadius: 12, alignItems: "center",
-                      backgroundColor: editPriority === p ? PRIORITY_COLORS[p] + "22" : Colors.bg.surface,
-                      borderWidth: 1.5, borderColor: editPriority === p ? PRIORITY_COLORS[p] : Colors.border.subtle,
+                      flexDirection: "row", alignItems: "center", gap: 10,
+                      backgroundColor: editingTask.is_completed ? Colors.accentSoft : Colors.bg.surface,
+                      borderRadius: 14, padding: 14,
+                      borderWidth: 1.5,
+                      borderColor: editingTask.is_completed ? Colors.accentBorder : Colors.border.subtle,
                     }}
                   >
-                    <Text style={{ color: editPriority === p ? PRIORITY_COLORS[p] : Colors.text.muted, fontSize: 13, fontFamily: Fonts.bold, textTransform: "capitalize" }}>
-                      {PRIORITY_LABELS[p]}
+                    <View style={{
+                      width: 24, height: 24, borderRadius: 12,
+                      borderWidth: 2, borderColor: editingTask.is_completed ? Colors.accent : Colors.text.muted,
+                      backgroundColor: editingTask.is_completed ? Colors.accentSoft : "transparent",
+                      alignItems: "center", justifyContent: "center",
+                    }}>
+                      {editingTask.is_completed && <Ionicons name="checkmark" size={13} color={Colors.accent} />}
+                    </View>
+                    <Text style={{ color: editingTask.is_completed ? Colors.accent : Colors.text.secondary, fontSize: 14, fontFamily: Fonts.semiBold }}>
+                      {editingTask.is_completed ? "Completed" : "Mark as complete"}
                     </Text>
                   </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+                )}
 
-            {/* Assignee */}
-            {members.length > 0 && (
-              <View>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Assign to</Text>
-                <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-                  <TouchableOpacity
-                    onPress={() => setEditAssignee(null)}
-                    style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: !editAssignee ? Colors.bg.overlay : Colors.bg.surface, borderWidth: 1.5, borderColor: !editAssignee ? Colors.border.strong : Colors.border.subtle }}
-                  >
-                    <Text style={{ color: !editAssignee ? Colors.text.primary : Colors.text.muted, fontSize: 13, fontFamily: Fonts.semiBold }}>Unassigned</Text>
-                  </TouchableOpacity>
-                  {members.map((m) => {
-                    const isMe = m.id === user?.id;
-                    const color = isMe ? Colors.accent : TASK_PURPLE;
-                    const selected = editAssignee === m.id;
-                    return (
+                {/* Title */}
+                <TextInput
+                  style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 15 }}
+                  placeholder="Task title"
+                  placeholderTextColor={Colors.text.muted}
+                  value={editTitle}
+                  onChangeText={setEditTitle}
+                />
+
+                {/* Notes */}
+                <TextInput
+                  style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 14, minHeight: 60 }}
+                  placeholder="Notes (optional)"
+                  placeholderTextColor={Colors.text.muted}
+                  value={editNotes}
+                  onChangeText={setEditNotes}
+                  multiline
+                />
+
+                {/* Priority */}
+                <View>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Priority</Text>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    {(["low", "medium", "high"] as Priority[]).map((p) => (
                       <TouchableOpacity
-                        key={m.id}
-                        onPress={() => setEditAssignee(m.id)}
-                        style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selected ? color + "22" : Colors.bg.surface, borderWidth: 1.5, borderColor: selected ? color : Colors.border.subtle }}
+                        key={p}
+                        onPress={() => setEditPriority(p)}
+                        style={{
+                          flex: 1, paddingVertical: 9, borderRadius: 12, alignItems: "center",
+                          backgroundColor: editPriority === p ? PRIORITY_COLORS[p] + "22" : Colors.bg.surface,
+                          borderWidth: 1.5, borderColor: editPriority === p ? PRIORITY_COLORS[p] : Colors.border.subtle,
+                        }}
                       >
-                        <AssigneeChip name={m.full_name} color={color} size="sm" />
-                        <Text style={{ color: selected ? color : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>{isMe ? "Me" : (m.full_name ?? m.email)}</Text>
+                        <Text style={{ color: editPriority === p ? PRIORITY_COLORS[p] : Colors.text.muted, fontSize: 13, fontFamily: Fonts.bold, textTransform: "capitalize" }}>
+                          {PRIORITY_LABELS[p]}
+                        </Text>
                       </TouchableOpacity>
-                    );
-                  })}
+                    ))}
+                  </View>
                 </View>
-              </View>
-            )}
 
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <Button label="Cancel" variant="ghost" onPress={() => { setShowEditTask(false); setEditingTask(null); }} style={{ flex: 1 }} />
-              <Button label="Save Changes" variant="primary" loading={savingEdit} onPress={handleUpdateTask} style={{ flex: 1 }} />
+                {/* Assignee */}
+                {members.length > 0 && (
+                  <View>
+                    <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Assign to</Text>
+                    <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+                      <TouchableOpacity
+                        onPress={() => setEditAssignee(null)}
+                        style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: !editAssignee ? Colors.bg.overlay : Colors.bg.surface, borderWidth: 1.5, borderColor: !editAssignee ? Colors.border.strong : Colors.border.subtle }}
+                      >
+                        <Text style={{ color: !editAssignee ? Colors.text.primary : Colors.text.muted, fontSize: 13, fontFamily: Fonts.semiBold }}>Unassigned</Text>
+                      </TouchableOpacity>
+                      {members.map((m) => {
+                        const isMe = m.id === user?.id;
+                        const color = isMe ? Colors.accent : TASK_PURPLE;
+                        const selected = editAssignee === m.id;
+                        return (
+                          <TouchableOpacity
+                            key={m.id}
+                            onPress={() => setEditAssignee(m.id)}
+                            style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selected ? color + "22" : Colors.bg.surface, borderWidth: 1.5, borderColor: selected ? color : Colors.border.subtle }}
+                          >
+                            <AssigneeChip name={m.full_name} color={color} size="sm" />
+                            <Text style={{ color: selected ? color : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>{isMe ? "Me" : (m.full_name ?? m.email)}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
+
+                {/* ── Subtasks section ──────────────────────────────── */}
+                {editingTask && (
+                  <View>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                      <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                        Subtasks
+                        {tasks.filter((t) => t.parent_task_id === editingTask.id).length > 0
+                          ? ` · ${tasks.filter((t) => t.parent_task_id === editingTask.id && t.is_completed).length}/${tasks.filter((t) => t.parent_task_id === editingTask.id).length}`
+                          : ""}
+                      </Text>
+                    </View>
+
+                    {/* Existing subtasks */}
+                    {tasks
+                      .filter((t) => t.parent_task_id === editingTask.id)
+                      .map((sub) => (
+                        <View
+                          key={sub.id}
+                          style={{
+                            flexDirection: "row", alignItems: "center", gap: 10,
+                            backgroundColor: Colors.bg.surface, borderRadius: 12,
+                            paddingHorizontal: 12, paddingVertical: 10,
+                            borderWidth: 1, borderColor: Colors.border.subtle,
+                            marginBottom: 6,
+                          }}
+                        >
+                          <TouchableOpacity
+                            onPress={() => toggleTask(sub.id, sub.is_completed)}
+                            style={{
+                              width: 22, height: 22, borderRadius: 11,
+                              borderWidth: 1.5,
+                              borderColor: sub.is_completed ? Colors.accent : Colors.border.strong,
+                              backgroundColor: sub.is_completed ? Colors.accentSoft : "transparent",
+                              alignItems: "center", justifyContent: "center",
+                            }}
+                            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                          >
+                            {sub.is_completed && <Ionicons name="checkmark" size={11} color={Colors.accent} />}
+                          </TouchableOpacity>
+                          <Text style={{
+                            flex: 1,
+                            color: sub.is_completed ? Colors.text.muted : Colors.text.secondary,
+                            fontSize: 13, fontFamily: Fonts.medium,
+                            textDecorationLine: sub.is_completed ? "line-through" : "none",
+                          }} numberOfLines={2}>
+                            {sub.title}
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => Alert.alert("Remove subtask?", sub.title, [
+                              { text: "Cancel", style: "cancel" },
+                              { text: "Remove", style: "destructive", onPress: () => deleteTask(sub.id) },
+                            ])}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          >
+                            <Ionicons name="close-circle" size={18} color={Colors.text.muted} />
+                          </TouchableOpacity>
+                        </View>
+                      ))
+                    }
+
+                    {/* Add subtask input */}
+                    {showSubtaskInput ? (
+                      <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+                        <TextInput
+                          style={{
+                            flex: 1, backgroundColor: Colors.bg.surface, borderRadius: 12,
+                            paddingHorizontal: 12, paddingVertical: 10,
+                            color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.accent,
+                            fontSize: 14,
+                          }}
+                          placeholder="Subtask title…"
+                          placeholderTextColor={Colors.text.muted}
+                          value={newSubtaskTitle}
+                          onChangeText={setNewSubtaskTitle}
+                          autoFocus
+                          returnKeyType="done"
+                          onSubmitEditing={handleAddSubtask}
+                        />
+                        <TouchableOpacity
+                          onPress={handleAddSubtask}
+                          disabled={savingSubtask || !newSubtaskTitle.trim()}
+                          style={{
+                            backgroundColor: Colors.accent, borderRadius: 12,
+                            paddingHorizontal: 14, paddingVertical: 11,
+                            opacity: !newSubtaskTitle.trim() ? 0.5 : 1,
+                          }}
+                        >
+                          {savingSubtask
+                            ? <ActivityIndicator size="small" color="#000" />
+                            : <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 13 }}>Add</Text>
+                          }
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => { setShowSubtaskInput(false); setNewSubtaskTitle(""); }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                          <Ionicons name="close" size={20} color={Colors.text.muted} />
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() => setShowSubtaskInput(true)}
+                        style={{
+                          flexDirection: "row", alignItems: "center", gap: 8,
+                          paddingVertical: 10, paddingHorizontal: 12,
+                          borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border.subtle,
+                          borderStyle: "dashed",
+                        }}
+                      >
+                        <Ionicons name="add" size={18} color={Colors.text.muted} />
+                        <Text style={{ color: Colors.text.muted, fontSize: 13, fontFamily: Fonts.medium }}>Add subtask</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
+
+                {/* Actions */}
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <Button label="Cancel" variant="ghost" onPress={() => { setShowEditTask(false); setEditingTask(null); }} style={{ flex: 1 }} />
+                  <Button label="Save Changes" variant="primary" loading={savingEdit} onPress={handleUpdateTask} style={{ flex: 1 }} />
+                </View>
+              </ScrollView>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* ── ADD TASK MODAL ── */}

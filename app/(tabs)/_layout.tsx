@@ -64,6 +64,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="goals"
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon name={focused ? "trophy" : "trophy-outline"} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="calendar"
         options={{
           tabBarIcon: ({ focused }) => <TabIcon name={focused ? "calendar" : "calendar-outline"} focused={focused} />,
@@ -73,6 +79,12 @@ export default function TabsLayout() {
         name="settings"
         options={{
           tabBarIcon: ({ focused }) => <TabIcon name={focused ? "person-circle" : "person-circle-outline"} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="upgrade"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

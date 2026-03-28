@@ -10,7 +10,7 @@ import {
   Modal,
   Platform,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useBudgetStore } from "@/store/budgetStore";
@@ -26,11 +26,15 @@ import AddCategoryModal from "@/components/budget/AddCategoryModal";
 import EditCategoryModal from "@/components/budget/EditCategoryModal";
 import TransactionItem from "@/components/dashboard/TransactionItem";
 import EmptyState from "@/components/ui/EmptyState";
+import AllocationChart from "@/components/budget/AllocationChart";
+import AiAnalysisSheet from "@/components/premium/AiAnalysisSheet";
+import { buildBudgetCsv, buildTransactionCsv, exportCsvFile } from "@/lib/csvUtils";
+import type { BudgetSuggestion } from "@/lib/openai";
 
-type BudgetTab = "overview" | "transactions";
+type BudgetTab = "overview" | "charts" | "transactions";
 
 export default function BudgetScreen() {
-  const { categories, currentMonth, setCurrentMonth, fetchMonthlyBudget, createCategory, monthlyBudget, setTotalLimit } = useBudgetStore();
+  const { categories, currentMonth, setCurrentMonth, fetchMonthlyBudget, createCategory, updateCategory, deleteCategory, monthlyBudget, setTotalLimit } = useBudgetStore();
   const { transactions, fetchTransactions, addManualTransaction } = useTransactionStore();
   const summary = useBudgetSummary();
 
@@ -39,8 +43,57 @@ export default function BudgetScreen() {
   const [showAddTx, setShowAddTx] = useState(false);
   const [showAddCat, setShowAddCat] = useState(false);
   const [showBudgetEdit, setShowBudgetEdit] = useState(false);
+  const [showAiSheet, setShowAiSheet] = useState(false);
   const [budgetInput, setBudgetInput] = useState("");
   const [editingCategory, setEditingCategory] = useState<import("@/types").BudgetCategory | null>(null);
+
+  const CHART_COLORS = ["#00D632","#3b82f6","#8b5cf6","#f59e0b","#ef4444","#06b6d4","#ec4899","#14b8a6","#f97316","#a78bfa"];
+
+  const chartData = useMemo(() => {
+    const spending = categories.filter((c) => !c.is_income);
+    return spending.map((c, i) => ({
+      label: c.name,
+      value: c.monthly_limit,
+      color: CHART_COLORS[i % CHART_COLORS.length],
+    }));
+  }, [categories]);
+
+  const handleExportBudget = async () => {
+    try {
+      const csv = buildBudgetCsv(categories);
+      await exportCsvFile(`flow-budget-${currentMonth}.csv`, csv);
+    } catch (err: unknown) {
+      Alert.alert("Export", (err as Error).message);
+    }
+  };
+
+  const handleExportTransactions = async () => {
+    try {
+      const txWithCat = transactions.map((t) => ({
+        ...t,
+        category_name: categories.find((c) => c.id === t.category_id)?.name ?? "Uncategorized",
+      }));
+      const csv = buildTransactionCsv(txWithCat);
+      await exportCsvFile(`flow-transactions-${currentMonth}.csv`, csv);
+    } catch (err: unknown) {
+      Alert.alert("Export", (err as Error).message);
+    }
+  };
+
+  const handleApplySuggestion = async (categoryName: string, newLimit: number) => {
+    const cat = categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase());
+    if (!cat) { Alert.alert("Category not found", `Couldn't find "${categoryName}" in your budget.`); return; }
+    await updateCategory(cat.id, { monthly_limit: newLimit });
+    await fetchMonthlyBudget(currentMonth);
+  };
+
+  const handleApplyAll = async (suggestions: BudgetSuggestion[]) => {
+    for (const s of suggestions) {
+      const cat = categories.find((c) => c.name.toLowerCase() === s.category.toLowerCase());
+      if (cat) await updateCategory(cat.id, { monthly_limit: s.suggestedLimit });
+    }
+    await fetchMonthlyBudget(currentMonth);
+  };
 
   const load = async () => {
     await Promise.all([fetchMonthlyBudget(currentMonth), fetchTransactions(currentMonth)]);
@@ -91,6 +144,28 @@ export default function BudgetScreen() {
               <Ionicons name="chevron-forward" size={14} color={currentMonth >= currentYearMonth() ? Colors.border.subtle : Colors.text.muted} />
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Right actions */}
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert("Export", "What would you like to export?", [
+                { text: "Budget Categories", onPress: handleExportBudget },
+                { text: "Transactions", onPress: handleExportTransactions },
+                { text: "Cancel", style: "cancel" },
+              ]);
+            }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.bg.surface, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: Colors.border.subtle }}
+          >
+            <Ionicons name="download-outline" size={17} color={Colors.text.secondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setShowAiSheet(true)}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.accentSoft, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: Colors.accentBorder }}
+          >
+            <Ionicons name="sparkles" size={17} color={Colors.accent} />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -239,22 +314,26 @@ export default function BudgetScreen() {
 
       {/* Tab pills */}
       <View style={{ flexDirection: "row", paddingHorizontal: 20, marginBottom: 14, gap: 8 }}>
-        {(["overview", "transactions"] as BudgetTab[]).map((t) => (
+        {([
+          { id: "overview", label: "Overview" },
+          { id: "charts", label: "Charts" },
+          { id: "transactions", label: "History" },
+        ] as { id: BudgetTab; label: string }[]).map((t) => (
           <TouchableOpacity
-            key={t}
-            onPress={() => setTab(t)}
+            key={t.id}
+            onPress={() => setTab(t.id)}
             style={{
-              paddingHorizontal: 20, paddingVertical: 9, borderRadius: 9999,
-              backgroundColor: tab === t ? Colors.accent : Colors.bg.surface,
+              paddingHorizontal: 16, paddingVertical: 9, borderRadius: 9999,
+              backgroundColor: tab === t.id ? Colors.accent : Colors.bg.surface,
               borderWidth: 1,
-              borderColor: tab === t ? "transparent" : Colors.border.subtle,
+              borderColor: tab === t.id ? "transparent" : Colors.border.subtle,
             }}
           >
             <Text style={{
-              color: tab === t ? "#000" : Colors.text.secondary,
-              fontWeight: "700", fontSize: 13, textTransform: "capitalize",
+              color: tab === t.id ? "#000" : Colors.text.secondary,
+              fontWeight: "700", fontSize: 13,
             }}>
-              {t}
+              {t.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -351,6 +430,72 @@ export default function BudgetScreen() {
               <Text style={{ color: Colors.accent, fontSize: 14, fontWeight: "600" }}>Add Category</Text>
             </TouchableOpacity>
           </View>
+        ) : tab === "charts" ? (
+          <View style={{ gap: 24 }}>
+            {/* Budget allocation donut */}
+            <View style={{
+              backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20,
+              borderWidth: 1, borderColor: Colors.border.subtle, alignItems: "center",
+            }}>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 16, alignSelf: "flex-start" }}>
+                Budget Allocation
+              </Text>
+              {chartData.length > 0 ? (
+                <AllocationChart
+                  data={chartData}
+                  centerLabel="budgeted"
+                  centerValue={summary.totalLimit}
+                  size={200}
+                />
+              ) : (
+                <EmptyState title="No categories yet" subtitle="Add budget categories to see your allocation." />
+              )}
+            </View>
+
+            {/* Spending breakdown bars */}
+            {chartData.length > 0 && (
+              <View style={{ backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: Colors.border.subtle, gap: 14 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  Spending by Category
+                </Text>
+                {categories.filter((c) => !c.is_income).map((c, i) => {
+                  const spent = monthlyBudget.find((m) => m.category_id === c.id)?.spent ?? 0;
+                  const pct = c.monthly_limit > 0 ? Math.min((spent / c.monthly_limit) * 100, 100) : 0;
+                  const barColor = CHART_COLORS[i % CHART_COLORS.length];
+                  return (
+                    <View key={c.id} style={{ gap: 6 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        <Text style={{ color: Colors.text.primary, fontSize: 13, fontWeight: "600" }}>{c.name}</Text>
+                        <Text style={{ color: Colors.text.muted, fontSize: 12 }}>
+                          {formatCurrency(spent)} / {formatCurrency(c.monthly_limit)}
+                        </Text>
+                      </View>
+                      <ProgressBar spent={spent} limit={c.monthly_limit} height={6} color={barColor} />
+                      <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{pct.toFixed(0)}% used</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+
+            {/* Income vs expense summary */}
+            {summary.totalIncome > 0 && (
+              <View style={{ backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: Colors.border.subtle, gap: 12 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  Income vs Expenses
+                </Text>
+                <AllocationChart
+                  data={[
+                    { label: "Expenses", value: summary.totalLimit, color: Colors.danger },
+                    { label: "Income", value: summary.totalIncome, color: Colors.accent },
+                  ]}
+                  centerLabel="income"
+                  centerValue={summary.totalIncome}
+                  size={160}
+                />
+              </View>
+            )}
+          </View>
         ) : (
           <View>
             {transactions.length === 0 ? (
@@ -425,6 +570,40 @@ export default function BudgetScreen() {
           setEditingCategory(null);
         }}
       />
+
+      {/* AI Analysis bottom sheet */}
+      <Modal
+        visible={showAiSheet}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAiSheet(false)}
+      >
+        <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <View style={{
+            backgroundColor: Colors.bg.raised,
+            borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            borderTopWidth: 1, borderColor: Colors.border.subtle,
+            padding: 24, paddingBottom: Platform.OS === "ios" ? 44 : 28,
+            maxHeight: "90%",
+          }}>
+            <View style={{ alignItems: "center", marginBottom: 12 }}>
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <View />
+              <TouchableOpacity onPress={() => setShowAiSheet(false)}>
+                <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.bg.overlay, alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="close" size={14} color={Colors.text.muted} />
+                </View>
+              </TouchableOpacity>
+            </View>
+            <AiAnalysisSheet
+              onApplySuggestion={handleApplySuggestion}
+              onApplyAll={handleApplyAll}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

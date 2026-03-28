@@ -6,14 +6,15 @@ interface ProgressBarProps {
   limit: number;
   showLabel?: boolean;
   height?: number;
+  color?: string;
 }
 
-export default function ProgressBar({ spent, limit, showLabel = false, height = 5 }: ProgressBarProps) {
+export default function ProgressBar({ spent, limit, showLabel = false, height = 5, color }: ProgressBarProps) {
   const pct = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
   const overBudget = limit > 0 && spent > limit;
   const nearBudget = limit > 0 && spent / limit >= 0.8 && !overBudget;
 
-  const fillColor = overBudget ? Colors.danger : nearBudget ? Colors.warning : Colors.accent;
+  const fillColor = color ?? (overBudget ? Colors.danger : nearBudget ? Colors.warning : Colors.accent);
 
   return (
     <View>

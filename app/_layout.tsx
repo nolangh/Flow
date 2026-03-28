@@ -14,6 +14,13 @@ import {
   Outfit_800ExtraBold,
   Outfit_900Black,
 } from "@expo-google-fonts/outfit";
+import {
+  SpaceGrotesk_300Light,
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from "@expo-google-fonts/space-grotesk";
 import { useAuthStore } from "@/store/authStore";
 import { useThemeStore } from "@/store/themeStore";
 import { THEMES } from "@/constants/themes";
@@ -30,6 +37,14 @@ export default function RootLayout() {
   const { theme, loadTheme } = useThemeStore();
   const C = THEMES[theme] ?? THEMES.midnight;
 
+  // Update Text.defaultProps whenever theme changes so fallback font matches
+  useEffect(() => {
+    const fontFamily = theme === "fresh" ? "SpaceGrotesk-Regular" : "Outfit-Regular";
+    (Text as any).defaultProps = {
+      style: [{ fontFamily }],
+    };
+  }, [theme]);
+
   useEffect(() => {
     const safetyTimer = setTimeout(hideSplash, 3500);
 
@@ -42,15 +57,12 @@ export default function RootLayout() {
         "Outfit-Bold":      Outfit_700Bold,
         "Outfit-ExtraBold": Outfit_800ExtraBold,
         "Outfit-Black":     Outfit_900Black,
+        "SpaceGrotesk-Light":    SpaceGrotesk_300Light,
+        "SpaceGrotesk-Regular":  SpaceGrotesk_400Regular,
+        "SpaceGrotesk-Medium":   SpaceGrotesk_500Medium,
+        "SpaceGrotesk-SemiBold": SpaceGrotesk_600SemiBold,
+        "SpaceGrotesk-Bold":     SpaceGrotesk_700Bold,
       });
-
-      (Text as any).defaultProps = {
-        ...(Text as any).defaultProps,
-        style: [
-          { fontFamily: "Outfit-Regular" },
-          (Text as any).defaultProps?.style,
-        ],
-      };
     };
 
     const timeoutPromise = new Promise<void>((resolve) =>

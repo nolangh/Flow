@@ -2,6 +2,8 @@
  * Flow Design System
  *
  * useColors() — reactive hook, call inside every component.
+ *               Also syncs the global Fonts object so all components
+ *               automatically get the right typeface for the active theme.
  * Colors      — static reference to Midnight (for non-React contexts only).
  */
 
@@ -12,7 +14,9 @@ import type { ThemeColors } from "@/constants/themes";
 export type { ThemeColors };
 export { THEMES, MIDNIGHT };
 
-export const Fonts = {
+// ─── Font maps ──────────────────────────────────────────────────────────────
+
+const OUTFIT_FONTS = {
   light:     "Outfit-Light",
   regular:   "Outfit-Regular",
   medium:    "Outfit-Medium",
@@ -20,12 +24,37 @@ export const Fonts = {
   bold:      "Outfit-Bold",
   extraBold: "Outfit-ExtraBold",
   black:     "Outfit-Black",
-} as const;
+};
+
+const SPACE_GROTESK_FONTS = {
+  light:     "SpaceGrotesk-Light",
+  regular:   "SpaceGrotesk-Regular",
+  medium:    "SpaceGrotesk-Medium",
+  semiBold:  "SpaceGrotesk-SemiBold",
+  bold:      "SpaceGrotesk-Bold",
+  extraBold: "SpaceGrotesk-Bold",
+  black:     "SpaceGrotesk-Bold",
+};
+
+/**
+ * Global mutable Fonts object.
+ * useColors() updates this every render so components using Fonts.xxx
+ * automatically pick up the correct typeface without any extra changes.
+ */
+export const Fonts: typeof OUTFIT_FONTS = { ...OUTFIT_FONTS };
+
+// ─── Hooks & exports ────────────────────────────────────────────────────────
 
 /** Reactive hook — call at the top of every component. */
 export function useColors(): ThemeColors {
   const { theme } = useThemeStore();
-  return THEMES[theme] ?? MIDNIGHT;
+  const colors = THEMES[theme] ?? MIDNIGHT;
+
+  // Sync the global Fonts object to the active theme
+  const themeFonts = theme === "fresh" ? SPACE_GROTESK_FONTS : OUTFIT_FONTS;
+  Object.assign(Fonts, themeFonts);
+
+  return colors;
 }
 
 /** Static fallback for non-React contexts (always Midnight). */

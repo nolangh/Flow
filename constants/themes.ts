@@ -2,7 +2,7 @@
  * Flow Theme Definitions
  *
  * Midnight — sleek dark fintech aesthetic (original)
- * Fresh    — editorial light mode: cream backgrounds, charcoal actions, mint highlights
+ * Fresh    — editorial light mode: cream base, vibrant coral accent, Space Grotesk type
  */
 
 export interface ThemeColors {
@@ -92,28 +92,29 @@ export const MIDNIGHT: ThemeColors = {
 };
 
 /**
- * Fresh — editorial light mode
- * Inspired by bold print + bold design: cream base, charcoal primary actions,
- * mint green as a decorative highlight (not the primary action color).
+ * Fresh — bold editorial light mode
+ * Typeface: Space Grotesk (loaded in _layout.tsx, synced via useColors())
+ * Accent:   vibrant coral #FF5757 — energetic, warm, clearly readable on cream/white
+ * Highlight: mint #5DDE82 for income / goal / success signals
  */
 export const FRESH: ThemeColors = {
   bg: {
-    app:     "#F5F1E8",  // warm cream
-    surface: "#FFFFFF",
-    raised:  "#FAFAF7",
-    overlay: "#EDEAE0",
+    app:     "#F5F1E8",   // warm cream
+    surface: "#FFFFFF",   // pure white cards
+    raised:  "#FBF9F5",   // slightly warm white for raised sections
+    overlay: "#EDE9DF",   // cream overlay / chips
     card:    "#FFFFFF",
   },
   border: {
-    subtle: "#E0DDD5",
-    dim:    "#EAE7DF",
-    strong: "#BBBAB4",
+    subtle: "#E4E0D6",
+    dim:    "#EDE9DF",
+    strong: "#C0BDB7",
   },
-  // Primary accent = charcoal — for buttons, active states, badges
-  accent:       "#111111",
-  accentDim:    "#2C2C2C",
-  accentSoft:   "rgba(17, 17, 17, 0.07)",
-  accentBorder: "rgba(17, 17, 17, 0.16)",
+  // Coral — energetic, trendy, pairs great with cream
+  accent:       "#FF5757",
+  accentDim:    "#E03E3E",
+  accentSoft:   "rgba(255, 87, 87, 0.10)",
+  accentBorder: "rgba(255, 87, 87, 0.24)",
   danger:       "#E53935",
   dangerDim:    "#C62828",
   dangerSoft:   "rgba(229, 57, 53, 0.10)",
@@ -121,21 +122,21 @@ export const FRESH: ThemeColors = {
   warning:      "#E67700",
   warningSoft:  "rgba(230, 119, 0, 0.10)",
   text: {
-    primary:   "#111111",
+    primary:   "#1A1A1A",
     secondary: "#444444",
     muted:     "#888888",
-    inverse:   "#FFFFFF",  // white text on dark/charcoal buttons
+    inverse:   "#FFFFFF",   // white text on coral buttons
   },
-  // Mint green — decorative highlight (income, goals, success indicators)
+  // Mint — secondary highlight for income, goals, success
   neonGreen:       "#5DDE82",
   neonGreenDim:    "#3BC463",
-  neonGreenGlow:   "rgba(93, 222, 130, 0.22)",
-  neonGreenBorder: "rgba(93, 222, 130, 0.42)",
-  dangerPink:       "#E53935",
-  dangerPinkDim:    "#C62828",
-  dangerPinkGlow:   "rgba(229, 57, 53, 0.10)",
-  dangerPinkBorder: "rgba(229, 57, 53, 0.25)",
-  income:  "#2ECC71",   // mint green for positive money flows
+  neonGreenGlow:   "rgba(93, 222, 130, 0.20)",
+  neonGreenBorder: "rgba(93, 222, 130, 0.40)",
+  dangerPink:       "#FF2D78",
+  dangerPinkDim:    "#CC2461",
+  dangerPinkGlow:   "rgba(255, 45, 120, 0.12)",
+  dangerPinkBorder: "rgba(255, 45, 120, 0.28)",
+  income:  "#2ECC71",    // mint for positive money flows
   expense: "#E53935",
   neutral: "#888888",
   statusBar: "dark-content",
@@ -157,6 +158,6 @@ export const THEME_META: Record<ThemeKey, { label: string; emoji: string; descri
   fresh: {
     label:       "Fresh",
     emoji:       "🌿",
-    description: "Editorial light mode, bold & clean",
+    description: "Editorial light mode, bold & vibrant",
   },
 };

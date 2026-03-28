@@ -68,7 +68,7 @@ All premium features are unlocked in dev mode (no Adaptly key configured).
 
 | Feature | Status | Key Required |
 |---------|--------|-------------|
-| AI Budget Analysis | Built (full UI) | `EXPO_PUBLIC_OPENAI_KEY` |
+| AI Budget Analysis | Built (full UI) | `EXPO_PUBLIC_MISTRAL_KEY` |
 | Budget Allocation Charts | Built ✓ | — |
 | Goals | Built ✓ | — |
 | CSV Import/Export | Built ✓ | — |

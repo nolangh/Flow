@@ -1,17 +1,17 @@
 /**
- * OpenAI client for AI budget analysis.
+ * Mistral AI client for budget analysis.
  *
  * TO ACTIVATE:
- *  1. Get your OpenAI API key from https://platform.openai.com/api-keys
- *  2. Add it to Replit Secrets as: EXPO_PUBLIC_OPENAI_API_KEY
+ *  1. Get your Mistral API key from https://console.mistral.ai/api-keys
+ *  2. Add it to Replit Secrets as: EXPO_PUBLIC_MISTRAL_KEY
  *  3. The functions below will automatically become active.
  */
 
-const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? "";
-export const openaiConfigured = OPENAI_KEY.length > 10;
+const MISTRAL_KEY = process.env.EXPO_PUBLIC_MISTRAL_KEY ?? "";
+export const openaiConfigured = MISTRAL_KEY.length > 10;
 
-const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
-const MODEL = "gpt-4o-mini";
+const MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions";
+const MODEL = "open-mistral-nemo";
 
 export interface BudgetSuggestion {
   category: string;
@@ -38,7 +38,7 @@ interface CategoryData {
 }
 
 /**
- * Run AI budget analysis.
+ * Run AI budget analysis using Mistral Nemo.
  * @param categories     Current budget categories with spend data.
  * @param priorityGoal   Optional user priority, e.g. "increase food budget" or "save more".
  */
@@ -48,7 +48,7 @@ export async function analyzeBudget(
 ): Promise<AnalysisResult> {
   if (!openaiConfigured) {
     throw new Error(
-      "OpenAI API key not configured. Add EXPO_PUBLIC_OPENAI_API_KEY to your secrets."
+      "Mistral API key not configured. Add EXPO_PUBLIC_MISTRAL_KEY to your secrets."
     );
   }
 
@@ -101,11 +101,11 @@ ${categoryJson}${priorityLine}
 
 Provide 3-5 specific budget suggestions that will help the user improve their finances.`;
 
-  const response = await fetch(OPENAI_URL, {
+  const response = await fetch(MISTRAL_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_KEY}`,
+      Authorization: `Bearer ${MISTRAL_KEY}`,
     },
     body: JSON.stringify({
       model: MODEL,
@@ -120,12 +120,12 @@ Provide 3-5 specific budget suggestions that will help the user improve their fi
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(`OpenAI error ${response.status}: ${err}`);
+    throw new Error(`Mistral error ${response.status}: ${err}`);
   }
 
   const json = await response.json();
   const content = json.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Empty response from OpenAI");
+  if (!content) throw new Error("Empty response from Mistral");
 
   return JSON.parse(content) as AnalysisResult;
 }

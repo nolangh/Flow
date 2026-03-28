@@ -1,37 +1,138 @@
 import {
   View, Text, ScrollView, TouchableOpacity,
-  Alert, Platform, StatusBar,
+  Alert, StatusBar,
 } from "react-native";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors, Fonts } from "@/constants/theme";
-import { UPGRADE_BENEFITS } from "@/constants/features";
+import { UPGRADE_BENEFITS, TIER_DEFINITIONS, type TierDefinition } from "@/constants/features";
 import { adaptlyConfigured, showPaywall, restorePurchases } from "@/lib/adaptly";
 import Button from "@/components/ui/Button";
 
-const PLANS = [
-  {
-    id: "monthly",
-    label: "Monthly",
-    price: "$4.99",
-    period: "/mo",
-    badge: null,
-  },
-  {
-    id: "annual",
-    label: "Annual",
-    price: "$39.99",
-    period: "/yr",
-    badge: "Save 33%",
-  },
-];
+type Billing = "monthly" | "annual";
+
+function TierCard({
+  tier,
+  billing,
+  selected,
+  onSelect,
+}: {
+  tier: TierDefinition;
+  billing: Billing;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const price = billing === "annual" ? tier.annualMonthly : tier.monthlyPrice + "/mo";
+  const billed = billing === "annual"
+    ? `${tier.annualPrice} billed annually`
+    : "billed monthly";
+
+  return (
+    <TouchableOpacity
+      onPress={onSelect}
+      activeOpacity={0.75}
+      style={{
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: selected ? Colors.accent : Colors.border.subtle,
+        backgroundColor: selected ? Colors.accentSoft : Colors.bg.surface,
+        padding: 18,
+        marginBottom: 12,
+        overflow: "hidden",
+      }}
+    >
+      {tier.mostPopular && (
+        <View style={{
+          position: "absolute", top: 0, right: 0,
+          backgroundColor: Colors.accent,
+          paddingHorizontal: 12, paddingVertical: 5,
+          borderBottomLeftRadius: 14,
+        }}>
+          <Text style={{ color: "#000", fontSize: 10, fontFamily: Fonts.extraBold }}>
+            MOST POPULAR
+          </Text>
+        </View>
+      )}
+
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <View style={{
+          width: 42, height: 42, borderRadius: 21,
+          backgroundColor: selected ? Colors.accent : Colors.bg.overlay,
+          alignItems: "center", justifyContent: "center",
+        }}>
+          <Ionicons name={tier.icon as any} size={20} color={selected ? "#000" : Colors.text.secondary} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 17, fontFamily: Fonts.extraBold }}>
+            {tier.name}
+          </Text>
+          <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 1 }}>
+            {tier.tagline}
+          </Text>
+        </View>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={{ color: selected ? Colors.accent : Colors.text.primary, fontSize: 22, fontFamily: Fonts.extraBold }}>
+            {price}
+          </Text>
+          {billing === "annual" && (
+            <View style={{
+              backgroundColor: selected ? Colors.accent : Colors.bg.overlay,
+              borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2, marginTop: 2,
+            }}>
+              <Text style={{ color: selected ? "#000" : Colors.text.muted, fontSize: 10, fontFamily: Fonts.bold }}>
+                {tier.savingsBadge}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+
+      <View style={{
+        flexDirection: "row", gap: 16, paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: selected ? Colors.accentBorder : Colors.border.subtle,
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Ionicons name="home-outline" size={13} color={selected ? Colors.accent : Colors.text.muted} />
+          <Text style={{ color: selected ? Colors.accent : Colors.text.muted, fontSize: 12, fontFamily: Fonts.medium }}>
+            {tier.maxHouseholds === null ? "Unlimited" : tier.maxHouseholds === 1 ? "1 household" : `${tier.maxHouseholds} households`}
+          </Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Ionicons name="people-outline" size={13} color={selected ? Colors.accent : Colors.text.muted} />
+          <Text style={{ color: selected ? Colors.accent : Colors.text.muted, fontSize: 12, fontFamily: Fonts.medium }}>
+            {tier.maxMembers} members each
+          </Text>
+        </View>
+      </View>
+
+      <Text style={{ color: Colors.text.muted, fontSize: 11, marginTop: 8 }}>
+        {billed}
+      </Text>
+
+      {selected && (
+        <View style={{
+          position: "absolute", bottom: 18, right: 18,
+          width: 22, height: 22, borderRadius: 11,
+          backgroundColor: Colors.accent,
+          alignItems: "center", justifyContent: "center",
+        }}>
+          <Ionicons name="checkmark" size={13} color="#000" />
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+}
 
 export default function UpgradeScreen() {
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("annual");
+  const [selectedTier, setSelectedTier] = useState<"personal" | "family" | "power">("family");
+  const [billing, setBilling] = useState<Billing>("annual");
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
+
+  const activeTier = TIER_DEFINITIONS.find((t) => t.id === selectedTier)!;
 
   const handleUpgrade = async () => {
     if (!adaptlyConfigured) {
@@ -43,9 +144,12 @@ export default function UpgradeScreen() {
     }
     setLoading(true);
     try {
-      const purchased = await showPaywall("upgrade_screen");
+      const productId = billing === "annual"
+        ? activeTier.annualProductId
+        : activeTier.monthlyProductId;
+      const purchased = await showPaywall("upgrade_screen", productId);
       if (purchased) {
-        Alert.alert("Welcome to Flow Premium! 🎉", "All features are now unlocked.");
+        Alert.alert("Welcome to Flow Premium!", `Your ${activeTier.name} plan is now active.`);
       }
     } catch (err: unknown) {
       Alert.alert("Purchase failed", (err as Error).message);
@@ -77,7 +181,7 @@ export default function UpgradeScreen() {
         {/* Hero */}
         <LinearGradient
           colors={["#001a0a", "#000000"]}
-          style={{ paddingTop: 20, paddingBottom: 40, paddingHorizontal: 24, alignItems: "center" }}
+          style={{ paddingTop: 20, paddingBottom: 32, paddingHorizontal: 24, alignItems: "center" }}
         >
           <View style={{
             width: 72, height: 72, borderRadius: 36,
@@ -92,52 +196,58 @@ export default function UpgradeScreen() {
             Flow Premium
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, textAlign: "center", lineHeight: 22 }}>
-            AI-powered budgeting, bank sync, goals tracking, and more — all in one app.
+            Every plan includes all features. Pay once per household — every member is covered.
           </Text>
         </LinearGradient>
 
-        {/* Plan picker */}
-        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            {PLANS.map((plan) => (
+        {/* Billing toggle */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+          <View style={{
+            flexDirection: "row",
+            backgroundColor: Colors.bg.surface,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: Colors.border.subtle,
+            padding: 4,
+          }}>
+            {(["monthly", "annual"] as Billing[]).map((b) => (
               <TouchableOpacity
-                key={plan.id}
-                onPress={() => setSelectedPlan(plan.id as "monthly" | "annual")}
+                key={b}
+                onPress={() => setBilling(b)}
                 style={{
-                  flex: 1, borderRadius: 18, padding: 16,
-                  backgroundColor: selectedPlan === plan.id ? Colors.accentSoft : Colors.bg.surface,
-                  borderWidth: 2,
-                  borderColor: selectedPlan === plan.id ? Colors.accent : Colors.border.subtle,
-                  alignItems: "center", gap: 4,
+                  flex: 1, paddingVertical: 10, borderRadius: 11, alignItems: "center",
+                  backgroundColor: billing === b ? Colors.accent : "transparent",
                 }}
               >
-                {plan.badge && (
-                  <View style={{
-                    backgroundColor: Colors.accent, borderRadius: 8,
-                    paddingHorizontal: 8, paddingVertical: 3, marginBottom: 4,
-                  }}>
-                    <Text style={{ color: "#000", fontSize: 10, fontFamily: Fonts.extraBold }}>{plan.badge}</Text>
-                  </View>
-                )}
-                <Text style={{ color: selectedPlan === plan.id ? Colors.accent : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
-                  {plan.label}
+                <Text style={{
+                  color: billing === b ? "#000" : Colors.text.muted,
+                  fontSize: 13, fontFamily: Fonts.bold,
+                  textTransform: "capitalize",
+                }}>
+                  {b}{b === "annual" ? " · Best value" : ""}
                 </Text>
-                <Text style={{ color: Colors.text.primary, fontSize: 22, fontFamily: Fonts.extraBold }}>{plan.price}</Text>
-                <Text style={{ color: Colors.text.muted, fontSize: 12 }}>{plan.period}</Text>
-                {selectedPlan === plan.id && (
-                  <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.accent, alignItems: "center", justifyContent: "center", marginTop: 4 }}>
-                    <Ionicons name="checkmark" size={12} color="#000" />
-                  </View>
-                )}
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Benefits */}
+        {/* Tier cards */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+          {TIER_DEFINITIONS.map((tier) => (
+            <TierCard
+              key={tier.id}
+              tier={tier}
+              billing={billing}
+              selected={selectedTier === tier.id}
+              onSelect={() => setSelectedTier(tier.id)}
+            />
+          ))}
+        </View>
+
+        {/* What's included */}
         <View style={{ paddingHorizontal: 20, gap: 10, marginBottom: 28 }}>
           <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4 }}>
-            Everything included
+            Everything included in all plans
           </Text>
           {UPGRADE_BENEFITS.map((benefit) => (
             <View
@@ -167,13 +277,13 @@ export default function UpgradeScreen() {
         {/* CTA */}
         <View style={{ paddingHorizontal: 20, gap: 12 }}>
           <Button
-            label={loading ? "Opening…" : `Start ${selectedPlan === "annual" ? "Annual" : "Monthly"} Plan`}
+            label={loading ? "Opening…" : `Start ${activeTier.name} ${billing === "annual" ? "Annual" : "Monthly"}`}
             variant="primary"
             loading={loading}
             onPress={handleUpgrade}
           />
           <Text style={{ color: Colors.text.muted, fontSize: 11, textAlign: "center" }}>
-            {selectedPlan === "annual" ? "$39.99/year" : "$4.99/month"} · Cancel anytime · Secure payment via App Store / Google Play
+            {billing === "annual" ? activeTier.annualPrice + "/year" : activeTier.monthlyPrice + "/month"} · Cancel anytime · Secure payment via App Store / Google Play
           </Text>
           <TouchableOpacity onPress={handleRestore} disabled={restoring} style={{ alignItems: "center", padding: 10 }}>
             <Text style={{ color: Colors.text.muted, fontSize: 13, textDecorationLine: "underline" }}>

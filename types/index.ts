@@ -9,10 +9,16 @@ export interface User {
   created_at: string;
 }
 
+export type PremiumTier = "personal" | "family" | "power";
+
 export interface Household {
   id: string;
   name: string;
   invite_code: string;
+  owner_id: string | null;
+  is_premium: boolean;
+  premium_tier: PremiumTier | null;
+  premium_expires_at: string | null;
   created_at: string;
   members?: User[];
 }

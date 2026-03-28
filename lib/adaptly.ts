@@ -7,8 +7,10 @@
  *  2. Add your Adaptly API key to Replit Secrets as: EXPO_PUBLIC_ADAPTLY_KEY
  *  3. Uncomment the SDK import below and remove the stub implementations.
  *
- * NOTE: If the exact SDK package name differs, update the import path below.
- * Common pattern for mobile paywall SDKs (Adapty, RevenueCat, etc.) is similar.
+ * Tier product IDs (register these in your Adaptly / App Store Connect dashboard):
+ *   Personal monthly : flow_personal_monthly   annual : flow_personal_annual
+ *   Family   monthly : flow_family_monthly      annual : flow_family_annual
+ *   Power    monthly : flow_power_monthly       annual : flow_power_annual
  */
 
 // import Adaptly from "react-native-adaptly"; // <-- uncomment when SDK is installed
@@ -16,65 +18,49 @@
 const ADAPTLY_KEY = process.env.EXPO_PUBLIC_ADAPTLY_KEY ?? "";
 export const adaptlyConfigured = ADAPTLY_KEY.length > 10;
 
-/** Entitlement ID for the Flow Premium product — update to match your Adaptly dashboard. */
 export const PREMIUM_ENTITLEMENT_ID = "flow_premium";
-
-/** Product ID for monthly subscription — update to match your Adaptly dashboard. */
-export const MONTHLY_PRODUCT_ID = "flow_premium_monthly";
-
-/** Product ID for annual subscription — update to match your Adaptly dashboard. */
-export const ANNUAL_PRODUCT_ID = "flow_premium_annual";
 
 export interface PremiumStatus {
   isActive: boolean;
+  tier?: "personal" | "family" | "power";
   expiresAt?: string;
   productId?: string;
 }
 
-/**
- * Initialize Adaptly. Call once on app startup (e.g. in your root layout).
- */
 export async function initAdaptly(userId: string): Promise<void> {
   if (!adaptlyConfigured) return;
-  // TODO: replace stub with real SDK call:
   // await Adaptly.activate(ADAPTLY_KEY);
   // await Adaptly.identify(userId);
   console.log("[Adaptly] init stub — SDK not yet installed");
 }
 
-/**
- * Check if the current user has an active premium subscription.
- */
 export async function getPremiumStatus(): Promise<PremiumStatus> {
   if (!adaptlyConfigured) return { isActive: false };
-  // TODO: replace stub with real SDK call:
   // const info = await Adaptly.getCustomerInfo();
   // const entitlement = info.entitlements.active[PREMIUM_ENTITLEMENT_ID];
-  // return { isActive: !!entitlement, expiresAt: entitlement?.expiresDate, productId: entitlement?.productIdentifier };
+  // const productId = entitlement?.productIdentifier ?? "";
+  // const tier = productId.includes("family") ? "family" : productId.includes("power") ? "power" : "personal";
+  // return { isActive: !!entitlement, tier, expiresAt: entitlement?.expiresDate, productId };
   return { isActive: false };
 }
 
 /**
  * Present the Adaptly paywall for a specific placement.
- * @param placement  Paywall placement ID from your Adaptly dashboard (e.g. "main", "analysis").
+ * @param placement  Paywall placement ID from your Adaptly dashboard.
+ * @param productId  Optional product ID to pre-select a specific tier/billing period.
  */
-export async function showPaywall(placement = "main"): Promise<boolean> {
+export async function showPaywall(placement = "main", productId?: string): Promise<boolean> {
   if (!adaptlyConfigured) {
     console.warn("[Adaptly] Cannot show paywall — SDK not configured.");
     return false;
   }
-  // TODO: replace stub with real SDK call:
-  // const result = await Adaptly.showPaywall({ placement });
+  // const result = await Adaptly.showPaywall({ placement, productId });
   // return result.purchased;
   return false;
 }
 
-/**
- * Restore previous purchases (required by App Store guidelines).
- */
 export async function restorePurchases(): Promise<PremiumStatus> {
   if (!adaptlyConfigured) return { isActive: false };
-  // TODO: replace stub with real SDK call:
   // await Adaptly.restorePurchases();
   // return getPremiumStatus();
   return { isActive: false };

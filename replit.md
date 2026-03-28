@@ -1,7 +1,7 @@
 # Flow — Personal Finance App
 
 ## Overview
-Flow is a mobile-first personal and household financial management app built with Expo/React Native. It supports budget tracking, recurring bills, transaction management, a shared "household" model, AI budget analysis, goals tracking, bank account linking (Plaid), manual account/card entry, CSV import/export, tasks with edit/complete/delete, and a premium subscription tier.
+Flow is a mobile-first personal and household financial management app built with Expo/React Native. It supports budget tracking, recurring bills, transaction management, a shared "household" model, AI budget analysis, goals tracking, bank account linking (Plaid), manual account/card entry, CSV import/export, tasks with edit/complete/delete, and a tiered premium subscription (Personal / Family / Power).
 
 ## Authentication
 Three sign-in methods are implemented on the login screen:

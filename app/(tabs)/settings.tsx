@@ -12,11 +12,13 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import * as Clipboard from "expo-clipboard";
 import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { Colors, Fonts } from "@/constants/theme";
 import Divider from "@/components/ui/Divider";
 import { parseBudgetCsv, pickCsvFile } from "@/lib/csvUtils";
+import { TIER_LABEL } from "@/constants/features";
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
@@ -117,6 +119,12 @@ export default function SettingsScreen() {
   const handleShareInvite = async () => {
     if (!household?.invite_code) return;
     await Share.share({ message: `Join my household on Flow! Invite code: ${household.invite_code}` });
+  };
+
+  const handleCopyHouseholdId = async () => {
+    if (!household?.id) return;
+    await Clipboard.setStringAsync(household.id);
+    Alert.alert("Copied", "Household support ID copied to clipboard.");
   };
 
   const handleSignOut = () => {
@@ -247,13 +255,26 @@ export default function SettingsScreen() {
               backgroundColor: Colors.accent,
               alignItems: "center", justifyContent: "center",
             }}>
-              <Ionicons name="sparkles" size={22} color="#000" />
+              <Ionicons name={household?.is_premium ? "checkmark-circle" : "sparkles"} size={22} color="#000" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: Colors.accent, fontSize: 15, fontFamily: Fonts.extraBold }}>Upgrade to Premium</Text>
-              <Text style={{ color: Colors.accent, fontSize: 12, opacity: 0.75, marginTop: 2 }}>
-                AI analysis · Bank sync · Goals · Charts
-              </Text>
+              {household?.is_premium && household.premium_tier ? (
+                <>
+                  <Text style={{ color: Colors.accent, fontSize: 15, fontFamily: Fonts.extraBold }}>
+                    {TIER_LABEL[household.premium_tier]}
+                  </Text>
+                  <Text style={{ color: Colors.accent, fontSize: 12, opacity: 0.75, marginTop: 2 }}>
+                    All features unlocked · {(household.members?.length ?? 1)} of 6 members
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={{ color: Colors.accent, fontSize: 15, fontFamily: Fonts.extraBold }}>Upgrade to Premium</Text>
+                  <Text style={{ color: Colors.accent, fontSize: 12, opacity: 0.75, marginTop: 2 }}>
+                    AI analysis · Bank sync · Goals · Charts
+                  </Text>
+                </>
+              )}
             </View>
             <Ionicons name="chevron-forward" size={18} color={Colors.accent} />
           </TouchableOpacity>
@@ -291,7 +312,27 @@ export default function SettingsScreen() {
           <SettingRow
             icon="people-outline"
             label="Members"
-            value={`${(household?.members?.length ?? 1)} member${(household?.members?.length ?? 1) === 1 ? "" : "s"}`}
+            value={`${(household?.members?.length ?? 1)} of 6 members`}
+          />
+          <Divider />
+          <SettingRow
+            icon="help-circle-outline"
+            label="Support ID"
+            value={household?.id ? `${household.id.slice(0, 8)}…` : "—"}
+            showChevron={false}
+            onPress={handleCopyHouseholdId}
+            rightElement={
+              <TouchableOpacity
+                onPress={handleCopyHouseholdId}
+                style={{
+                  backgroundColor: Colors.bg.overlay,
+                  borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
+                  borderWidth: 1, borderColor: Colors.border.subtle,
+                }}
+              >
+                <Text style={{ color: Colors.text.muted, fontSize: 12, fontFamily: Fonts.bold }}>Copy</Text>
+              </TouchableOpacity>
+            }
           />
         </SettingsCard>
 

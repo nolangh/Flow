@@ -1,10 +1,4 @@
-/**
- * Premium feature flags for Flow.
- *
- * `isPremium` is derived from the Adaptly subscription status.
- * During development or when Adaptly isn't configured, all features are unlocked
- * so you can build and test without a paid subscription.
- */
+import type { PremiumTier } from "@/types";
 
 export const PREMIUM_FEATURES = {
   AI_ANALYSIS: "ai_analysis",
@@ -19,26 +13,96 @@ export const PREMIUM_FEATURES = {
 
 export type PremiumFeature = (typeof PREMIUM_FEATURES)[keyof typeof PREMIUM_FEATURES];
 
-/** Set to true once Adaptly confirms an active subscription. */
 let _isPremium = false;
+let _premiumTier: PremiumTier | null = null;
 
-export function setPremiumStatus(active: boolean) {
+export function setPremiumStatus(active: boolean, tier?: PremiumTier | null) {
   _isPremium = active;
+  _premiumTier = tier ?? null;
 }
 
-/**
- * Returns true when the user has premium access.
- * In dev mode (no Adaptly key) always returns true so you can test all features.
- */
 export function isPremium(): boolean {
   const isDev = !process.env.EXPO_PUBLIC_ADAPTLY_KEY;
   return isDev || _isPremium;
 }
 
-/** Check if a specific feature is available to the current user. */
+export function getPremiumTier(): PremiumTier | null {
+  return _premiumTier;
+}
+
 export function hasFeature(_feature: PremiumFeature): boolean {
   return isPremium();
 }
+
+export interface TierDefinition {
+  id: PremiumTier;
+  name: string;
+  icon: string;
+  monthlyPrice: string;
+  annualPrice: string;
+  annualMonthly: string;
+  savingsBadge: string;
+  maxHouseholds: number | null;
+  maxMembers: number;
+  tagline: string;
+  mostPopular: boolean;
+  monthlyProductId: string;
+  annualProductId: string;
+}
+
+export const TIER_DEFINITIONS: TierDefinition[] = [
+  {
+    id: "personal",
+    name: "Personal",
+    icon: "person",
+    monthlyPrice: "$4.99",
+    annualPrice: "$39.99",
+    annualMonthly: "$3.33/mo",
+    savingsBadge: "Save 33%",
+    maxHouseholds: 1,
+    maxMembers: 6,
+    tagline: "Solo budgeters & couples",
+    mostPopular: false,
+    monthlyProductId: "flow_personal_monthly",
+    annualProductId: "flow_personal_annual",
+  },
+  {
+    id: "family",
+    name: "Family",
+    icon: "people",
+    monthlyPrice: "$8.99",
+    annualPrice: "$69.99",
+    annualMonthly: "$5.83/mo",
+    savingsBadge: "Save 35%",
+    maxHouseholds: 3,
+    maxMembers: 6,
+    tagline: "Up to 3 households",
+    mostPopular: true,
+    monthlyProductId: "flow_family_monthly",
+    annualProductId: "flow_family_annual",
+  },
+  {
+    id: "power",
+    name: "Power",
+    icon: "flash",
+    monthlyPrice: "$14.99",
+    annualPrice: "$119.99",
+    annualMonthly: "$10.00/mo",
+    savingsBadge: "Save 33%",
+    maxHouseholds: null,
+    maxMembers: 6,
+    tagline: "Unlimited households",
+    mostPopular: false,
+    monthlyProductId: "flow_power_monthly",
+    annualProductId: "flow_power_annual",
+  },
+];
+
+export const TIER_LABEL: Record<PremiumTier, string> = {
+  personal: "Personal Plan",
+  family: "Family Plan",
+  power: "Power Plan",
+};
 
 export const UPGRADE_BENEFITS = [
   {

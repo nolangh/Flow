@@ -1,17 +1,10 @@
 /**
  * CSV import/export utilities for Flow budget data.
- *
- * Export: generates a CSV string that can be shared via expo-sharing.
- * Import: parses a CSV file and returns structured budget rows.
- *
- * TO ENABLE FILE SHARING:
- *  Run: npx expo install expo-file-system expo-sharing expo-document-picker
- *  Then uncomment the imports below.
  */
 
-// import * as FileSystem from "expo-file-system";       // <-- uncomment after install
-// import * as Sharing from "expo-sharing";               // <-- uncomment after install
-// import * as DocumentPicker from "expo-document-picker"; // <-- uncomment after install
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import * as DocumentPicker from "expo-document-picker";
 
 export interface BudgetCsvRow {
   name: string;
@@ -30,7 +23,7 @@ export interface TransactionCsvRow {
   note?: string;
 }
 
-// ─── Export ──────────────────────────────────────────────────────────────────
+// ─── CSV building ─────────────────────────────────────────────────────────────
 
 function escapeCsv(val: string | number | undefined | null): string {
   const s = String(val ?? "");
@@ -40,7 +33,14 @@ function escapeCsv(val: string | number | undefined | null): string {
 }
 
 export function buildBudgetCsv(
-  categories: { name: string; monthly_limit: number; is_fixed: boolean; is_income: boolean; fixed_day_of_month?: number | null; emoji?: string }[]
+  categories: {
+    name: string;
+    monthly_limit: number;
+    is_fixed: boolean;
+    is_income: boolean;
+    fixed_day_of_month?: number | null;
+    emoji?: string;
+  }[]
 ): string {
   const header = "name,type,monthly_limit,fixed_day_of_month,emoji";
   const rows = categories.map((c) => {
@@ -57,7 +57,14 @@ export function buildBudgetCsv(
 }
 
 export function buildTransactionCsv(
-  transactions: { date: string; name: string; amount: number; category_name?: string; pending?: boolean; note?: string }[]
+  transactions: {
+    date: string;
+    name: string;
+    amount: number;
+    category_name?: string;
+    pending?: boolean;
+    note?: string;
+  }[]
 ): string {
   const header = "date,name,amount,category,type,note";
   const rows = transactions.map((t) => [
@@ -71,7 +78,7 @@ export function buildTransactionCsv(
   return [header, ...rows].join("\n");
 }
 
-// ─── Import ───────────────────────────────────────────────────────────────────
+// ─── CSV parsing ──────────────────────────────────────────────────────────────
 
 export function parseBudgetCsv(csvText: string): BudgetCsvRow[] {
   const lines = csvText.trim().split("\n");
@@ -124,30 +131,31 @@ function splitCsvLine(line: string): string[] {
   return result;
 }
 
-// ─── Share helpers (stubs until expo-sharing is installed) ────────────────────
+// ─── File operations ──────────────────────────────────────────────────────────
 
 export async function exportCsvFile(filename: string, content: string): Promise<void> {
-  // TODO: uncomment after running: npx expo install expo-file-system expo-sharing
-  //
-  // const uri = FileSystem.cacheDirectory + filename;
-  // await FileSystem.writeAsStringAsync(uri, content, { encoding: FileSystem.EncodingType.UTF8 });
-  // const canShare = await Sharing.isAvailableAsync();
-  // if (canShare) {
-  //   await Sharing.shareAsync(uri, { mimeType: "text/csv", dialogTitle: "Export CSV" });
-  // }
-  console.log(`[CSV Export] ${filename}\n${content.slice(0, 300)}...`);
-  throw new Error(
-    "File sharing not yet installed. Run: npx expo install expo-file-system expo-sharing"
-  );
+  const uri = (FileSystem.cacheDirectory ?? "") + filename;
+  await FileSystem.writeAsStringAsync(uri, content, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+  const canShare = await Sharing.isAvailableAsync();
+  if (canShare) {
+    await Sharing.shareAsync(uri, { mimeType: "text/csv", dialogTitle: "Export CSV" });
+  } else {
+    throw new Error("Sharing is not available on this device.");
+  }
 }
 
 export async function pickCsvFile(): Promise<string> {
-  // TODO: uncomment after running: npx expo install expo-document-picker
-  //
-  // const result = await DocumentPicker.getDocumentAsync({ type: "text/csv", copyToCacheDirectory: true });
-  // if (result.canceled) throw new Error("Cancelled");
-  // return await FileSystem.readAsStringAsync(result.assets[0].uri);
-  throw new Error(
-    "Document picker not yet installed. Run: npx expo install expo-document-picker expo-file-system"
-  );
+  const result = await DocumentPicker.getDocumentAsync({
+    type: ["text/csv", "text/comma-separated-values", "text/plain", "*/*"],
+    copyToCacheDirectory: true,
+  });
+  if (result.canceled || !result.assets?.[0]) {
+    throw new Error("No file selected.");
+  }
+  const uri = result.assets[0].uri;
+  return await FileSystem.readAsStringAsync(uri, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
 }

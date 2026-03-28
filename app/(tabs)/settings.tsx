@@ -14,8 +14,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors } from "@/constants/theme";
 import Divider from "@/components/ui/Divider";
+import { parseBudgetCsv, pickCsvFile } from "@/lib/csvUtils";
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
@@ -24,13 +25,18 @@ interface SettingRowProps {
   value?: string;
   icon?: IoniconsName;
   iconBg?: string;
+  iconColor?: string;
   onPress?: () => void;
   rightElement?: React.ReactNode;
   destructive?: boolean;
   showChevron?: boolean;
+  badge?: string;
 }
 
-function SettingRow({ label, value, icon, iconBg, onPress, rightElement, destructive, showChevron = true }: SettingRowProps) {
+function SettingRow({
+  label, value, icon, iconBg, iconColor, onPress, rightElement,
+  destructive, showChevron = true, badge,
+}: SettingRowProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -44,13 +50,20 @@ function SettingRow({ label, value, icon, iconBg, onPress, rightElement, destruc
           backgroundColor: iconBg ?? Colors.bg.overlay,
           alignItems: "center", justifyContent: "center",
         }}>
-          <Ionicons name={icon} size={18} color={destructive ? Colors.danger : Colors.text.secondary} />
+          <Ionicons name={icon} size={18} color={iconColor ?? (destructive ? Colors.danger : Colors.text.secondary)} />
         </View>
       )}
       <View style={{ flex: 1 }}>
-        <Text style={{ color: destructive ? Colors.danger : Colors.text.primary, fontSize: 15, fontWeight: "500" }}>
-          {label}
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Text style={{ color: destructive ? Colors.danger : Colors.text.primary, fontSize: 15, fontWeight: "500" }}>
+            {label}
+          </Text>
+          {badge && (
+            <View style={{ backgroundColor: Colors.accent, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1 }}>
+              <Text style={{ color: "#000", fontSize: 9, fontWeight: "800" }}>{badge}</Text>
+            </View>
+          )}
+        </View>
         {value && (
           <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 1 }}>{value}</Text>
         )}
@@ -96,9 +109,10 @@ function SettingsCard({ children }: { children: React.ReactNode }) {
 
 export default function SettingsScreen() {
   const { user, household, signOut } = useAuthStore();
-  const { categories, deleteCategory } = useBudgetStore();
+  const { categories, createCategory, deleteCategory } = useBudgetStore();
   const [notifications, setNotifications] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const handleShareInvite = async () => {
     if (!household?.invite_code) return;
@@ -118,6 +132,55 @@ export default function SettingsScreen() {
         },
       },
     ]);
+  };
+
+  const handleImportCsv = async () => {
+    setImporting(true);
+    try {
+      const csvText = await pickCsvFile();
+      const rows = parseBudgetCsv(csvText);
+
+      if (rows.length === 0) {
+        Alert.alert("Nothing to import", 'CSV must have "name" and "monthly_limit" columns.');
+        return;
+      }
+
+      Alert.alert(
+        `Import ${rows.length} categories?`,
+        rows.slice(0, 3).map((r) => `• ${r.name} ($${r.monthly_limit})`).join("\n") +
+          (rows.length > 3 ? `\n…and ${rows.length - 3} more` : ""),
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Import",
+            onPress: async () => {
+              let success = 0;
+              for (const row of rows) {
+                try {
+                  await createCategory({
+                    name: row.name,
+                    monthly_limit: row.monthly_limit,
+                    is_fixed: row.type === "fixed",
+                    is_income: row.type === "income",
+                    fixed_day_of_month: row.fixed_day_of_month ?? null,
+                    emoji: row.emoji ?? null,
+                  });
+                  success++;
+                } catch {
+                  // skip duplicates / invalid
+                }
+              }
+              Alert.alert("Import complete", `${success} of ${rows.length} categories imported.`);
+            },
+          },
+        ]
+      );
+    } catch (err: unknown) {
+      const msg = (err as Error).message;
+      if (!msg.includes("No file selected")) Alert.alert("Import failed", msg);
+    } finally {
+      setImporting(false);
+    }
   };
 
   const handleDeleteCategory = (catId: string, catName: string) => {
@@ -146,10 +209,8 @@ export default function SettingsScreen() {
         <View style={{ marginHorizontal: 20, marginBottom: 28 }}>
           <View style={{
             backgroundColor: Colors.bg.surface,
-            borderRadius: 20,
-            padding: 20,
-            borderWidth: 1,
-            borderColor: Colors.border.subtle,
+            borderRadius: 20, padding: 20,
+            borderWidth: 1, borderColor: Colors.border.subtle,
             alignItems: "center",
           }}>
             <View style={{
@@ -168,6 +229,34 @@ export default function SettingsScreen() {
             </Text>
             <Text style={{ color: Colors.text.muted, fontSize: 13 }}>{user?.email}</Text>
           </View>
+        </View>
+
+        {/* Premium banner */}
+        <View style={{ marginHorizontal: 20, marginBottom: 28 }}>
+          <TouchableOpacity
+            onPress={() => router.push("/upgrade" as any)}
+            style={{
+              backgroundColor: Colors.accentSoft,
+              borderRadius: 20, padding: 18,
+              borderWidth: 1, borderColor: Colors.accentBorder,
+              flexDirection: "row", alignItems: "center", gap: 14,
+            }}
+          >
+            <View style={{
+              width: 44, height: 44, borderRadius: 22,
+              backgroundColor: Colors.accent,
+              alignItems: "center", justifyContent: "center",
+            }}>
+              <Ionicons name="sparkles" size={22} color="#000" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: Colors.accent, fontSize: 15, fontWeight: "800" }}>Upgrade to Premium</Text>
+              <Text style={{ color: Colors.accent, fontSize: 12, opacity: 0.75, marginTop: 2 }}>
+                AI analysis · Bank sync · Goals · Charts
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Colors.accent} />
+          </TouchableOpacity>
         </View>
 
         {/* Household */}
@@ -203,6 +292,55 @@ export default function SettingsScreen() {
             icon="people-outline"
             label="Members"
             value={`${(household?.members?.length ?? 1)} member${(household?.members?.length ?? 1) === 1 ? "" : "s"}`}
+          />
+        </SettingsCard>
+
+        {/* Bank accounts & bill pay */}
+        <SectionLabel>Banking</SectionLabel>
+        <SettingsCard>
+          <SettingRow
+            icon="link-outline"
+            iconBg={Colors.accentSoft}
+            iconColor={Colors.accent}
+            label="Accounts & Bill Pay"
+            value="Linked banks, cards, and bill payment tracking"
+            onPress={() => router.push("/accounts" as any)}
+            badge="NEW"
+          />
+          <Divider />
+          <SettingRow
+            icon="sync-outline"
+            label="Auto Sync Transactions"
+            value="Requires Plaid credentials"
+            showChevron={false}
+            rightElement={
+              <Switch
+                value={false}
+                disabled
+                trackColor={{ false: Colors.bg.overlay, true: Colors.accentDim }}
+                thumbColor={Colors.text.muted}
+              />
+            }
+          />
+        </SettingsCard>
+
+        {/* Data */}
+        <SectionLabel>Data</SectionLabel>
+        <SettingsCard>
+          <SettingRow
+            icon="document-outline"
+            iconBg={Colors.accentSoft}
+            iconColor={Colors.accent}
+            label="Import Budget CSV"
+            value={importing ? "Picking file…" : "Import categories from a CSV file"}
+            onPress={importing ? undefined : handleImportCsv}
+          />
+          <Divider />
+          <SettingRow
+            icon="download-outline"
+            label="Export Budget"
+            value="Go to Budget → download icon"
+            showChevron={false}
           />
         </SettingsCard>
 
@@ -242,13 +380,6 @@ export default function SettingsScreen() {
                 thumbColor={notifications ? Colors.accent : Colors.text.muted}
               />
             }
-          />
-          <Divider />
-          <SettingRow
-            icon="link-outline"
-            label="Connect Bank Account"
-            value="Plaid integration — coming soon"
-            iconBg={Colors.warningSoft}
           />
         </SettingsCard>
 

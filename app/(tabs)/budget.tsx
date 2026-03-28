@@ -28,7 +28,7 @@ import TransactionItem from "@/components/dashboard/TransactionItem";
 import EmptyState from "@/components/ui/EmptyState";
 import AllocationChart from "@/components/budget/AllocationChart";
 import AiAnalysisSheet from "@/components/premium/AiAnalysisSheet";
-import { buildBudgetCsv, buildTransactionCsv, exportCsvFile } from "@/lib/csvUtils";
+import { buildBudgetCsv, buildTransactionCsv, exportCsvFile, pickCsvFile, parseBudgetCsv } from "@/lib/csvUtils";
 import type { BudgetSuggestion } from "@/lib/openai";
 
 type BudgetTab = "overview" | "charts" | "transactions";
@@ -150,15 +150,38 @@ export default function BudgetScreen() {
         <View style={{ flexDirection: "row", gap: 8 }}>
           <TouchableOpacity
             onPress={() => {
-              Alert.alert("Export", "What would you like to export?", [
-                { text: "Budget Categories", onPress: handleExportBudget },
-                { text: "Transactions", onPress: handleExportTransactions },
+              Alert.alert("Budget Data", "Choose an action:", [
+                { text: "Export Categories", onPress: handleExportBudget },
+                { text: "Export Transactions", onPress: handleExportTransactions },
+                { text: "Import Categories (CSV)", onPress: async () => {
+                  try {
+                    const csvText = await pickCsvFile();
+                    const rows = parseBudgetCsv(csvText);
+                    if (rows.length === 0) { Alert.alert("Nothing to import", 'CSV needs "name" and "monthly_limit" columns.'); return; }
+                    Alert.alert(`Import ${rows.length} categories?`,
+                      rows.slice(0, 3).map((r) => `• ${r.name} ($${r.monthly_limit})`).join("\n") + (rows.length > 3 ? `\n…+${rows.length - 3} more` : ""),
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Import", onPress: async () => {
+                          let ok = 0;
+                          for (const row of rows) {
+                            try { await createCategory({ name: row.name, monthly_limit: row.monthly_limit, is_fixed: row.type === "fixed", is_income: row.type === "income", fixed_day_of_month: row.fixed_day_of_month ?? null, emoji: row.emoji ?? null }); ok++; } catch { /* skip */ }
+                          }
+                          Alert.alert("Import complete", `${ok}/${rows.length} categories imported.`);
+                        }},
+                      ]
+                    );
+                  } catch (err: unknown) {
+                    const msg = (err as Error).message;
+                    if (!msg.includes("No file selected")) Alert.alert("Import failed", msg);
+                  }
+                }},
                 { text: "Cancel", style: "cancel" },
               ]);
             }}
             style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.bg.surface, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: Colors.border.subtle }}
           >
-            <Ionicons name="download-outline" size={17} color={Colors.text.secondary} />
+            <Ionicons name="swap-vertical-outline" size={17} color={Colors.text.secondary} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setShowAiSheet(true)}

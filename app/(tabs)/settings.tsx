@@ -199,7 +199,7 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 24 }}>
+        <View style={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 24 }}>
           <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>
             Profile
           </Text>

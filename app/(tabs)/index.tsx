@@ -84,7 +84,7 @@ export default function DashboardScreen() {
         {/* ── Header ── */}
         <View style={{
           flexDirection: "row", justifyContent: "space-between",
-          alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 20,
+          alignItems: "center", paddingHorizontal: 20, paddingTop: 14, paddingBottom: 20,
         }}>
           <View>
             <Text style={{ color: Colors.text.muted, fontSize: 13 }}>

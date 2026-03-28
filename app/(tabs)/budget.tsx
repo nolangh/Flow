@@ -153,7 +153,7 @@ export default function BudgetScreen() {
       {/* Header */}
       <View style={{
         flexDirection: "row", justifyContent: "space-between",
-        alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 4,
+        alignItems: "center", paddingHorizontal: 20, paddingTop: 14, paddingBottom: 8,
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>

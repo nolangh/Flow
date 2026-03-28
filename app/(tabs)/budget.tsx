@@ -30,12 +30,14 @@ import AllocationChart from "@/components/budget/AllocationChart";
 import AiAnalysisSheet from "@/components/premium/AiAnalysisSheet";
 import BezierChart from "@/components/ui/BezierChart";
 import { useWindowDimensions } from "react-native";
+import { useRouter } from "expo-router";
 import { buildBudgetCsv, buildTransactionCsv, exportCsvFile, pickCsvFile, parseBudgetCsv } from "@/lib/csvUtils";
 import type { BudgetSuggestion } from "@/lib/openai";
 
 type BudgetTab = "overview" | "charts" | "transactions";
 
 export default function BudgetScreen() {
+  const router = useRouter();
   const { categories, currentMonth, setCurrentMonth, fetchMonthlyBudget, createCategory, updateCategory, deleteCategory, monthlyBudget, setTotalLimit } = useBudgetStore();
   const { transactions, fetchTransactions, addManualTransaction } = useTransactionStore();
   const summary = useBudgetSummary();
@@ -422,7 +424,10 @@ export default function BudgetScreen() {
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
                   {spendCategories.map((cat) => (
                     <View key={cat.id} style={{ width: "47.5%" }}>
-                      <CategoryCard category={cat} onPress={setEditingCategory} />
+                      <CategoryCard
+                        category={cat}
+                        onPress={(c) => router.push(`/category/${c.id}` as any)}
+                      />
                     </View>
                   ))}
                 </View>

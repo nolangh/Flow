@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Colors, getBudgetColor, Fonts } from "@/constants/theme";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { formatCurrency } from "@/lib/utils";
+import { Ionicons } from "@expo/vector-icons";
 import type { BudgetCategory } from "@/types";
 
 interface CategoryCardProps {
@@ -100,13 +101,16 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <Text style={{ fontSize: 22 }}>{cat.emoji ?? "📦"}</Text>
-        {overBudget ? (
-          <View style={{ backgroundColor: Colors.dangerSoft, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 }}>
-            <Text style={{ color: Colors.danger, fontSize: 10, fontFamily: Fonts.bold }}>OVER</Text>
-          </View>
-        ) : (
-          <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{pct}%</Text>
-        )}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          {overBudget ? (
+            <View style={{ backgroundColor: Colors.dangerSoft, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 }}>
+              <Text style={{ color: Colors.danger, fontSize: 10, fontFamily: Fonts.bold }}>OVER</Text>
+            </View>
+          ) : (
+            <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{pct}%</Text>
+          )}
+          <Ionicons name="chevron-forward" size={13} color={Colors.text.muted} />
+        </View>
       </View>
 
       <Text style={{ color: Colors.text.secondary, fontSize: 12, fontFamily: Fonts.medium }}>{cat.name}</Text>

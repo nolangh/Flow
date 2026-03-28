@@ -140,6 +140,9 @@ export interface AuthState {
   error: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
+  signInWithBiometric: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
   joinHousehold: (inviteCode: string) => Promise<void>;

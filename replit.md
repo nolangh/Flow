@@ -3,6 +3,20 @@
 ## Overview
 Flow is a mobile-first personal and household financial management app built with Expo/React Native. It supports budget tracking, recurring bills, transaction management, a shared "household" model, AI budget analysis, goals tracking, bank account linking (Plaid), manual account/card entry, CSV import/export, tasks with edit/complete/delete, and a premium subscription tier.
 
+## Authentication
+Three sign-in methods are implemented on the login screen:
+- **Email/Password** — standard Supabase auth; credentials are saved to device SecureStore on first successful login so biometric can replay them
+- **Google** — Supabase OAuth via in-app browser session (`expo-auth-session` + `expo-web-browser`); handles both PKCE `code` and implicit `access_token` redirects; redirect URI is `flow://auth/callback`
+- **Apple** — `expo-apple-authentication` native sheet → `supabase.auth.signInWithIdToken`; iOS only; skipped silently on cancel
+- **Biometric/Fingerprint/Face ID** — `expo-local-authentication` authenticates, then replays saved SecureStore credentials; button only appears once credentials have been saved; icon switches between fingerprint 🫆 and Face ID 🪪 based on device capability
+
+Helper functions live in `lib/biometrics.ts` (save/load/clear credentials, biometric auth).
+
+**Setup required in Supabase Dashboard** before Google and Apple sign-in will work in production:
+- Authentication > Providers > Google (requires Google Cloud OAuth 2.0 client ID)
+- Authentication > Providers > Apple (requires Apple Developer Sign In with Apple)
+- Authentication > URL Configuration > Redirect URLs: add `flow://auth/callback`
+
 ## Fonts
 - **Outfit** font family (`@expo-google-fonts/outfit`) loaded in `app/_layout.tsx`
 - 7 weights registered: Light, Regular, Medium, SemiBold, Bold, ExtraBold, Black

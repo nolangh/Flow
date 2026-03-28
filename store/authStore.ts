@@ -1,6 +1,14 @@
 import { create } from "zustand";
+import { Platform } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import * as AppleAuthentication from "expo-apple-authentication";
+import { makeRedirectUri } from "expo-auth-session";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
-import { generateInviteCode } from "@/lib/utils";
+import {
+  biometricAvailable,
+  authenticateWithBiometric,
+  loadCredentials,
+} from "@/lib/biometrics";
 import type { AuthState, User, Household } from "@/types";
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -94,6 +102,153 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ error: (err as Error).message, isLoading: false });
       throw err; // let the screen show the error and not navigate
     }
+  },
+
+  signInWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const redirectUri = makeRedirectUri({ scheme: "flow", path: "auth/callback" });
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: redirectUri, skipBrowserRedirect: true },
+      });
+      if (error) throw error;
+      if (!data.url) throw new Error("No OAuth URL returned");
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
+      if (result.type !== "success") {
+        set({ isLoading: false });
+        return;
+      }
+
+      const url = result.url;
+      const hashParams = new URLSearchParams(url.split("#")[1] ?? "");
+      const queryParams = new URLSearchParams(url.split("?")[1]?.split("#")[0] ?? "");
+
+      // Supabase may use PKCE (code) or implicit (tokens) depending on project config
+      const code = queryParams.get("code");
+      let accessToken = hashParams.get("access_token") ?? queryParams.get("access_token");
+      let refreshToken = hashParams.get("refresh_token") ?? queryParams.get("refresh_token");
+
+      let authUser: { id: string; email?: string; user_metadata?: Record<string, string>; created_at: string } | undefined;
+
+      if (code) {
+        const { data: exchanged, error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeErr) throw exchangeErr;
+        accessToken = exchanged.session!.access_token;
+        refreshToken = exchanged.session!.refresh_token;
+        authUser = exchanged.session!.user as typeof authUser;
+      } else {
+        if (!accessToken || !refreshToken) throw new Error("Missing tokens in redirect");
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (sessionError) throw sessionError;
+        authUser = sessionData.session!.user as typeof authUser;
+      }
+
+      let profile: User | null = null;
+      let household = null;
+      try {
+        profile = await fetchProfile(authUser!.id);
+        household = profile?.household_id ? await fetchHousehold(profile.household_id) : null;
+      } catch { /* ignore DB errors */ }
+
+      const fallback: User = {
+        id: authUser!.id,
+        email: authUser!.email ?? "",
+        full_name: authUser!.user_metadata?.full_name ?? authUser!.user_metadata?.name ?? null,
+        household_id: null,
+        avatar_url: authUser!.user_metadata?.avatar_url ?? null,
+        created_at: authUser!.created_at,
+      };
+
+      set({ user: profile ?? fallback, household, session: { access_token: accessToken!, refresh_token: refreshToken! }, isLoading: false });
+    } catch (err: unknown) {
+      set({ error: (err as Error).message, isLoading: false });
+      throw err;
+    }
+  },
+
+  signInWithApple: async () => {
+    if (Platform.OS !== "ios") throw new Error("Apple Sign-In is only available on iOS");
+    set({ isLoading: true, error: null });
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) throw new Error("No identity token from Apple");
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: credential.identityToken,
+      });
+      if (error) throw error;
+
+      const authUser = data.user!;
+      const fullName = credential.fullName
+        ? [credential.fullName.givenName, credential.fullName.familyName]
+            .filter(Boolean)
+            .join(" ") || null
+        : null;
+
+      let profile: User | null = null;
+      let household = null;
+      try {
+        profile = await fetchProfile(authUser.id);
+        if (fullName && profile && !profile.full_name) {
+          await supabase.from("profiles").update({ full_name: fullName }).eq("id", authUser.id);
+          profile = { ...profile, full_name: fullName };
+        }
+        household = profile?.household_id ? await fetchHousehold(profile.household_id) : null;
+      } catch { /* ignore */ }
+
+      const fallback: User = {
+        id: authUser.id,
+        email: authUser.email ?? credential.email ?? "",
+        full_name: fullName ?? authUser.user_metadata?.full_name ?? null,
+        household_id: null,
+        avatar_url: null,
+        created_at: authUser.created_at,
+      };
+
+      set({
+        user: profile ?? fallback,
+        household,
+        session: {
+          access_token: data.session!.access_token,
+          refresh_token: data.session!.refresh_token,
+        },
+        isLoading: false,
+      });
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
+      if (code === "ERR_REQUEST_CANCELED") {
+        set({ isLoading: false });
+        return;
+      }
+      set({ error: (err as Error).message, isLoading: false });
+      throw err;
+    }
+  },
+
+  signInWithBiometric: async () => {
+    const available = await biometricAvailable();
+    if (!available) throw new Error("Biometric authentication not available");
+
+    const creds = await loadCredentials();
+    if (!creds) throw new Error("No saved credentials. Please sign in with email first.");
+
+    const passed = await authenticateWithBiometric("Sign in to Flow");
+    if (!passed) throw new Error("Biometric authentication failed");
+
+    await get().signIn(creds.email, creds.password);
   },
 
   signOut: async () => {

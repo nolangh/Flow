@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, pillShadow, Fonts } from "@/constants/theme";
 import { formatCurrency } from "@/lib/utils";
 import { triggerTransactionSync } from "@/lib/plaid";
 import BillPayTracker from "@/components/premium/BillPayTracker";
@@ -70,7 +70,7 @@ function AccountCard({ account, item }: { account: PlaidAccount; item: PlaidItem
         <Ionicons name={icon as any} size={20} color={color} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "700" }} numberOfLines={1}>
+        <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.bold }} numberOfLines={1}>
           {account.name}
         </Text>
         <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 1 }}>
@@ -82,7 +82,7 @@ function AccountCard({ account, item }: { account: PlaidAccount; item: PlaidItem
       <View style={{ alignItems: "flex-end" }}>
         {balance !== null ? (
           <>
-            <Text style={{ color: Colors.text.primary, fontSize: 15, fontWeight: "700" }}>
+            <Text style={{ color: Colors.text.primary, fontSize: 15, fontFamily: Fonts.bold }}>
               {formatCurrency(balance)}
             </Text>
             <Text style={{ color: Colors.text.muted, fontSize: 10, marginTop: 1 }}>
@@ -185,7 +185,7 @@ export default function AccountsScreen() {
         <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
         </TouchableOpacity>
-        <Text style={{ color: Colors.text.primary, fontSize: 22, fontWeight: "800", flex: 1 }}>
+        <Text style={{ color: Colors.text.primary, fontSize: 22, fontFamily: Fonts.extraBold, flex: 1 }}>
           Accounts & Bill Pay
         </Text>
         <TouchableOpacity
@@ -199,7 +199,7 @@ export default function AccountsScreen() {
           }}
         >
           <Ionicons name="sync-outline" size={14} color={syncing ? Colors.text.muted : Colors.accent} />
-          <Text style={{ color: syncing ? Colors.text.muted : Colors.accent, fontSize: 12, fontWeight: "600" }}>
+          <Text style={{ color: syncing ? Colors.text.muted : Colors.accent, fontSize: 12, fontFamily: Fonts.semiBold }}>
             {syncing ? "Syncing…" : "Sync"}
           </Text>
         </TouchableOpacity>
@@ -220,7 +220,7 @@ export default function AccountsScreen() {
               borderWidth: 1, borderColor: activeSection === s.id ? "transparent" : Colors.border.subtle,
             }}
           >
-            <Text style={{ color: activeSection === s.id ? "#000" : Colors.text.secondary, fontWeight: "700", fontSize: 13 }}>
+            <Text style={{ color: activeSection === s.id ? "#000" : Colors.text.secondary, fontFamily: Fonts.bold, fontSize: 13 }}>
               {s.label}
             </Text>
           </TouchableOpacity>
@@ -243,21 +243,21 @@ export default function AccountsScreen() {
               }}>
                 <View style={{ alignItems: "center", flex: 1 }}>
                   <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>Total Deposits</Text>
-                  <Text style={{ color: Colors.accent, fontSize: 18, fontWeight: "800" }}>
+                  <Text style={{ color: Colors.accent, fontSize: 18, fontFamily: Fonts.extraBold }}>
                     {formatCurrency(totalBalance)}
                   </Text>
                 </View>
                 <View style={{ width: 1, backgroundColor: Colors.border.subtle }} />
                 <View style={{ alignItems: "center", flex: 1 }}>
                   <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>Credit Used</Text>
-                  <Text style={{ color: "#8b5cf6", fontSize: 18, fontWeight: "800" }}>
+                  <Text style={{ color: "#8b5cf6", fontSize: 18, fontFamily: Fonts.extraBold }}>
                     {formatCurrency(totalCredit)}
                   </Text>
                 </View>
                 <View style={{ width: 1, backgroundColor: Colors.border.subtle }} />
                 <View style={{ alignItems: "center", flex: 1 }}>
                   <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>Accounts</Text>
-                  <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "800" }}>
+                  <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.extraBold }}>
                     {accounts.length}
                   </Text>
                 </View>
@@ -276,7 +276,7 @@ export default function AccountsScreen() {
               >
                 <Ionicons name="information-circle-outline" size={20} color="#facc15" />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: "#facc15", fontSize: 13, fontWeight: "700" }}>Plaid not configured</Text>
+                  <Text style={{ color: "#facc15", fontSize: 13, fontFamily: Fonts.bold }}>Plaid not configured</Text>
                   <Text style={{ color: "#facc15", fontSize: 11, opacity: 0.8, marginTop: 2 }}>
                     Tap to see setup instructions. Connect up to 12,000+ banks.
                   </Text>
@@ -288,7 +288,7 @@ export default function AccountsScreen() {
             {/* Connected accounts */}
             {accounts.length > 0 ? (
               <>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
                   Connected ({accounts.length})
                 </Text>
                 {accounts.map((acct) => {
@@ -311,7 +311,7 @@ export default function AccountsScreen() {
                 }}>
                   <Ionicons name="link-outline" size={28} color={Colors.text.muted} />
                 </View>
-                <Text style={{ color: Colors.text.primary, fontSize: 16, fontWeight: "700" }}>No accounts linked</Text>
+                <Text style={{ color: Colors.text.primary, fontSize: 16, fontFamily: Fonts.bold }}>No accounts linked</Text>
                 <Text style={{ color: Colors.text.muted, fontSize: 13, textAlign: "center", lineHeight: 18 }}>
                   Connect your bank via Plaid to automatically track transactions from all your accounts and cards.
                 </Text>
@@ -333,7 +333,7 @@ export default function AccountsScreen() {
               }}>
                 <Ionicons name="add" size={16} color={Colors.accent} />
               </View>
-              <Text style={{ color: Colors.accent, fontSize: 14, fontWeight: "700" }}>
+              <Text style={{ color: Colors.accent, fontSize: 14, fontFamily: Fonts.bold }}>
                 Connect Bank Account
               </Text>
             </TouchableOpacity>
@@ -344,7 +344,7 @@ export default function AccountsScreen() {
                 backgroundColor: Colors.bg.surface, borderRadius: 16, padding: 16,
                 borderWidth: 1, borderColor: Colors.border.subtle, gap: 10,
               }}>
-                <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "700" }}>
+                <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.bold }}>
                   How to enable Plaid
                 </Text>
                 {[
@@ -360,7 +360,7 @@ export default function AccountsScreen() {
                       width: 22, height: 22, borderRadius: 11,
                       backgroundColor: Colors.accentSoft, alignItems: "center", justifyContent: "center",
                     }}>
-                      <Text style={{ color: Colors.accent, fontSize: 11, fontWeight: "700" }}>{step.num}</Text>
+                      <Text style={{ color: Colors.accent, fontSize: 11, fontFamily: Fonts.bold }}>{step.num}</Text>
                     </View>
                     <Text style={{ color: Colors.text.secondary, fontSize: 13, flex: 1, lineHeight: 18 }}>{step.text}</Text>
                   </View>

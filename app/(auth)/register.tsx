@@ -13,7 +13,7 @@ import {
 import { useState } from "react";
 import { Link, router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, pillShadow, Fonts } from "@/constants/theme";
 
 export default function RegisterScreen() {
   const { signUp, isLoading } = useAuthStore();
@@ -79,7 +79,7 @@ export default function RegisterScreen() {
           }}>
             <Text style={{ fontSize: 26, fontWeight: "900", color: Colors.accent }}>F</Text>
           </View>
-          <Text style={{ color: Colors.text.primary, fontSize: 30, fontWeight: "800", letterSpacing: -0.8 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 30, fontFamily: Fonts.extraBold, letterSpacing: -0.8 }}>
             Create account
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, marginTop: 6 }}>
@@ -145,14 +145,14 @@ export default function RegisterScreen() {
           {isLoading ? (
             <ActivityIndicator color="#000" />
           ) : (
-            <Text style={{ color: "#000", fontWeight: "700", fontSize: 16 }}>Create Account</Text>
+            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16 }}>Create Account</Text>
           )}
         </TouchableOpacity>
 
         <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 24, gap: 4 }}>
           <Text style={{ color: Colors.text.muted, fontSize: 14 }}>Already have an account?</Text>
           <Link href="/(auth)/login">
-            <Text style={{ color: Colors.accent, fontWeight: "600", fontSize: 14 }}>Sign in</Text>
+            <Text style={{ color: Colors.accent, fontFamily: Fonts.semiBold, fontSize: 14 }}>Sign in</Text>
           </Link>
         </View>
       </ScrollView>

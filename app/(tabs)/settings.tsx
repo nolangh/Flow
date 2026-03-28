@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import Divider from "@/components/ui/Divider";
 import { parseBudgetCsv, pickCsvFile } from "@/lib/csvUtils";
 
@@ -55,12 +55,12 @@ function SettingRow({
       )}
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Text style={{ color: destructive ? Colors.danger : Colors.text.primary, fontSize: 15, fontWeight: "500" }}>
+          <Text style={{ color: destructive ? Colors.danger : Colors.text.primary, fontSize: 15, fontFamily: Fonts.medium }}>
             {label}
           </Text>
           {badge && (
             <View style={{ backgroundColor: Colors.accent, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1 }}>
-              <Text style={{ color: "#000", fontSize: 9, fontWeight: "800" }}>{badge}</Text>
+              <Text style={{ color: "#000", fontSize: 9, fontFamily: Fonts.extraBold }}>{badge}</Text>
             </View>
           )}
         </View>
@@ -79,7 +79,7 @@ function SectionLabel({ children }: { children: string }) {
   return (
     <Text style={{
       color: Colors.text.muted,
-      fontSize: 11, fontWeight: "600",
+      fontSize: 11, fontFamily: Fonts.semiBold,
       textTransform: "uppercase",
       letterSpacing: 0.8,
       marginBottom: 8,
@@ -200,7 +200,7 @@ export default function SettingsScreen() {
 
         {/* Header */}
         <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 24 }}>
-          <Text style={{ color: Colors.text.primary, fontSize: 26, fontWeight: "800", letterSpacing: -0.5 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>
             Profile
           </Text>
         </View>
@@ -220,11 +220,11 @@ export default function SettingsScreen() {
               alignItems: "center", justifyContent: "center",
               marginBottom: 12,
             }}>
-              <Text style={{ fontSize: 30, fontWeight: "800", color: Colors.accent }}>
+              <Text style={{ fontSize: 30, fontFamily: Fonts.extraBold, color: Colors.accent }}>
                 {firstName.charAt(0).toUpperCase()}
               </Text>
             </View>
-            <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700", marginBottom: 2 }}>
+            <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold, marginBottom: 2 }}>
               {user?.full_name ?? "—"}
             </Text>
             <Text style={{ color: Colors.text.muted, fontSize: 13 }}>{user?.email}</Text>
@@ -250,7 +250,7 @@ export default function SettingsScreen() {
               <Ionicons name="sparkles" size={22} color="#000" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: Colors.accent, fontSize: 15, fontWeight: "800" }}>Upgrade to Premium</Text>
+              <Text style={{ color: Colors.accent, fontSize: 15, fontFamily: Fonts.extraBold }}>Upgrade to Premium</Text>
               <Text style={{ color: Colors.accent, fontSize: 12, opacity: 0.75, marginTop: 2 }}>
                 AI analysis · Bank sync · Goals · Charts
               </Text>
@@ -283,7 +283,7 @@ export default function SettingsScreen() {
                   borderWidth: 1, borderColor: Colors.accentBorder,
                 }}
               >
-                <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: "700" }}>Share</Text>
+                <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.bold }}>Share</Text>
               </TouchableOpacity>
             }
           />
@@ -407,7 +407,7 @@ export default function SettingsScreen() {
               borderColor: Colors.dangerBorder,
             }}
           >
-            <Text style={{ color: Colors.danger, fontWeight: "700", fontSize: 15 }}>
+            <Text style={{ color: Colors.danger, fontFamily: Fonts.bold, fontSize: 15 }}>
               {signingOut ? "Signing out…" : "Sign Out"}
             </Text>
           </TouchableOpacity>

@@ -5,7 +5,7 @@ import {
 import { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, pillShadow } from "@/constants/theme";
 import { useGoalsStore, type Goal } from "@/store/goalsStore";
 import { formatCurrency } from "@/lib/utils";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -43,7 +43,7 @@ function GoalCard({ goal, onContribute, onDelete }: {
           <Text style={{ fontSize: 22 }}>{goal.emoji}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: Colors.text.primary, fontSize: 16, fontWeight: "700" }} numberOfLines={1}>
+          <Text style={{ color: Colors.text.primary, fontSize: 16, fontFamily: Fonts.bold }} numberOfLines={1}>
             {goal.name}
           </Text>
           {goal.deadline && (
@@ -59,7 +59,7 @@ function GoalCard({ goal, onContribute, onDelete }: {
             flexDirection: "row", alignItems: "center", gap: 4,
           }}>
             <Ionicons name="checkmark-circle" size={12} color={Colors.accent} />
-            <Text style={{ color: Colors.accent, fontSize: 11, fontWeight: "700" }}>Done!</Text>
+            <Text style={{ color: Colors.accent, fontSize: 11, fontFamily: Fonts.bold }}>Done!</Text>
           </View>
         ) : (
           <TouchableOpacity
@@ -81,7 +81,7 @@ function GoalCard({ goal, onContribute, onDelete }: {
       {/* Progress */}
       <View style={{ gap: 8 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ color: goal.color, fontSize: 20, fontWeight: "800" }}>
+          <Text style={{ color: goal.color, fontSize: 20, fontFamily: Fonts.extraBold }}>
             {formatCurrency(goal.current_amount)}
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 14, alignSelf: "flex-end" }}>
@@ -108,7 +108,7 @@ function GoalCard({ goal, onContribute, onDelete }: {
           }}
         >
           <Ionicons name="add-circle-outline" size={16} color={Colors.accent} />
-          <Text style={{ color: Colors.accent, fontSize: 13, fontWeight: "700" }}>Add Funds</Text>
+          <Text style={{ color: Colors.accent, fontSize: 13, fontFamily: Fonts.bold }}>Add Funds</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -187,7 +187,7 @@ export default function GoalsScreen() {
         flexDirection: "row", justifyContent: "space-between",
         alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 16,
       }}>
-        <Text style={{ color: Colors.text.primary, fontSize: 26, fontWeight: "800", letterSpacing: -0.5 }}>
+        <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>
           Goals
         </Text>
         <TouchableOpacity
@@ -198,7 +198,7 @@ export default function GoalsScreen() {
             ...pillShadow(Colors.accent),
           }}
         >
-          <Text style={{ color: "#000", fontSize: 13, fontWeight: "700" }}>+ New Goal</Text>
+          <Text style={{ color: "#000", fontSize: 13, fontFamily: Fonts.bold }}>+ New Goal</Text>
         </TouchableOpacity>
       </View>
 
@@ -217,7 +217,7 @@ export default function GoalsScreen() {
             ].map(({ label, value, color: c }) => (
               <View key={label} style={{ alignItems: "center" }}>
                 <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>{label}</Text>
-                <Text style={{ color: c, fontSize: 16, fontWeight: "700" }}>{value}</Text>
+                <Text style={{ color: c, fontSize: 16, fontFamily: Fonts.bold }}>{value}</Text>
               </View>
             ))}
           </View>
@@ -244,7 +244,7 @@ export default function GoalsScreen() {
                 ...pillShadow(Colors.accent),
               }}
             >
-              <Text style={{ color: "#000", fontSize: 15, fontWeight: "700" }}>Create my first goal</Text>
+              <Text style={{ color: "#000", fontSize: 15, fontFamily: Fonts.bold }}>Create my first goal</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -273,11 +273,11 @@ export default function GoalsScreen() {
               <View style={{ alignItems: "center", marginTop: -8, marginBottom: 4 }}>
                 <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
               </View>
-              <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700" }}>New Goal</Text>
+              <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.bold }}>New Goal</Text>
 
               {/* Emoji picker */}
               <View>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
                   Pick an emoji
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -329,7 +329,7 @@ export default function GoalsScreen() {
 
               {/* Color picker */}
               <View>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
                   Color
                 </Text>
                 <View style={{ flexDirection: "row", gap: 10 }}>
@@ -369,11 +369,11 @@ export default function GoalsScreen() {
             <View style={{ alignItems: "center", marginTop: -8, marginBottom: 4 }}>
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
             </View>
-            <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>
+            <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>
               {goals.find((g) => g.id === showContribute)?.name ?? "Add Funds"}
             </Text>
             <TextInput
-              style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 20, fontWeight: "700", textAlign: "center" }}
+              style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 20, fontFamily: Fonts.bold, textAlign: "center" }}
               placeholder="$0.00"
               placeholderTextColor={Colors.text.muted}
               value={contributeAmount}

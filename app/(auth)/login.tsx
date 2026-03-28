@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { Link, router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, pillShadow, Fonts } from "@/constants/theme";
 
 export default function LoginScreen() {
   const { signIn, isLoading } = useAuthStore();
@@ -61,7 +61,7 @@ export default function LoginScreen() {
           }}>
             <Text style={{ fontSize: 26, fontWeight: "900", color: Colors.accent }}>F</Text>
           </View>
-          <Text style={{ color: Colors.text.primary, fontSize: 32, fontWeight: "800", letterSpacing: -1 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 32, fontFamily: Fonts.extraBold, letterSpacing: -1 }}>
             Welcome back
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, marginTop: 6, lineHeight: 22 }}>
@@ -110,7 +110,7 @@ export default function LoginScreen() {
           {isLoading ? (
             <ActivityIndicator color="#000" />
           ) : (
-            <Text style={{ color: "#000", fontWeight: "700", fontSize: 16, letterSpacing: 0.1 }}>
+            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16, letterSpacing: 0.1 }}>
               Sign In
             </Text>
           )}
@@ -120,7 +120,7 @@ export default function LoginScreen() {
         <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 24, gap: 4 }}>
           <Text style={{ color: Colors.text.muted, fontSize: 14 }}>Don't have an account?</Text>
           <Link href="/(auth)/register">
-            <Text style={{ color: Colors.accent, fontWeight: "600", fontSize: 14 }}>Sign up</Text>
+            <Text style={{ color: Colors.accent, fontFamily: Fonts.semiBold, fontSize: 14 }}>Sign up</Text>
           </Link>
         </View>
       </View>

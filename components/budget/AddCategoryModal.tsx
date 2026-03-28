@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useState } from "react";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import Button from "@/components/ui/Button";
 
 const EMOJI_OPTIONS = ["🍔", "🛒", "🚗", "🏠", "💊", "🎬", "✈️", "📱", "💡", "🎓", "👗", "🐾", "💵", "📦", "🏋️", "🎮"];
@@ -80,7 +80,7 @@ export default function AddCategoryModal({ visible, onClose, onAdd }: AddCategor
 
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ paddingHorizontal: 20, gap: 14 }}>
-              <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700" }}>
+              <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.bold }}>
                 New Category
               </Text>
 
@@ -117,7 +117,7 @@ export default function AddCategoryModal({ visible, onClose, onAdd }: AddCategor
               />
 
               <TextInput
-                style={{ backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14, color: Colors.text.primary, borderWidth: 1, borderColor: Colors.border.subtle, fontSize: 20, fontWeight: "700" }}
+                style={{ backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14, color: Colors.text.primary, borderWidth: 1, borderColor: Colors.border.subtle, fontSize: 20, fontFamily: Fonts.bold }}
                 placeholder="Monthly amount"
                 placeholderTextColor={Colors.text.muted}
                 keyboardType="decimal-pad"

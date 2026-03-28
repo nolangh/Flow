@@ -13,7 +13,7 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useAuthStore } from "@/store/authStore";
 import { useTasksStore } from "@/store/tasksStore";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, pillShadow } from "@/constants/theme";
 import { formatCurrency, formatMonth, currentYearMonth } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
@@ -30,14 +30,14 @@ type Priority = "low" | "medium" | "high";
 function TimeInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
+      <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
         {label}
       </Text>
       <TextInput
         style={{
           backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14,
           color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle,
-          fontSize: 18, fontWeight: "600", textAlign: "center",
+          fontSize: 18, fontFamily: Fonts.semiBold, textAlign: "center",
         }}
         placeholder="9:00 AM"
         placeholderTextColor={Colors.text.muted}
@@ -78,7 +78,7 @@ function AssigneeChip({ name, color, size = "sm" }: { name: string | null; color
       borderWidth: 1, borderColor: color + "66",
       alignItems: "center", justifyContent: "center",
     }}>
-      <Text style={{ color, fontSize, fontWeight: "700" }}>{getInitials(name)}</Text>
+      <Text style={{ color, fontSize, fontFamily: Fonts.bold }}>{getInitials(name)}</Text>
     </View>
   );
 }
@@ -276,7 +276,7 @@ export default function CalendarScreen() {
         <View style={{ flex: 1 }}>
           <Text style={{
             color: task.is_completed ? Colors.text.muted : Colors.text.primary,
-            fontSize: 14, fontWeight: "600",
+            fontSize: 14, fontFamily: Fonts.semiBold,
             textDecorationLine: task.is_completed ? "line-through" : "none",
           }}>
             {task.title}
@@ -286,7 +286,7 @@ export default function CalendarScreen() {
           ) : null}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
             {task.due_date && (
-              <Text style={{ color: isOverdue ? Colors.danger : Colors.text.muted, fontSize: 11, fontWeight: "600" }}>
+              <Text style={{ color: isOverdue ? Colors.danger : Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
                 {isOverdue ? "Overdue · " : ""}{format(parseISO(task.due_date), "MMM d")}
               </Text>
             )}
@@ -319,11 +319,11 @@ export default function CalendarScreen() {
 
   const SectionHeader = ({ title, count }: { title: string; count: number }) => (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10, marginTop: 4 }}>
-      <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8 }}>
+      <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8 }}>
         {title}
       </Text>
       <View style={{ backgroundColor: Colors.bg.surface, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2 }}>
-        <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600" }}>{count}</Text>
+        <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>{count}</Text>
       </View>
     </View>
   );
@@ -337,7 +337,7 @@ export default function CalendarScreen() {
         flexDirection: "row", justifyContent: "space-between",
         alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 16,
       }}>
-        <Text style={{ color: Colors.text.primary, fontSize: 26, fontWeight: "800", letterSpacing: -0.5 }}>
+        <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>
           {calTab === "calendar" ? "Calendar" : "Tasks"}
         </Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
@@ -346,7 +346,7 @@ export default function CalendarScreen() {
               <TouchableOpacity onPress={handlePrevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Ionicons name="chevron-back" size={14} color={Colors.text.muted} />
               </TouchableOpacity>
-              <Text style={{ color: Colors.text.secondary, fontSize: 13, fontWeight: "600", marginHorizontal: 6 }}>
+              <Text style={{ color: Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold, marginHorizontal: 6 }}>
                 {formatMonth(`${viewMonth}-01`)}
               </Text>
               <TouchableOpacity onPress={handleNextMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -359,7 +359,7 @@ export default function CalendarScreen() {
               onPress={() => { resetTaskModal(); setShowAddTask(true); }}
               style={{ backgroundColor: Colors.accent, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, ...pillShadow(Colors.accent) }}
             >
-              <Text style={{ color: "#000", fontSize: 13, fontWeight: "700" }}>+ Task</Text>
+              <Text style={{ color: "#000", fontSize: 13, fontFamily: Fonts.bold }}>+ Task</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -376,7 +376,7 @@ export default function CalendarScreen() {
               backgroundColor: calTab === tab ? Colors.accent : "transparent",
             }}
           >
-            <Text style={{ color: calTab === tab ? "#000" : Colors.text.muted, fontSize: 13, fontWeight: "700", textTransform: "capitalize" }}>
+            <Text style={{ color: calTab === tab ? "#000" : Colors.text.muted, fontSize: 13, fontFamily: Fonts.bold, textTransform: "capitalize" }}>
               {tab === "calendar" ? "📅 Calendar" : "✅ Tasks"}
             </Text>
           </TouchableOpacity>
@@ -393,7 +393,7 @@ export default function CalendarScreen() {
               <View style={{ flexDirection: "row", marginBottom: 6 }}>
                 {DAY_LABELS.map((d) => (
                   <View key={d} style={{ flex: 1, alignItems: "center", paddingBottom: 6 }}>
-                    <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "700" }}>{d}</Text>
+                    <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold }}>{d}</Text>
                   </View>
                 ))}
               </View>
@@ -447,7 +447,7 @@ export default function CalendarScreen() {
             {/* Selected day panel */}
             <View style={{ paddingHorizontal: 20 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <Text style={{ color: selectedDate ? Colors.text.primary : Colors.text.muted, fontSize: 15, fontWeight: "600" }}>
+                <Text style={{ color: selectedDate ? Colors.text.primary : Colors.text.muted, fontSize: 15, fontFamily: Fonts.semiBold }}>
                   {selectedDate ? format(parseISO(selectedDate), "EEEE, MMMM d") : "Select a day"}
                 </Text>
                 {selectedDate && (
@@ -456,13 +456,13 @@ export default function CalendarScreen() {
                       onPress={() => { resetTaskModal(); setShowAddTask(true); }}
                       style={{ backgroundColor: TASK_PURPLE + "22", borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: TASK_PURPLE + "44" }}
                     >
-                      <Text style={{ color: TASK_PURPLE, fontSize: 12, fontWeight: "700" }}>+ Task</Text>
+                      <Text style={{ color: TASK_PURPLE, fontSize: 12, fontFamily: Fonts.bold }}>+ Task</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => setShowAddEvent(true)}
                       style={{ backgroundColor: Colors.accent, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, ...pillShadow(Colors.accent) }}
                     >
-                      <Text style={{ color: "#000", fontSize: 12, fontWeight: "700" }}>+ Event</Text>
+                      <Text style={{ color: "#000", fontSize: 12, fontFamily: Fonts.bold }}>+ Event</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -494,7 +494,7 @@ export default function CalendarScreen() {
                     />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "600" }}>{ev.title}</Text>
+                    <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.semiBold }}>{ev.title}</Text>
                     {ev.description && <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }}>{ev.description}</Text>}
                     {!ev.all_day && ev.start_at && (
                       <Text style={{ color: Colors.text.secondary, fontSize: 12, marginTop: 2 }}>
@@ -502,7 +502,7 @@ export default function CalendarScreen() {
                         {ev.end_at ? ` – ${format(parseISO(ev.end_at), "h:mm a")}` : ""}
                       </Text>
                     )}
-                    {ev.amount && <Text style={{ color: Colors.danger, fontSize: 13, fontWeight: "700", marginTop: 4 }}>{formatCurrency(ev.amount)}</Text>}
+                    {ev.amount && <Text style={{ color: Colors.danger, fontSize: 13, fontFamily: Fonts.bold, marginTop: 4 }}>{formatCurrency(ev.amount)}</Text>}
                   </View>
                   {ev.source === "manual" && (
                     <TouchableOpacity onPress={() => deleteEvent(ev.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.bg.overlay, alignItems: "center", justifyContent: "center" }}>
@@ -566,7 +566,7 @@ export default function CalendarScreen() {
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>New Event</Text>
+              <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>New Event</Text>
               <Text style={{ color: Colors.text.muted, fontSize: 14 }}>
                 {selectedDate ? format(parseISO(selectedDate), "MMM d") : ""}
               </Text>
@@ -612,7 +612,7 @@ export default function CalendarScreen() {
             </View>
 
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>New Task</Text>
+              <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>New Task</Text>
               {taskDueDate && (
                 <Text style={{ color: Colors.text.muted, fontSize: 13 }}>
                   Due {format(parseISO(taskDueDate), "MMM d")}
@@ -641,7 +641,7 @@ export default function CalendarScreen() {
 
             {/* Priority */}
             <View>
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Priority</Text>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Priority</Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 {(["low", "medium", "high"] as Priority[]).map((p) => (
                   <TouchableOpacity
@@ -654,7 +654,7 @@ export default function CalendarScreen() {
                       borderColor: taskPriority === p ? PRIORITY_COLORS[p] : Colors.border.subtle,
                     }}
                   >
-                    <Text style={{ color: taskPriority === p ? PRIORITY_COLORS[p] : Colors.text.muted, fontSize: 13, fontWeight: "700", textTransform: "capitalize" }}>
+                    <Text style={{ color: taskPriority === p ? PRIORITY_COLORS[p] : Colors.text.muted, fontSize: 13, fontFamily: Fonts.bold, textTransform: "capitalize" }}>
                       {PRIORITY_LABELS[p]}
                     </Text>
                   </TouchableOpacity>
@@ -665,7 +665,7 @@ export default function CalendarScreen() {
             {/* Assignee */}
             {members.length > 0 && (
               <View>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Assign to</Text>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Assign to</Text>
                 <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
                   <TouchableOpacity
                     onPress={() => setTaskAssignee(null)}
@@ -675,7 +675,7 @@ export default function CalendarScreen() {
                       borderWidth: 1.5, borderColor: !taskAssignee ? Colors.border.strong : Colors.border.subtle,
                     }}
                   >
-                    <Text style={{ color: !taskAssignee ? Colors.text.primary : Colors.text.muted, fontSize: 13, fontWeight: "600" }}>Unassigned</Text>
+                    <Text style={{ color: !taskAssignee ? Colors.text.primary : Colors.text.muted, fontSize: 13, fontFamily: Fonts.semiBold }}>Unassigned</Text>
                   </TouchableOpacity>
                   {members.map((m) => {
                     const isMe = m.id === user?.id;
@@ -693,7 +693,7 @@ export default function CalendarScreen() {
                         }}
                       >
                         <AssigneeChip name={m.full_name} color={color} size="sm" />
-                        <Text style={{ color: selected ? color : Colors.text.secondary, fontSize: 13, fontWeight: "600" }}>
+                        <Text style={{ color: selected ? color : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
                           {isMe ? "Me" : (m.full_name ?? m.email)}
                         </Text>
                       </TouchableOpacity>

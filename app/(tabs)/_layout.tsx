@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { View, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -47,7 +47,7 @@ export default function TabsLayout() {
         },
         tabBarActiveTintColor: Colors.accent,
         tabBarInactiveTintColor: Colors.text.muted,
-        tabBarLabelStyle: { fontSize: 10, fontWeight: "600", marginTop: 2 },
+        tabBarLabelStyle: { fontSize: 10, fontFamily: Fonts.semiBold, marginTop: 2 },
         tabBarShowLabel: false,
       }}
     >

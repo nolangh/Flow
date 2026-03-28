@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useState, useEffect } from "react";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import Button from "@/components/ui/Button";
 import type { BudgetCategory } from "@/types";
 
@@ -110,11 +110,11 @@ export default function EditCategoryModal({ visible, category, onClose, onSave, 
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ paddingHorizontal: 20, gap: 14 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700" }}>
+                <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.bold }}>
                   Edit {category?.is_fixed ? "Bill" : category?.is_income ? "Income" : "Category"}
                 </Text>
                 <TouchableOpacity onPress={handleDelete} disabled={deleting}>
-                  <Text style={{ color: Colors.danger, fontSize: 14, fontWeight: "600" }}>
+                  <Text style={{ color: Colors.danger, fontSize: 14, fontFamily: Fonts.semiBold }}>
                     {deleting ? "Deleting…" : "Delete"}
                   </Text>
                 </TouchableOpacity>
@@ -153,7 +153,7 @@ export default function EditCategoryModal({ visible, category, onClose, onSave, 
               />
 
               <TextInput
-                style={{ backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14, color: Colors.text.primary, borderWidth: 1, borderColor: Colors.border.subtle, fontSize: 20, fontWeight: "700" }}
+                style={{ backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14, color: Colors.text.primary, borderWidth: 1, borderColor: Colors.border.subtle, fontSize: 20, fontFamily: Fonts.bold }}
                 placeholder="Monthly amount"
                 placeholderTextColor={Colors.text.muted}
                 keyboardType="decimal-pad"

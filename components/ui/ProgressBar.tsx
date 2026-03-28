@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 
 interface ProgressBarProps {
   spent: number;
@@ -41,7 +41,7 @@ export default function ProgressBar({ spent, limit, showLabel = false, height = 
 
       {showLabel && (
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 5 }}>
-          <Text style={{ color: fillColor, fontSize: 11, fontWeight: "600" }}>
+          <Text style={{ color: fillColor, fontSize: 11, fontFamily: Fonts.semiBold }}>
             ${spent.toFixed(0)} spent
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 11 }}>

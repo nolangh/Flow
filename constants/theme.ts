@@ -2,6 +2,20 @@
  * Flow Design System — Cash App / Chime inspired premium fintech theme.
  */
 
+/**
+ * Outfit font family — map fontWeight to the correct loaded variant.
+ * Use these instead of fontWeight when you want precise control.
+ */
+export const Fonts = {
+  light:     "Outfit-Light",
+  regular:   "Outfit-Regular",
+  medium:    "Outfit-Medium",
+  semiBold:  "Outfit-SemiBold",
+  bold:      "Outfit-Bold",
+  extraBold: "Outfit-ExtraBold",
+  black:     "Outfit-Black",
+} as const;
+
 export const Colors = {
   bg: {
     app: "#000000",
@@ -14,6 +28,7 @@ export const Colors = {
   border: {
     subtle: "#2C2C2E",
     dim: "#1C1C1E",
+    strong: "#48484A",
   },
 
   // Primary accent — Cash App green

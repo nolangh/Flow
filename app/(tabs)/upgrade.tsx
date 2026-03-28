@@ -6,7 +6,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import { UPGRADE_BENEFITS } from "@/constants/features";
 import { adaptlyConfigured, showPaywall, restorePurchases } from "@/lib/adaptly";
 import Button from "@/components/ui/Button";
@@ -88,7 +88,7 @@ export default function UpgradeScreen() {
           }}>
             <Ionicons name="sparkles" size={32} color={Colors.accent} />
           </View>
-          <Text style={{ color: Colors.text.primary, fontSize: 28, fontWeight: "800", letterSpacing: -0.5, textAlign: "center", marginBottom: 10 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 28, fontFamily: Fonts.extraBold, letterSpacing: -0.5, textAlign: "center", marginBottom: 10 }}>
             Flow Premium
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, textAlign: "center", lineHeight: 22 }}>
@@ -116,13 +116,13 @@ export default function UpgradeScreen() {
                     backgroundColor: Colors.accent, borderRadius: 8,
                     paddingHorizontal: 8, paddingVertical: 3, marginBottom: 4,
                   }}>
-                    <Text style={{ color: "#000", fontSize: 10, fontWeight: "800" }}>{plan.badge}</Text>
+                    <Text style={{ color: "#000", fontSize: 10, fontFamily: Fonts.extraBold }}>{plan.badge}</Text>
                   </View>
                 )}
-                <Text style={{ color: selectedPlan === plan.id ? Colors.accent : Colors.text.secondary, fontSize: 13, fontWeight: "600" }}>
+                <Text style={{ color: selectedPlan === plan.id ? Colors.accent : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
                   {plan.label}
                 </Text>
-                <Text style={{ color: Colors.text.primary, fontSize: 22, fontWeight: "800" }}>{plan.price}</Text>
+                <Text style={{ color: Colors.text.primary, fontSize: 22, fontFamily: Fonts.extraBold }}>{plan.price}</Text>
                 <Text style={{ color: Colors.text.muted, fontSize: 12 }}>{plan.period}</Text>
                 {selectedPlan === plan.id && (
                   <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.accent, alignItems: "center", justifyContent: "center", marginTop: 4 }}>
@@ -136,7 +136,7 @@ export default function UpgradeScreen() {
 
         {/* Benefits */}
         <View style={{ paddingHorizontal: 20, gap: 10, marginBottom: 28 }}>
-          <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4 }}>
+          <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4 }}>
             Everything included
           </Text>
           {UPGRADE_BENEFITS.map((benefit) => (
@@ -156,7 +156,7 @@ export default function UpgradeScreen() {
                 <Ionicons name={benefit.icon as any} size={18} color={Colors.accent} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "700" }}>{benefit.title}</Text>
+                <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.bold }}>{benefit.title}</Text>
                 <Text style={{ color: Colors.text.muted, fontSize: 12, lineHeight: 16, marginTop: 1 }}>{benefit.description}</Text>
               </View>
               <Ionicons name="checkmark-circle" size={18} color={Colors.accent} />
@@ -187,7 +187,7 @@ export default function UpgradeScreen() {
             marginHorizontal: 20, marginTop: 16, backgroundColor: "#1a1400",
             borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "#3a2f00",
           }}>
-            <Text style={{ color: "#facc15", fontSize: 12, fontWeight: "600", marginBottom: 2 }}>Dev Mode — Adaptly not configured</Text>
+            <Text style={{ color: "#facc15", fontSize: 12, fontFamily: Fonts.semiBold, marginBottom: 2 }}>Dev Mode — Adaptly not configured</Text>
             <Text style={{ color: "#facc15", fontSize: 11 }}>
               Add EXPO_PUBLIC_ADAPTLY_KEY to secrets and install the Adaptly SDK to enable real purchases.
             </Text>

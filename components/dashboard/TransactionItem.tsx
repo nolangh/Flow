@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Transaction } from "@/types";
 
@@ -57,7 +57,7 @@ export default function TransactionItem({ transaction: tx, onPress }: Transactio
 
       <View style={{ flex: 1 }}>
         <Text
-          style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "600" }}
+          style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.semiBold }}
           numberOfLines={1}
         >
           {tx.merchant_name ?? tx.name}
@@ -70,7 +70,7 @@ export default function TransactionItem({ transaction: tx, onPress }: Transactio
         </Text>
       </View>
 
-      <Text style={{ color: amountColor, fontSize: 15, fontWeight: "700", letterSpacing: -0.3 }}>
+      <Text style={{ color: amountColor, fontSize: 15, fontFamily: Fonts.bold, letterSpacing: -0.3 }}>
         {sign}{formatCurrency(tx.amount)}
       </Text>
     </TouchableOpacity>

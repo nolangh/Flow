@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetSummary } from "@/hooks/useBudgetSummary";
-import { Colors, getBudgetColor, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, getBudgetColor, pillShadow } from "@/constants/theme";
 import { formatCurrency, currentYearMonth, formatMonth } from "@/lib/utils";
 import Divider from "@/components/ui/Divider";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -132,7 +132,7 @@ export default function BudgetScreen() {
         alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 4,
       }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-          <Text style={{ color: Colors.text.primary, fontSize: 26, fontWeight: "800", letterSpacing: -0.5 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>
             Budget
           </Text>
           {/* Month nav inline */}
@@ -140,7 +140,7 @@ export default function BudgetScreen() {
             <TouchableOpacity onPress={handlePrevMonth}>
               <Ionicons name="chevron-back" size={14} color={Colors.text.muted} />
             </TouchableOpacity>
-            <Text style={{ color: Colors.text.secondary, fontSize: 12, fontWeight: "600" }}>
+            <Text style={{ color: Colors.text.secondary, fontSize: 12, fontFamily: Fonts.semiBold }}>
               {formatMonth(`${currentMonth}-01`)}
             </Text>
             <TouchableOpacity onPress={handleNextMonth} disabled={currentMonth >= currentYearMonth()}>
@@ -223,10 +223,10 @@ export default function BudgetScreen() {
             }}
           >
             <View>
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.5 }}>
                 Monthly Budget
               </Text>
-              <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "800", letterSpacing: -0.5, marginTop: 2 }}>
+              <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.extraBold, letterSpacing: -0.5, marginTop: 2 }}>
                 {summary.totalLimit > 0 ? formatCurrency(summary.totalLimit) : "Not set"}
               </Text>
             </View>
@@ -237,7 +237,7 @@ export default function BudgetScreen() {
               borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
             }}>
               <Ionicons name="pencil" size={12} color={Colors.accent} />
-              <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: "600" }}>Edit</Text>
+              <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.semiBold }}>Edit</Text>
             </View>
           </TouchableOpacity>
 
@@ -250,7 +250,7 @@ export default function BudgetScreen() {
             ].map(({ label, value, color }) => (
               <View key={label} style={{ alignItems: "center" }}>
                 <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>{label}</Text>
-                <Text style={{ color, fontSize: 17, fontWeight: "700", letterSpacing: -0.5 }}>
+                <Text style={{ color, fontSize: 17, fontFamily: Fonts.bold, letterSpacing: -0.5 }}>
                   {formatCurrency(value)}
                 </Text>
               </View>
@@ -278,7 +278,7 @@ export default function BudgetScreen() {
             borderColor: Colors.border.subtle,
             gap: 16,
           }}>
-            <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700" }}>
+            <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.bold }}>
               Set Monthly Budget
             </Text>
             <Text style={{ color: Colors.text.muted, fontSize: 13, lineHeight: 18 }}>
@@ -289,7 +289,7 @@ export default function BudgetScreen() {
                 backgroundColor: Colors.bg.surface,
                 borderRadius: 12, padding: 16,
                 color: Colors.text.primary,
-                fontSize: 28, fontWeight: "700", letterSpacing: -0.5,
+                fontSize: 28, fontFamily: Fonts.bold, letterSpacing: -0.5,
                 borderWidth: 1, borderColor: Colors.accentBorder,
                 textAlign: "center",
               }}
@@ -309,7 +309,7 @@ export default function BudgetScreen() {
                   borderWidth: 1, borderColor: Colors.border.subtle,
                 }}
               >
-                <Text style={{ color: Colors.text.secondary, fontWeight: "600" }}>Cancel</Text>
+                <Text style={{ color: Colors.text.secondary, fontFamily: Fonts.semiBold }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={async () => {
@@ -331,7 +331,7 @@ export default function BudgetScreen() {
                   ...pillShadow(Colors.accent),
                 }}
               >
-                <Text style={{ color: "#000", fontWeight: "700" }}>Save</Text>
+                <Text style={{ color: "#000", fontFamily: Fonts.bold }}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -357,7 +357,7 @@ export default function BudgetScreen() {
           >
             <Text style={{
               color: tab === t.id ? "#000" : Colors.text.secondary,
-              fontWeight: "700", fontSize: 13,
+              fontFamily: Fonts.bold, fontSize: 13,
             }}>
               {t.label}
             </Text>
@@ -378,10 +378,10 @@ export default function BudgetScreen() {
             {fixedCategories.length > 0 && (
               <View>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
                     Fixed Bills
                   </Text>
-                  <Text style={{ color: Colors.text.secondary, fontSize: 13, fontWeight: "700" }}>
+                  <Text style={{ color: Colors.text.secondary, fontSize: 13, fontFamily: Fonts.bold }}>
                     {formatCurrency(totalFixed)}/mo
                   </Text>
                 </View>
@@ -406,7 +406,7 @@ export default function BudgetScreen() {
 
             {/* ── Spending Budgets ─────────────────────────────────── */}
             <View>
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
                 Spending
               </Text>
               {spendCategories.length === 0 ? (
@@ -425,7 +425,7 @@ export default function BudgetScreen() {
             {/* ── Income ───────────────────────────────────────────── */}
             {incomeCategories.length > 0 && (
               <View>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
                   Income
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
@@ -453,7 +453,7 @@ export default function BudgetScreen() {
               }}
             >
               <Ionicons name="add-circle-outline" size={18} color={Colors.accent} />
-              <Text style={{ color: Colors.accent, fontSize: 14, fontWeight: "600" }}>Add Category</Text>
+              <Text style={{ color: Colors.accent, fontSize: 14, fontFamily: Fonts.semiBold }}>Add Category</Text>
             </TouchableOpacity>
           </View>
         ) : tab === "charts" ? (
@@ -463,7 +463,7 @@ export default function BudgetScreen() {
               backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20,
               borderWidth: 1, borderColor: Colors.border.subtle, alignItems: "center",
             }}>
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 16, alignSelf: "flex-start" }}>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 16, alignSelf: "flex-start" }}>
                 Budget Allocation
               </Text>
               {chartData.length > 0 ? (
@@ -481,7 +481,7 @@ export default function BudgetScreen() {
             {/* Spending breakdown bars */}
             {chartData.length > 0 && (
               <View style={{ backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: Colors.border.subtle, gap: 14 }}>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
                   Spending by Category
                 </Text>
                 {categories.filter((c) => !c.is_income).map((c, i) => {
@@ -491,7 +491,7 @@ export default function BudgetScreen() {
                   return (
                     <View key={c.id} style={{ gap: 6 }}>
                       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                        <Text style={{ color: Colors.text.primary, fontSize: 13, fontWeight: "600" }}>{c.name}</Text>
+                        <Text style={{ color: Colors.text.primary, fontSize: 13, fontFamily: Fonts.semiBold }}>{c.name}</Text>
                         <Text style={{ color: Colors.text.muted, fontSize: 12 }}>
                           {formatCurrency(spent)} / {formatCurrency(c.monthly_limit)}
                         </Text>
@@ -507,7 +507,7 @@ export default function BudgetScreen() {
             {/* Spending trend line chart */}
             {summary.spendingData.length > 1 && (
               <View style={{ backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: Colors.border.subtle }}>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 14 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 14 }}>
                   Spending Trend
                 </Text>
                 <BezierChart
@@ -522,7 +522,7 @@ export default function BudgetScreen() {
             {/* Income vs expense summary */}
             {summary.totalIncome > 0 && (
               <View style={{ backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: Colors.border.subtle, gap: 12 }}>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
                   Income vs Expenses
                 </Text>
                 <AllocationChart
@@ -579,7 +579,7 @@ export default function BudgetScreen() {
             ...pillShadow(Colors.accent),
           }}
         >
-          <Text style={{ color: "#000", fontWeight: "700", fontSize: 15 }}>+ Add Transaction</Text>
+          <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 15 }}>+ Add Transaction</Text>
         </TouchableOpacity>
       </View>
 

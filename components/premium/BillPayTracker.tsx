@@ -3,7 +3,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import { useBudgetStore } from "@/store/budgetStore";
 import { formatCurrency } from "@/lib/utils";
 import Button from "@/components/ui/Button";
@@ -98,7 +98,7 @@ export default function BillPayTracker() {
     <View style={{ gap: 12 }}>
       {/* Linked accounts section */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+        <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
           Linked Accounts ({accounts.length})
         </Text>
         <TouchableOpacity
@@ -111,7 +111,7 @@ export default function BillPayTracker() {
           }}
         >
           <Ionicons name="add" size={14} color={Colors.accent} />
-          <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: "600" }}>Add Account</Text>
+          <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.semiBold }}>Add Account</Text>
         </TouchableOpacity>
       </View>
 
@@ -128,11 +128,11 @@ export default function BillPayTracker() {
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                   <Ionicons name={ACCOUNT_ICONS[acct.type] as any} size={14} color={Colors.accent} />
-                  <Text style={{ color: Colors.text.secondary, fontSize: 11, fontWeight: "600", textTransform: "capitalize" }}>
+                  <Text style={{ color: Colors.text.secondary, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "capitalize" }}>
                     {acct.type}
                   </Text>
                 </View>
-                <Text style={{ color: Colors.text.primary, fontSize: 13, fontWeight: "700" }} numberOfLines={1}>
+                <Text style={{ color: Colors.text.primary, fontSize: 13, fontFamily: Fonts.bold }} numberOfLines={1}>
                   {acct.name}
                 </Text>
                 {acct.last4 && (
@@ -162,7 +162,7 @@ export default function BillPayTracker() {
       )}
 
       {/* Bills list */}
-      <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4 }}>
+      <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginTop: 4 }}>
         Fixed Bills
       </Text>
 
@@ -180,7 +180,7 @@ export default function BillPayTracker() {
           >
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "700" }}>{bill.name}</Text>
+                <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.bold }}>{bill.name}</Text>
                 <Text style={{ color: Colors.text.muted, fontSize: 12 }}>
                   {bill.fixed_day_of_month ? `Due the ${bill.fixed_day_of_month}th` : "No due date set"}
                   {" · "}{formatCurrency(bill.monthly_limit)}
@@ -201,14 +201,14 @@ export default function BillPayTracker() {
               }}>
                 <Ionicons name="link" size={13} color={Colors.accent} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: "700" }}>{linkedAcct.name}</Text>
+                  <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.bold }}>{linkedAcct.name}</Text>
                   {linkedAcct.last4 && (
                     <Text style={{ color: Colors.accent, fontSize: 11 }}>•••• {linkedAcct.last4}</Text>
                   )}
                 </View>
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={{ color: Colors.text.muted, fontSize: 10 }}>Reminder</Text>
-                  <Text style={{ color: Colors.accent, fontSize: 12, fontWeight: "600" }}>
+                  <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.semiBold }}>
                     {link?.reminderDaysBefore}d before
                   </Text>
                 </View>
@@ -247,7 +247,7 @@ export default function BillPayTracker() {
             <View style={{ alignItems: "center", marginTop: -8, marginBottom: 4 }}>
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
             </View>
-            <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>Add Account</Text>
+            <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>Add Account</Text>
 
             <TextInput
               style={{ backgroundColor: Colors.bg.surface, borderRadius: 12, padding: 14, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 15 }}
@@ -268,7 +268,7 @@ export default function BillPayTracker() {
                     borderWidth: 1.5, borderColor: acctType === t ? Colors.accentBorder : Colors.border.subtle,
                   }}
                 >
-                  <Text style={{ color: acctType === t ? Colors.accent : Colors.text.muted, fontSize: 12, fontWeight: "600", textTransform: "capitalize" }}>
+                  <Text style={{ color: acctType === t ? Colors.accent : Colors.text.muted, fontSize: 12, fontFamily: Fonts.semiBold, textTransform: "capitalize" }}>
                     {t}
                   </Text>
                 </TouchableOpacity>
@@ -313,7 +313,7 @@ export default function BillPayTracker() {
             <View style={{ alignItems: "center", marginTop: -8, marginBottom: 4 }}>
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
             </View>
-            <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>
+            <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>
               Link Account
             </Text>
             <Text style={{ color: Colors.text.muted, fontSize: 13 }}>Which account pays this bill?</Text>
@@ -330,7 +330,7 @@ export default function BillPayTracker() {
               >
                 <Ionicons name={ACCOUNT_ICONS[acct.type] as any} size={18} color={Colors.accent} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "600" }}>{acct.name}</Text>
+                  <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.semiBold }}>{acct.name}</Text>
                   <Text style={{ color: Colors.text.muted, fontSize: 12 }}>
                     {acct.type}{acct.last4 ? ` •••• ${acct.last4}` : ""}
                     {acct.institution ? ` · ${acct.institution}` : ""}

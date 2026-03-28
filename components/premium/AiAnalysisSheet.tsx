@@ -4,7 +4,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, pillShadow, Fonts } from "@/constants/theme";
 import { formatCurrency } from "@/lib/utils";
 import { openaiConfigured, analyzeBudget, type AnalysisResult, type BudgetSuggestion } from "@/lib/openai";
 import { useBudgetStore } from "@/store/budgetStore";
@@ -106,14 +106,14 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
           <Ionicons name="sparkles" size={20} color={Colors.accent} />
         </View>
         <View>
-          <Text style={{ color: Colors.text.primary, fontSize: 18, fontWeight: "700" }}>AI Budget Analysis</Text>
+          <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>AI Budget Analysis</Text>
           <Text style={{ color: Colors.text.muted, fontSize: 12 }}>Powered by GPT-4o mini</Text>
         </View>
       </View>
 
       {/* Priority goal chips */}
       <View>
-        <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+        <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
           What do you want to optimize?
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
@@ -129,7 +129,7 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
                   borderColor: priorityGoal === s ? Colors.accentBorder : Colors.border.subtle,
                 }}
               >
-                <Text style={{ color: priorityGoal === s ? Colors.accent : Colors.text.secondary, fontSize: 13, fontWeight: "600" }}>
+                <Text style={{ color: priorityGoal === s ? Colors.accent : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
                   {s}
                 </Text>
               </TouchableOpacity>
@@ -166,7 +166,7 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
             backgroundColor: Colors.bg.surface, borderRadius: 16, padding: 16,
             borderWidth: 1, borderColor: Colors.border.subtle,
           }}>
-            <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
               Analysis Summary
             </Text>
             <Text style={{ color: Colors.text.primary, fontSize: 14, lineHeight: 20 }}>{result.summary}</Text>
@@ -177,20 +177,20 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
                 flexDirection: "row", gap: 8, alignItems: "flex-start",
               }}>
                 <Ionicons name="bulb-outline" size={16} color={Colors.accent} style={{ marginTop: 1 }} />
-                <Text style={{ color: Colors.accent, fontSize: 13, lineHeight: 18, flex: 1, fontWeight: "500" }}>
+                <Text style={{ color: Colors.accent, fontSize: 13, lineHeight: 18, flex: 1, fontFamily: Fonts.medium }}>
                   {result.topInsight}
                 </Text>
               </View>
             )}
             {result.monthlyPotentialSavings > 0 && (
-              <Text style={{ color: Colors.accent, fontSize: 13, fontWeight: "700", marginTop: 10 }}>
+              <Text style={{ color: Colors.accent, fontSize: 13, fontFamily: Fonts.bold, marginTop: 10 }}>
                 Potential monthly savings: {formatCurrency(result.monthlyPotentialSavings)}
               </Text>
             )}
           </View>
 
           {/* Suggestions */}
-          <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+          <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
             Suggestions ({result.suggestions.length})
           </Text>
 
@@ -205,12 +205,12 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <View style={{ flex: 1, gap: 2 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "700" }}>{s.category}</Text>
+                    <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.bold }}>{s.category}</Text>
                     <View style={{
                       paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8,
                       backgroundColor: PRIORITY_COLORS[s.priority] + "22",
                     }}>
-                      <Text style={{ color: PRIORITY_COLORS[s.priority], fontSize: 10, fontWeight: "700", textTransform: "uppercase" }}>
+                      <Text style={{ color: PRIORITY_COLORS[s.priority], fontSize: 10, fontFamily: Fonts.bold, textTransform: "uppercase" }}>
                         {s.priority}
                       </Text>
                     </View>
@@ -221,7 +221,7 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
                   <Text style={{ color: Colors.text.muted, fontSize: 11, textDecorationLine: "line-through" }}>
                     {formatCurrency(s.currentLimit)}
                   </Text>
-                  <Text style={{ color: s.savingsImpact >= 0 ? Colors.accent : Colors.danger, fontSize: 16, fontWeight: "700" }}>
+                  <Text style={{ color: s.savingsImpact >= 0 ? Colors.accent : Colors.danger, fontSize: 16, fontFamily: Fonts.bold }}>
                     {formatCurrency(s.suggestedLimit)}
                   </Text>
                 </View>
@@ -242,7 +242,7 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
                   ) : (
                     <Ionicons name="checkmark-circle" size={15} color={Colors.accent} />
                   )}
-                  <Text style={{ color: Colors.accent, fontSize: 13, fontWeight: "600" }}>
+                  <Text style={{ color: Colors.accent, fontSize: 13, fontFamily: Fonts.semiBold }}>
                     Apply this suggestion
                   </Text>
                 </TouchableOpacity>

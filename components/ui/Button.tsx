@@ -1,6 +1,6 @@
 import { TouchableOpacity, Text, ActivityIndicator, View, type TouchableOpacityProps } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, pillShadow, Fonts } from "@/constants/theme";
 
 type Variant = "primary" | "danger" | "ghost" | "outline";
 type Size = "sm" | "md" | "lg";
@@ -92,7 +92,7 @@ export default function Button({
       ) : (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           {icon && <Ionicons name={icon} size={s.fontSize + 1} color={v.text} />}
-          <Text style={{ color: v.text, fontWeight: "700", fontSize: s.fontSize, letterSpacing: 0.1 }}>
+          <Text style={{ color: v.text, fontFamily: Fonts.bold, fontSize: s.fontSize, letterSpacing: 0.1 }}>
             {label}
           </Text>
         </View>

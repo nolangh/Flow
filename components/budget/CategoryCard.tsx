@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { Colors, getBudgetColor } from "@/constants/theme";
+import { Colors, getBudgetColor, Fonts } from "@/constants/theme";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { formatCurrency } from "@/lib/utils";
 import type { BudgetCategory } from "@/types";
@@ -32,8 +32,8 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
         }}
       >
         <Text style={{ fontSize: 22, marginBottom: 4 }}>{cat.emoji ?? "💵"}</Text>
-        <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "500" }}>{cat.name}</Text>
-        <Text style={{ color: Colors.accent, fontSize: 17, fontWeight: "700", letterSpacing: -0.3 }}>
+        <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.medium }}>{cat.name}</Text>
+        <Text style={{ color: Colors.accent, fontSize: 17, fontFamily: Fonts.bold, letterSpacing: -0.3 }}>
           {formatCurrency(limit)}
         </Text>
         <Text style={{ color: Colors.text.muted, fontSize: 11 }}>per month</Text>
@@ -64,7 +64,7 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
         </View>
 
         <View style={{ flex: 1 }}>
-          <Text style={{ color: Colors.text.primary, fontSize: 14, fontWeight: "600" }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.semiBold }}>
             {cat.name}
           </Text>
           {cat.fixed_day_of_month ? (
@@ -78,7 +78,7 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
           )}
         </View>
 
-        <Text style={{ color: Colors.text.primary, fontSize: 16, fontWeight: "700", letterSpacing: -0.3 }}>
+        <Text style={{ color: Colors.text.primary, fontSize: 16, fontFamily: Fonts.bold, letterSpacing: -0.3 }}>
           {formatCurrency(limit)}
         </Text>
       </TouchableOpacity>
@@ -102,16 +102,16 @@ export default function CategoryCard({ category: cat, onPress }: CategoryCardPro
         <Text style={{ fontSize: 22 }}>{cat.emoji ?? "📦"}</Text>
         {overBudget ? (
           <View style={{ backgroundColor: Colors.dangerSoft, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 }}>
-            <Text style={{ color: Colors.danger, fontSize: 10, fontWeight: "700" }}>OVER</Text>
+            <Text style={{ color: Colors.danger, fontSize: 10, fontFamily: Fonts.bold }}>OVER</Text>
           </View>
         ) : (
           <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{pct}%</Text>
         )}
       </View>
 
-      <Text style={{ color: Colors.text.secondary, fontSize: 12, fontWeight: "500" }}>{cat.name}</Text>
+      <Text style={{ color: Colors.text.secondary, fontSize: 12, fontFamily: Fonts.medium }}>{cat.name}</Text>
 
-      <Text style={{ color: activeColor, fontSize: 17, fontWeight: "700", letterSpacing: -0.5 }}>
+      <Text style={{ color: activeColor, fontSize: 17, fontFamily: Fonts.bold, letterSpacing: -0.5 }}>
         {formatCurrency(spent)}
       </Text>
 

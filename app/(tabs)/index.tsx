@@ -15,7 +15,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetSummary } from "@/hooks/useBudgetSummary";
-import { Colors, getBudgetColor, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, getBudgetColor, pillShadow } from "@/constants/theme";
 import { formatCurrency, currentYearMonth, formatMonth } from "@/lib/utils";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Divider from "@/components/ui/Divider";
@@ -90,7 +90,7 @@ export default function DashboardScreen() {
             <Text style={{ color: Colors.text.muted, fontSize: 13 }}>
               Good {greeting()}, {firstName}
             </Text>
-            <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700", letterSpacing: -0.5, marginTop: 1 }}>
+            <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.bold, letterSpacing: -0.5, marginTop: 1 }}>
               {household?.name ?? "My Household"}
             </Text>
           </View>
@@ -103,7 +103,7 @@ export default function DashboardScreen() {
             }}
             onPress={() => router.push("/(tabs)/settings")}
           >
-            <Text style={{ fontSize: 18, fontWeight: "700", color: Colors.accent }}>
+            <Text style={{ fontSize: 18, fontFamily: Fonts.bold, color: Colors.accent }}>
               {firstName.charAt(0).toUpperCase()}
             </Text>
           </TouchableOpacity>
@@ -123,7 +123,7 @@ export default function DashboardScreen() {
             <TouchableOpacity onPress={handlePrevMonth} style={{ padding: 4 }}>
               <Ionicons name="chevron-back" size={18} color={Colors.text.muted} />
             </TouchableOpacity>
-            <Text style={{ color: Colors.text.secondary, fontSize: 13, fontWeight: "600" }}>
+            <Text style={{ color: Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
               {formatMonth(`${currentMonth}-01`)}
             </Text>
             <TouchableOpacity
@@ -141,14 +141,14 @@ export default function DashboardScreen() {
 
           {/* Big balance */}
           <View style={{ alignItems: "center", marginBottom: 20 }}>
-            <Text style={{ color: Colors.text.muted, fontSize: 12, fontWeight: "600", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 12, fontFamily: Fonts.semiBold, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>
               Total Spent
             </Text>
             <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)}>
               <Text style={{
                 color: activeColor,
                 fontSize: 48,
-                fontWeight: "800",
+                fontFamily: Fonts.extraBold,
                 letterSpacing: -2,
                 lineHeight: 54,
               }}>
@@ -174,7 +174,7 @@ export default function DashboardScreen() {
             ].map(({ label, value, color }) => (
               <View key={label} style={{ alignItems: "center" }}>
                 <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>{label}</Text>
-                <Text style={{ color, fontSize: 15, fontWeight: "700", letterSpacing: -0.3 }}>
+                <Text style={{ color, fontSize: 15, fontFamily: Fonts.bold, letterSpacing: -0.3 }}>
                   {formatCurrency(value)}
                 </Text>
               </View>
@@ -185,11 +185,11 @@ export default function DashboardScreen() {
         {/* ── Category pills ── */}
         <View style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 12 }}>
-            <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
               Categories
             </Text>
             <TouchableOpacity onPress={() => router.push("/(tabs)/budget")}>
-              <Text style={{ color: Colors.accent, fontSize: 13, fontWeight: "600" }}>See All</Text>
+              <Text style={{ color: Colors.accent, fontSize: 13, fontFamily: Fonts.semiBold }}>See All</Text>
             </TouchableOpacity>
           </View>
 
@@ -228,12 +228,12 @@ export default function DashboardScreen() {
                   }}
                 >
                   <Text style={{ fontSize: 22, marginBottom: 8 }}>{cat.emoji ?? "📦"}</Text>
-                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "500" }} numberOfLines={1}>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.medium }} numberOfLines={1}>
                     {cat.name}
                   </Text>
                   {isFixed ? (
                     <>
-                      <Text style={{ color, fontSize: 15, fontWeight: "700", marginTop: 2, letterSpacing: -0.3 }}>
+                      <Text style={{ color, fontSize: 15, fontFamily: Fonts.bold, marginTop: 2, letterSpacing: -0.3 }}>
                         {formatCurrency(limit)}
                       </Text>
                       <Text style={{ color: paid ? Colors.accent : Colors.text.muted, fontSize: 10, marginTop: 6 }}>
@@ -242,7 +242,7 @@ export default function DashboardScreen() {
                     </>
                   ) : (
                     <>
-                      <Text style={{ color, fontSize: 15, fontWeight: "700", marginTop: 2, letterSpacing: -0.3 }}>
+                      <Text style={{ color, fontSize: 15, fontFamily: Fonts.bold, marginTop: 2, letterSpacing: -0.3 }}>
                         {formatCurrency(spent)}
                       </Text>
                       <View style={{ marginTop: 8 }}>
@@ -275,7 +275,7 @@ export default function DashboardScreen() {
                 }}
               >
                 <Ionicons name="add-circle-outline" size={24} color={Colors.accent} />
-                <Text style={{ color: Colors.accent, fontSize: 11, fontWeight: "600", textAlign: "center" }}>
+                <Text style={{ color: Colors.accent, fontSize: 11, fontFamily: Fonts.semiBold, textAlign: "center" }}>
                   Add Category
                 </Text>
               </TouchableOpacity>
@@ -286,11 +286,11 @@ export default function DashboardScreen() {
         {/* ── Recent Transactions ── */}
         <View style={{ paddingHorizontal: 20 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
-            <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8 }}>
+            <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.8 }}>
               Recent Activity
             </Text>
             <TouchableOpacity onPress={() => router.push("/(tabs)/budget")}>
-              <Text style={{ color: Colors.accent, fontSize: 13, fontWeight: "600" }}>See All</Text>
+              <Text style={{ color: Colors.accent, fontSize: 13, fontFamily: Fonts.semiBold }}>See All</Text>
             </TouchableOpacity>
           </View>
 
@@ -328,7 +328,7 @@ export default function DashboardScreen() {
               ...pillShadow(Colors.accent),
             }}
           >
-            <Text style={{ color: "#000", fontWeight: "700", fontSize: 16 }}>+ Add Transaction</Text>
+            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16 }}>+ Add Transaction</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

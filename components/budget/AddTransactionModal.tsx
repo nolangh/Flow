@@ -9,7 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { useState } from "react";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, pillShadow, Fonts } from "@/constants/theme";
 import Button from "@/components/ui/Button";
 import type { BudgetCategory } from "@/types";
 
@@ -106,7 +106,7 @@ export default function AddTransactionModal({
 
           <ScrollView keyboardShouldPersistTaps="handled">
             <View style={{ paddingHorizontal: 20, gap: 14 }}>
-              <Text style={{ color: Colors.text.primary, fontSize: 20, fontWeight: "700" }}>
+              <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.bold }}>
                 Add Transaction
               </Text>
 
@@ -134,7 +134,7 @@ export default function AddTransactionModal({
                         : {}),
                     }}
                   >
-                    <Text style={{ color: type === t ? "#000" : Colors.text.secondary, fontWeight: "600", fontSize: 13 }}>
+                    <Text style={{ color: type === t ? "#000" : Colors.text.secondary, fontFamily: Fonts.semiBold, fontSize: 13 }}>
                       {t === "debit" ? "💸 Expense" : "💰 Income"}
                     </Text>
                   </TouchableOpacity>
@@ -168,7 +168,7 @@ export default function AddTransactionModal({
                   borderWidth: 1,
                   borderColor: Colors.border.subtle,
                   fontSize: 24,
-                  fontWeight: "700",
+                  fontFamily: Fonts.bold,
                 }}
                 placeholder="0.00"
                 placeholderTextColor={Colors.text.muted}

@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 
 interface EmptyStateProps {
   icon?: string;
@@ -19,7 +19,7 @@ export default function EmptyState({ icon, title, subtitle }: EmptyStateProps) {
       }}>
         <Ionicons name="receipt-outline" size={24} color={Colors.text.muted} />
       </View>
-      <Text style={{ color: Colors.text.secondary, fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+      <Text style={{ color: Colors.text.secondary, fontSize: 16, fontFamily: Fonts.semiBold, marginBottom: 4 }}>
         {title}
       </Text>
       {subtitle && (

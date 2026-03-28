@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow } from "@/constants/theme";
+import { Colors, pillShadow, Fonts } from "@/constants/theme";
 
 export default function HouseholdScreen() {
   const { createHousehold, joinHousehold, isLoading } = useAuthStore();
@@ -67,7 +67,7 @@ export default function HouseholdScreen() {
           }}>
             <Text style={{ fontSize: 26, fontWeight: "900", color: Colors.accent }}>F</Text>
           </View>
-          <Text style={{ color: Colors.text.primary, fontSize: 30, fontWeight: "800", letterSpacing: -0.8, marginBottom: 6 }}>
+          <Text style={{ color: Colors.text.primary, fontSize: 30, fontFamily: Fonts.extraBold, letterSpacing: -0.8, marginBottom: 6 }}>
             Your Household
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, lineHeight: 22 }}>
@@ -99,7 +99,7 @@ export default function HouseholdScreen() {
             >
               <Text style={{
                 color: mode === m ? "#000" : Colors.text.secondary,
-                fontWeight: "700",
+                fontFamily: Fonts.bold,
                 fontSize: 14,
               }}>
                 {m === "create" ? "Create New" : "Join Existing"}
@@ -154,7 +154,7 @@ export default function HouseholdScreen() {
           {isLoading ? (
             <ActivityIndicator color="#000" />
           ) : (
-            <Text style={{ color: "#000", fontWeight: "700", fontSize: 16 }}>
+            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16 }}>
               {mode === "create" ? "Create Household" : "Join Household"}
             </Text>
           )}

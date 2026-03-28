@@ -63,6 +63,7 @@ export default function Button({
 
   return (
     <TouchableOpacity
+      accessibilityRole="button"
       activeOpacity={0.8}
       disabled={disabled || loading}
       style={[

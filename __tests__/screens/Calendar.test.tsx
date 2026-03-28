@@ -5,28 +5,33 @@ import CalendarScreen from "@/app/(tabs)/calendar";
 const mockAddEvent = jest.fn().mockResolvedValue(undefined);
 const mockDeleteEvent = jest.fn().mockResolvedValue(undefined);
 
-jest.mock("@/hooks/useCalendarEvents", () => ({
-  useCalendarEvents: () => ({
-    events: [
-      {
-        id: "ev1", household_id: "hh1", user_id: "u1",
-        title: "Doctor Appointment",
-        description: "Annual checkup",
-        start_at: "2025-03-15T14:00:00",
-        end_at: null, all_day: false,
-        source: "manual",
-        google_event_id: null, budget_category_id: null,
-        amount: null, color: null,
-        created_at: "", updated_at: "",
-      },
-    ],
-    isLoading: false,
-    error: null,
-    refetch: jest.fn(),
-    addEvent: mockAddEvent,
-    deleteEvent: mockDeleteEvent,
-  }),
-}));
+// Compute current month inside the factory — jest.mock is hoisted above variable declarations
+jest.mock("@/hooks/useCalendarEvents", () => {
+  const { format } = require("date-fns");
+  const currentMonth = format(new Date(), "yyyy-MM");
+  return {
+    useCalendarEvents: () => ({
+      events: [
+        {
+          id: "ev1", household_id: "hh1", user_id: "u1",
+          title: "Doctor Appointment",
+          description: "Annual checkup",
+          start_at: `${currentMonth}-15T14:00:00`,
+          end_at: null, all_day: false,
+          source: "manual",
+          google_event_id: null, budget_category_id: null,
+          amount: null, color: null,
+          created_at: "", updated_at: "",
+        },
+      ],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+      addEvent: mockAddEvent,
+      deleteEvent: mockDeleteEvent,
+    }),
+  };
+});
 
 jest.mock("@/store/budgetStore", () => ({
   useBudgetStore: () => ({
@@ -48,7 +53,6 @@ describe("CalendarScreen", () => {
 
   it("displays current month header", () => {
     const { getByText } = render(<CalendarScreen />);
-    // Should display current month — check for a month name
     expect(getByText(/\w+ \d{4}/)).toBeTruthy();
   });
 
@@ -85,17 +89,13 @@ describe("CalendarScreen", () => {
   });
 
   it("shows fixed bill dot for day 1 (Rent category)", () => {
-    // The bill shows as a budget_bill event on day 1
     const { toJSON } = render(<CalendarScreen />);
-    // Should render without error including the bill injection
     expect(toJSON()).toBeTruthy();
   });
 
   it("navigates to previous month", () => {
-    const { getByText, getAllByText } = render(<CalendarScreen />);
-    const prevBtn = getByText("‹");
-    fireEvent.press(prevBtn);
-    // Month should have changed — just ensure no crash
+    const { getByText } = render(<CalendarScreen />);
+    fireEvent.press(getByText("‹"));
     expect(getByText(/\w+ \d{4}/)).toBeTruthy();
   });
 });

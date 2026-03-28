@@ -24,21 +24,17 @@ describe("Button", () => {
   });
 
   it("shows ActivityIndicator when loading", () => {
-    const { queryByText, getByTestId } = render(
-      <Button label="Loading" loading />
-    );
-    // Text is hidden during loading
+    const { queryByText } = render(<Button label="Loading" loading />);
+    // Label text is hidden during loading (replaced by ActivityIndicator)
     expect(queryByText("Loading")).toBeNull();
   });
 
   it("applies primary variant background color", () => {
     const { getByRole } = render(<Button label="Primary" variant="primary" />);
-    // TouchableOpacity acts as button
     const btn = getByRole("button");
+    // style is a flat merged object in the test renderer
     expect(btn.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ backgroundColor: Colors.neonGreen }),
-      ])
+      expect.objectContaining({ backgroundColor: Colors.neonGreen })
     );
   });
 
@@ -46,9 +42,7 @@ describe("Button", () => {
     const { getByRole } = render(<Button label="Danger" variant="danger" />);
     const btn = getByRole("button");
     expect(btn.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ backgroundColor: Colors.dangerPink }),
-      ])
+      expect.objectContaining({ backgroundColor: Colors.dangerPink })
     );
   });
 
@@ -64,9 +58,7 @@ describe("Button", () => {
     const { getByRole } = render(<Button label="Full" />);
     const btn = getByRole("button");
     expect(btn.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ alignSelf: "stretch" }),
-      ])
+      expect.objectContaining({ alignSelf: "stretch" })
     );
   });
 
@@ -74,9 +66,7 @@ describe("Button", () => {
     const { getByRole } = render(<Button label="Narrow" fullWidth={false} />);
     const btn = getByRole("button");
     expect(btn.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ alignSelf: "flex-start" }),
-      ])
+      expect.objectContaining({ alignSelf: "flex-start" })
     );
   });
 
@@ -84,9 +74,7 @@ describe("Button", () => {
     const { getByRole } = render(<Button label="Pill" />);
     const btn = getByRole("button");
     expect(btn.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ borderRadius: 9999 }),
-      ])
+      expect.objectContaining({ borderRadius: 9999 })
     );
   });
 

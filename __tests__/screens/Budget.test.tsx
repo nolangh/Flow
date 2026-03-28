@@ -96,8 +96,9 @@ describe("BudgetScreen", () => {
   });
 
   it("shows summary income/spent/remaining values", () => {
-    const { getByText } = render(<BudgetScreen />);
-    expect(getByText("Income")).toBeTruthy();
+    const { getAllByText, getByText } = render(<BudgetScreen />);
+    // "Income" appears as both a summary label and a section header — just check at least one exists
+    expect(getAllByText("Income").length).toBeGreaterThan(0);
     expect(getByText("Spent")).toBeTruthy();
     expect(getByText("Left")).toBeTruthy();
   });

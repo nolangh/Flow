@@ -57,14 +57,14 @@ export const Colors = {
 export function getBudgetColor(spent: number, limit: number): string {
   if (limit === 0) return Colors.accent;
   const ratio = spent / limit;
-  if (ratio >= 1) return Colors.danger;
+  if (ratio > 1) return Colors.danger;
   if (ratio >= 0.8) return Colors.warning;
   return Colors.accent;
 }
 
 export function getBudgetGlow(spent: number, limit: number): string {
   if (limit === 0) return Colors.accentSoft;
-  return spent / limit >= 1 ? Colors.dangerSoft : Colors.accentSoft;
+  return spent > limit ? Colors.dangerSoft : Colors.accentSoft;
 }
 
 export const Typography = {

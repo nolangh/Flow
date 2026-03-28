@@ -47,7 +47,7 @@ describe("TransactionItem", () => {
     const { getByText } = render(<TransactionItem transaction={tx} />);
     const amountText = getByText("+$2,000.00");
     expect(amountText.props.style).toEqual(
-      expect.objectContaining({ color: Colors.neonGreen })
+      expect.objectContaining({ color: Colors.income })
     );
   });
 
@@ -77,8 +77,9 @@ describe("TransactionItem", () => {
     expect(onPress).toHaveBeenCalledWith(baseTransaction);
   });
 
-  it("renders category emoji as icon", () => {
-    const { getByText } = render(<TransactionItem transaction={baseTransaction} />);
-    expect(getByText("🛒")).toBeTruthy();
+  it("renders an icon for the transaction category", () => {
+    const { UNSAFE_getAllByType } = render(<TransactionItem transaction={baseTransaction} />);
+    // Component uses Ionicons (mocked as "Ionicons" string component) for category icons
+    expect(UNSAFE_getAllByType("Ionicons").length).toBeGreaterThan(0);
   });
 });

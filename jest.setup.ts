@@ -32,6 +32,32 @@ jest.mock("expo-linear-gradient", () => ({
   LinearGradient: "LinearGradient",
 }));
 
+jest.mock("expo-file-system", () => ({
+  documentDirectory: "file:///documents/",
+  writeAsStringAsync: jest.fn().mockResolvedValue(undefined),
+  readAsStringAsync: jest.fn().mockResolvedValue(""),
+  deleteAsync: jest.fn().mockResolvedValue(undefined),
+  getInfoAsync: jest.fn().mockResolvedValue({ exists: false }),
+  EncodingType: { UTF8: "utf8", Base64: "base64" },
+}));
+
+jest.mock("expo-sharing", () => ({
+  shareAsync: jest.fn().mockResolvedValue(undefined),
+  isAvailableAsync: jest.fn().mockResolvedValue(true),
+}));
+
+jest.mock("expo-document-picker", () => ({
+  getDocumentAsync: jest.fn().mockResolvedValue({ canceled: true, assets: [] }),
+}));
+
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: "Ionicons",
+  MaterialIcons: "MaterialIcons",
+  FontAwesome: "FontAwesome",
+  Feather: "Feather",
+  AntDesign: "AntDesign",
+}));
+
 jest.mock("react-native-reanimated", () =>
   require("react-native-reanimated/mock")
 );

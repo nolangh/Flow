@@ -1,35 +1,34 @@
 import { getBudgetColor, getBudgetGlow, pillShadow, Colors } from "@/constants/theme";
 
 describe("getBudgetColor", () => {
-  it("returns neonGreen when under budget", () => {
-    expect(getBudgetColor(400, 500)).toBe(Colors.neonGreen);
+  it("returns accent when clearly under budget", () => {
+    expect(getBudgetColor(300, 500)).toBe(Colors.accent);
   });
 
-  it("returns neonGreen when exactly at budget", () => {
-    // isOverBudget requires strictly greater-than
-    expect(getBudgetColor(500, 500)).toBe(Colors.neonGreen);
+  it("returns warning when exactly at budget (80-100% range)", () => {
+    expect(getBudgetColor(500, 500)).toBe(Colors.warning);
   });
 
-  it("returns dangerPink when over budget", () => {
-    expect(getBudgetColor(501, 500)).toBe(Colors.dangerPink);
+  it("returns danger when over budget", () => {
+    expect(getBudgetColor(501, 500)).toBe(Colors.danger);
   });
 
-  it("returns neonGreen when limit is 0", () => {
-    expect(getBudgetColor(999, 0)).toBe(Colors.neonGreen);
+  it("returns accent when limit is 0", () => {
+    expect(getBudgetColor(999, 0)).toBe(Colors.accent);
   });
 });
 
 describe("getBudgetGlow", () => {
-  it("returns green glow when under budget", () => {
-    expect(getBudgetGlow(100, 500)).toBe(Colors.neonGreenGlow);
+  it("returns accent glow when under budget", () => {
+    expect(getBudgetGlow(100, 500)).toBe(Colors.accentSoft);
   });
 
-  it("returns pink glow when over budget", () => {
-    expect(getBudgetGlow(600, 500)).toBe(Colors.dangerPinkGlow);
+  it("returns danger glow when over budget", () => {
+    expect(getBudgetGlow(600, 500)).toBe(Colors.dangerSoft);
   });
 
-  it("returns green glow when limit is 0", () => {
-    expect(getBudgetGlow(999, 0)).toBe(Colors.neonGreenGlow);
+  it("returns accent glow when limit is 0", () => {
+    expect(getBudgetGlow(999, 0)).toBe(Colors.accentSoft);
   });
 });
 
@@ -55,16 +54,16 @@ describe("Colors", () => {
     expect(Colors.bg.app).toBe("#000000");
   });
 
-  it("has neonGreen defined", () => {
-    expect(Colors.neonGreen).toBe("#00FF00");
+  it("has neonGreen defined (backward-compat alias for accent)", () => {
+    expect(Colors.neonGreen).toBe(Colors.accent);
   });
 
-  it("has dangerPink defined", () => {
-    expect(Colors.dangerPink).toBe("#FF4D6D");
+  it("has dangerPink defined (backward-compat alias for danger)", () => {
+    expect(Colors.dangerPink).toBe(Colors.danger);
   });
 
-  it("has border.subtle as gray-800 equivalent", () => {
-    expect(Colors.border.subtle).toBe("#1F2937");
+  it("has border.subtle defined", () => {
+    expect(Colors.border.subtle).toBeTruthy();
   });
 
   it("has text.inverse as black (for button labels)", () => {

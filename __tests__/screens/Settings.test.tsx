@@ -82,10 +82,10 @@ describe("SettingsScreen", () => {
     expect(shareBtns.length).toBeGreaterThan(0);
   });
 
-  it("shows Connect Bank Account row (Plaid coming soon)", () => {
+  it("shows Banking section with accounts row", () => {
     const { getByText } = render(<SettingsScreen />);
-    expect(getByText("Connect Bank Account")).toBeTruthy();
-    expect(getByText(/coming soon/)).toBeTruthy();
+    expect(getByText("Banking")).toBeTruthy();
+    expect(getByText("Accounts & Bill Pay")).toBeTruthy();
   });
 
   it("shows Budget Alerts preference toggle", () => {

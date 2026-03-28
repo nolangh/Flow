@@ -79,13 +79,13 @@ describe("BudgetScreen", () => {
 
   it("switches to Transactions tab", () => {
     const { getByText } = render(<BudgetScreen />);
-    fireEvent.press(getByText("transactions"));
+    fireEvent.press(getByText("History"));
     expect(getByText("Trader Joe's")).toBeTruthy();
   });
 
   it("opens AddCategoryModal when Add Category is pressed", () => {
     const { getByText } = render(<BudgetScreen />);
-    fireEvent.press(getByText("+ Add Category"));
+    fireEvent.press(getByText("Add Category"));
     expect(getByText("New Category")).toBeTruthy();
   });
 

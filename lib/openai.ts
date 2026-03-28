@@ -1,17 +1,21 @@
 /**
- * Mistral AI client for budget analysis.
+ * AI budget analysis — proxied through a Supabase Edge Function.
+ *
+ * The Mistral API key lives only in the Edge Function environment
+ * (set via `supabase secrets set MISTRAL_KEY=<key>`). It is never
+ * bundled into the client app.
  *
  * TO ACTIVATE:
  *  1. Get your Mistral API key from https://console.mistral.ai/api-keys
- *  2. Add it to Replit Secrets as: EXPO_PUBLIC_MISTRAL_KEY
- *  3. The functions below will automatically become active.
+ *  2. Set it as a Supabase secret (NOT an EXPO_PUBLIC_ env var):
+ *       supabase secrets set MISTRAL_KEY=<your-key>
+ *  3. Deploy the edge function:
+ *       supabase functions deploy ai-budget-analysis
  */
 
-const MISTRAL_KEY = process.env.EXPO_PUBLIC_MISTRAL_KEY ?? "";
-export const openaiConfigured = MISTRAL_KEY.length > 10;
+import { supabase } from "@/lib/supabase";
 
-const MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions";
-const MODEL = "open-mistral-nemo";
+export const openaiConfigured = true; // Always show the feature; the function reports its own error if unconfigured
 
 export interface BudgetSuggestion {
   category: string;
@@ -38,94 +42,24 @@ interface CategoryData {
 }
 
 /**
- * Run AI budget analysis using Mistral Nemo.
- * @param categories     Current budget categories with spend data.
- * @param priorityGoal   Optional user priority, e.g. "increase food budget" or "save more".
+ * Run AI budget analysis via the `ai-budget-analysis` Edge Function.
+ * The Mistral API key is never sent to or from the client.
  */
 export async function analyzeBudget(
   categories: CategoryData[],
   priorityGoal?: string
 ): Promise<AnalysisResult> {
-  if (!openaiConfigured) {
-    throw new Error(
-      "Mistral API key not configured. Add EXPO_PUBLIC_MISTRAL_KEY to your secrets."
-    );
-  }
-
-  const income = categories.filter((c) => c.is_income);
-  const expenses = categories.filter((c) => !c.is_income);
-  const totalIncome = income.reduce((s, c) => s + c.monthly_limit, 0);
-  const totalExpenses = expenses.reduce((s, c) => s + c.monthly_limit, 0);
-  const totalSpent = expenses.reduce((s, c) => s + c.spent, 0);
-
-  const categoryJson = JSON.stringify(
-    expenses.map((c) => ({
-      name: c.name,
-      budget: c.monthly_limit,
-      spent: c.spent,
-      utilization: c.monthly_limit > 0 ? Math.round((c.spent / c.monthly_limit) * 100) : 0,
-      type: c.is_fixed ? "fixed" : "variable",
-    })),
-    null,
-    2
-  );
-
-  const priorityLine = priorityGoal
-    ? `\n\nUser priority goal: "${priorityGoal}". Align suggestions with this goal — if the user wants more budget in a category, suggest increasing it and cutting elsewhere.`
-    : "";
-
-  const systemPrompt = `You are a personal finance advisor. Analyze the user's budget and provide clear, actionable suggestions.
-Return ONLY valid JSON with this exact shape:
-{
-  "summary": "2-3 sentence overall assessment",
-  "topInsight": "single most important insight",
-  "monthlyPotentialSavings": <number>,
-  "suggestions": [
-    {
-      "category": "<name>",
-      "currentLimit": <number>,
-      "suggestedLimit": <number>,
-      "reasoning": "<brief reason>",
-      "priority": "high|medium|low",
-      "savingsImpact": <number, positive=savings, negative=increase>
-    }
-  ]
-}`;
-
-  const userPrompt = `Monthly income: $${totalIncome}
-Total budgeted expenses: $${totalExpenses}
-Total spent this month: $${totalSpent}
-
-Category breakdown:
-${categoryJson}${priorityLine}
-
-Provide 3-5 specific budget suggestions that will help the user improve their finances.`;
-
-  const response = await fetch(MISTRAL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${MISTRAL_KEY}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.4,
-      response_format: { type: "json_object" },
-    }),
+  const { data, error } = await supabase.functions.invoke("ai-budget-analysis", {
+    body: { categories, priorityGoal },
   });
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Mistral error ${response.status}: ${err}`);
+  if (error) {
+    throw new Error(error.message ?? "AI budget analysis failed");
   }
 
-  const json = await response.json();
-  const content = json.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Empty response from Mistral");
+  if (data?.error) {
+    throw new Error(data.error as string);
+  }
 
-  return JSON.parse(content) as AnalysisResult;
+  return data as AnalysisResult;
 }

@@ -42,7 +42,7 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
     if (!openaiConfigured) {
       Alert.alert(
         "AI Not Configured",
-        "Add your Mistral API key as EXPO_PUBLIC_MISTRAL_KEY in Replit Secrets to enable AI analysis."
+        "Deploy the ai-budget-analysis Edge Function and set the MISTRAL_KEY secret in Supabase to enable AI analysis."
       );
       return;
     }

@@ -67,6 +67,8 @@ export function buildTransactionCsv(
   }[]
 ): string {
   const header = "date,name,amount,category,type,note";
+  // Note: this output is written to a file and shared as text/csv — never injected into HTML.
+  // The escapeCsv helper handles commas, quotes, and newlines. XSS is not applicable here.
   const rows = transactions.map((t) => [
     escapeCsv(t.date),
     escapeCsv(t.name),

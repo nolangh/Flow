@@ -88,7 +88,7 @@ serve(async (req) => {
 
           const syncData = await syncRes.json();
           if (!syncRes.ok) {
-            console.error(`Sync error for item ${item.id}:`, syncData);
+            console.error("Sync error for item", item.id, syncData);
             await supabase.from("plaid_items").update({
               status: "error",
               error_code: syncData.error_code ?? "SYNC_ERROR",
@@ -168,7 +168,7 @@ serve(async (req) => {
 
         summary.push(`${item.institution_name ?? item.id}: +${added.length} added, ${modified.length} modified, ${removed.length} removed`);
       } catch (itemErr) {
-        console.error(`Error syncing item ${item.id}:`, itemErr);
+        console.error("Error syncing item", item.id, itemErr instanceof Error ? itemErr.message : String(itemErr));
         summary.push(`${item.institution_name ?? item.id}: ERROR - ${String(itemErr)}`);
       }
     }

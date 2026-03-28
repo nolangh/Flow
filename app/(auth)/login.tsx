@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { Link, router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
 import { Colors, pillShadow, Fonts } from "@/constants/theme";
 import {
@@ -195,19 +196,18 @@ export default function LoginScreen() {
           <View style={{ flex: 1, height: 1, backgroundColor: Colors.border.subtle }} />
         </View>
 
-        {/* Social buttons row */}
-        <View style={{ flexDirection: "row", gap: 12 }}>
+        {/* Social buttons — stacked */}
+        <View style={{ gap: 12 }}>
 
           {/* Google */}
           <TouchableOpacity
             onPress={handleGoogle}
             disabled={anyLoading}
             style={{
-              flex: 1,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              gap: 8,
+              gap: 10,
               backgroundColor: Colors.bg.surface,
               borderRadius: 14,
               paddingVertical: 15,
@@ -220,8 +220,10 @@ export default function LoginScreen() {
               <ActivityIndicator color={Colors.text.primary} size="small" />
             ) : (
               <>
-                <Text style={{ fontSize: 18 }}>G</Text>
-                <Text style={{ color: Colors.text.primary, fontFamily: Fonts.semiBold, fontSize: 14 }}>Google</Text>
+                <Ionicons name="logo-google" size={20} color={Colors.text.primary} />
+                <Text style={{ color: Colors.text.primary, fontFamily: Fonts.semiBold, fontSize: 15 }}>
+                  Continue with Google
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -232,16 +234,13 @@ export default function LoginScreen() {
               onPress={handleApple}
               disabled={anyLoading}
               style={{
-                flex: 1,
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 8,
+                gap: 10,
                 backgroundColor: "#fff",
                 borderRadius: 14,
                 paddingVertical: 15,
-                borderWidth: 1.5,
-                borderColor: "#fff",
                 opacity: anyLoading ? 0.5 : 1,
               }}
             >
@@ -249,22 +248,25 @@ export default function LoginScreen() {
                 <ActivityIndicator color="#000" size="small" />
               ) : (
                 <>
-                  <Text style={{ fontSize: 17, color: "#000", fontFamily: "System" }}></Text>
-                  <Text style={{ color: "#000", fontFamily: Fonts.semiBold, fontSize: 14 }}>Apple</Text>
+                  <Ionicons name="logo-apple" size={20} color="#000" />
+                  <Text style={{ color: "#000", fontFamily: Fonts.semiBold, fontSize: 15 }}>
+                    Continue with Apple
+                  </Text>
                 </>
               )}
             </TouchableOpacity>
           )}
 
-          {/* Biometric */}
+          {/* Biometric — only after first email login */}
           {showBiometric && (
             <TouchableOpacity
               onPress={handleBiometric}
               disabled={anyLoading}
               style={{
-                width: 56,
+                flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
+                gap: 10,
                 backgroundColor: Colors.accentSoft,
                 borderRadius: 14,
                 paddingVertical: 15,
@@ -276,9 +278,16 @@ export default function LoginScreen() {
               {socialLoading === "biometric" ? (
                 <ActivityIndicator color={Colors.accent} size="small" />
               ) : (
-                <Text style={{ fontSize: 22 }}>
-                  {biometricIcon === "face" ? "🪪" : "🫆"}
-                </Text>
+                <>
+                  <Ionicons
+                    name={biometricIcon === "face" ? "scan-outline" : "finger-print-outline"}
+                    size={20}
+                    color={Colors.accent}
+                  />
+                  <Text style={{ color: Colors.accent, fontFamily: Fonts.semiBold, fontSize: 15 }}>
+                    {biometricIcon === "face" ? "Sign in with Face ID" : "Sign in with Fingerprint"}
+                  </Text>
+                </>
               )}
             </TouchableOpacity>
           )}

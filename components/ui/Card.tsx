@@ -1,5 +1,5 @@
 import { View, type ViewProps } from "react-native";
-import { Colors } from "@/constants/theme";
+import { Colors, useColors} from "@/constants/theme";
 
 interface CardProps extends ViewProps {
   glow?: "green" | "pink" | null;
@@ -7,6 +7,7 @@ interface CardProps extends ViewProps {
 }
 
 export default function Card({ children, glow, padding = 16, style, ...rest }: CardProps) {
+  const Colors = useColors();
   const glowColor =
     glow === "green" ? Colors.accentBorder : glow === "pink" ? Colors.dangerBorder : undefined;
 

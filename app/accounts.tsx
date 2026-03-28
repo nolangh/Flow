@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow, Fonts } from "@/constants/theme";
+import { Colors, pillShadow, Fonts, useColors} from "@/constants/theme";
 import { formatCurrency } from "@/lib/utils";
 import { triggerTransactionSync } from "@/lib/plaid";
 import BillPayTracker from "@/components/premium/BillPayTracker";
@@ -126,6 +126,7 @@ function AccountCard({ account, item }: { account: PlaidAccount; item: PlaidItem
 }
 
 export default function AccountsScreen() {
+  const Colors = useColors();
   const { household, user } = useAuthStore();
   const [items, setItems] = useState<PlaidItem[]>([]);
   const [accounts, setAccounts] = useState<PlaidAccount[]>([]);
@@ -292,8 +293,8 @@ export default function AccountsScreen() {
   const allAccountsCount = accounts.length + manualAccounts.length;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top"]}>
+      <StatusBar barStyle={Colors.statusBar} />
 
       {/* Header */}
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 6, paddingBottom: 16, gap: 12 }}>

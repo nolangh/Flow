@@ -5,7 +5,7 @@ import {
 import { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, pillShadow, useColors} from "@/constants/theme";
 import { useGoalsStore, type Goal } from "@/store/goalsStore";
 import { formatCurrency } from "@/lib/utils";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -116,6 +116,7 @@ function GoalCard({ goal, onContribute, onDelete }: {
 }
 
 export default function GoalsScreen() {
+  const Colors = useColors();
   const { goals, isLoading, fetchGoals, createGoal, addContribution, deleteGoal } = useGoalsStore();
   const [refreshing, setRefreshing] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -179,8 +180,8 @@ export default function GoalsScreen() {
   const completedCount = goals.filter((g) => g.is_completed).length;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top"]}>
+      <StatusBar barStyle={Colors.statusBar} />
 
       {/* Header */}
       <View style={{

@@ -1,12 +1,13 @@
 import { Tabs } from "expo-router";
 import { View, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
+  const Colors = useColors();
   return (
     <View style={{ alignItems: "center", justifyContent: "center", paddingTop: 2 }}>
       <Ionicons
@@ -31,6 +32,7 @@ function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
 }
 
 export default function TabsLayout() {
+  const Colors = useColors();
   useRealtimeSync();
 
   return (

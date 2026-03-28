@@ -1,11 +1,12 @@
 import { View, Text } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 
 export default function NotFoundScreen() {
+  const Colors = useColors();
   return (
-    <View style={{ flex: 1, backgroundColor: "#000", alignItems: "center", justifyContent: "center", padding: 32 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg.app, alignItems: "center", justifyContent: "center", padding: 32 }}>
       <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.bg.overlay, alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
         <Ionicons name="compass-outline" size={36} color={Colors.text.muted} />
       </View>

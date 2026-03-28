@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 import { formatCurrency } from "@/lib/utils";
 
 export interface BudgetAlert {
@@ -19,6 +19,7 @@ interface Props {
 }
 
 export default function BudgetAlertBanner({ alert, onDismiss }: Props) {
+  const Colors = useColors();
   const remaining = alert.limit - alert.spent;
   const over = remaining < 0;
 

@@ -12,9 +12,10 @@ import {
 import { useState } from "react";
 import { router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow, Fonts } from "@/constants/theme";
+import { Colors, pillShadow, Fonts, useColors} from "@/constants/theme";
 
 export default function HouseholdScreen() {
+  const Colors = useColors();
   const { createHousehold, joinHousehold, isLoading } = useAuthStore();
   const [mode, setMode] = useState<"create" | "join">("create");
   const [householdName, setHouseholdName] = useState("");
@@ -50,10 +51,10 @@ export default function HouseholdScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#000" }}
+      style={{ flex: 1, backgroundColor: Colors.bg.app }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={Colors.statusBar} />
       <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 28 }}>
 
         {/* Header */}

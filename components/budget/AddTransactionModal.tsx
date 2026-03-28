@@ -9,7 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { useState } from "react";
-import { Colors, pillShadow, Fonts } from "@/constants/theme";
+import { Colors, pillShadow, Fonts, useColors} from "@/constants/theme";
 import Button from "@/components/ui/Button";
 import type { BudgetCategory } from "@/types";
 
@@ -33,6 +33,7 @@ export default function AddTransactionModal({
   onClose,
   onAdd,
 }: AddTransactionModalProps) {
+  const Colors = useColors();
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"debit" | "credit">("debit");

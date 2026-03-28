@@ -14,7 +14,7 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useAuthStore } from "@/store/authStore";
 import { useTasksStore } from "@/store/tasksStore";
-import { Colors, Fonts, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, pillShadow, useColors} from "@/constants/theme";
 import { formatCurrency, formatMonth, currentYearMonth } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
@@ -85,6 +85,7 @@ function AssigneeChip({ name, color, size = "sm" }: { name: string | null; color
 }
 
 export default function CalendarScreen() {
+  const Colors = useColors();
   const [calTab, setCalTab] = useState<CalTab>("calendar");
   const [viewMonth, setViewMonth] = useState(currentYearMonth());
   const { events, isLoading: eventsLoading, addEvent, deleteEvent } = useCalendarEvents(viewMonth);
@@ -490,8 +491,8 @@ export default function CalendarScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top"]}>
+      <StatusBar barStyle={Colors.statusBar} />
 
       {/* Header */}
       <View style={{

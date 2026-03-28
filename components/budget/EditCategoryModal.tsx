@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 import Button from "@/components/ui/Button";
 import type { BudgetCategory } from "@/types";
 
@@ -34,6 +34,7 @@ interface EditCategoryModalProps {
 }
 
 export default function EditCategoryModal({ visible, category, onClose, onSave, onDelete }: EditCategoryModalProps) {
+  const Colors = useColors();
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState("📦");
   const [limit, setLimit] = useState("");

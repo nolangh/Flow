@@ -15,7 +15,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetSummary } from "@/hooks/useBudgetSummary";
-import { Colors, Fonts, getBudgetColor, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, getBudgetColor, pillShadow, useColors} from "@/constants/theme";
 import { formatCurrency, currentYearMonth, formatMonth } from "@/lib/utils";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Divider from "@/components/ui/Divider";
@@ -24,6 +24,7 @@ import AddTransactionModal from "@/components/budget/AddTransactionModal";
 import EmptyState from "@/components/ui/EmptyState";
 
 export default function DashboardScreen() {
+  const Colors = useColors();
   const { width } = useWindowDimensions();
   const { user, household } = useAuthStore();
   const { fetchMonthlyBudget, categories, currentMonth, setCurrentMonth } = useBudgetStore();
@@ -34,7 +35,7 @@ export default function DashboardScreen() {
   const [showAddTx, setShowAddTx] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
 
-  const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit);
+  const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit, Colors);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -71,8 +72,8 @@ export default function DashboardScreen() {
   const firstName = user?.full_name?.split(" ")[0] ?? "there";
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top"]}>
+      <StatusBar barStyle={Colors.statusBar} />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 32 }}
@@ -207,7 +208,7 @@ export default function DashboardScreen() {
               const paid = isFixed && spent >= limit && limit > 0;
               const color = isFixed
                 ? paid ? Colors.accent : Colors.text.secondary
-                : getBudgetColor(spent, limit);
+                : getBudgetColor(spent, limit, Colors);
               const borderColor = isFixed
                 ? paid ? Colors.accentBorder : Colors.border.subtle
                 : spent > limit ? Colors.dangerBorder : Colors.border.subtle;

@@ -25,7 +25,7 @@ Helper functions live in `lib/biometrics.ts` (save/load/clear credentials, biome
 
 ## Tech Stack
 - **Framework**: Expo SDK 54 with Expo Router (file-based routing)
-- **Frontend**: React Native (inline styles via `constants/theme.ts` design system)
+- **Frontend**: React Native (inline styles via `constants/theme.ts` design system; `useColors()` hook for multi-theme support)
 - **Backend**: Supabase (Auth, PostgreSQL, Realtime subscriptions, Edge Functions)
 - **State Management**: Zustand
 - **Icons**: `@expo/vector-icons` (Ionicons)

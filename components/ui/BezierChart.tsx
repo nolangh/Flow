@@ -8,7 +8,7 @@
 import { useMemo } from "react";
 import { View } from "react-native";
 import Svg, { Path, Circle, Defs, LinearGradient, Stop } from "react-native-svg";
-import { Colors } from "@/constants/theme";
+import { Colors, useColors} from "@/constants/theme";
 import type { SpendingDataPoint } from "@/types";
 
 interface BezierChartProps {
@@ -43,6 +43,7 @@ function buildPath(points: { x: number; y: number }[], h: number): string {
 }
 
 export default function BezierChart({ data, limit, width, height }: BezierChartProps) {
+  const Colors = useColors();
   const isOverBudget = limit > 0 && data.length > 0 && data[data.length - 1].cumulative > limit;
   const lineColor = isOverBudget ? Colors.dangerPink : Colors.neonGreen;
   const gradientId = isOverBudget ? "grad-pink" : "grad-green";

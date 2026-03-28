@@ -13,9 +13,10 @@ import {
 import { useState } from "react";
 import { Link, router } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow, Fonts } from "@/constants/theme";
+import { Colors, pillShadow, Fonts, useColors} from "@/constants/theme";
 
 export default function RegisterScreen() {
+  const Colors = useColors();
   const { signUp, isLoading } = useAuthStore();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -58,10 +59,10 @@ export default function RegisterScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#000" }}
+      style={{ flex: 1, backgroundColor: Colors.bg.app }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={Colors.statusBar} />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ justifyContent: "center", paddingHorizontal: 28, paddingVertical: 60 }}

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Transaction } from "@/types";
 
@@ -22,6 +22,7 @@ function getIconName(tx: Transaction): keyof typeof Ionicons.glyphMap {
 }
 
 export default function TransactionItem({ transaction: tx, onPress }: TransactionItemProps) {
+  const Colors = useColors();
   const isCredit = tx.type === "credit";
   const amountColor = isCredit ? Colors.accent : Colors.text.primary;
   const sign = isCredit ? "+" : "-";

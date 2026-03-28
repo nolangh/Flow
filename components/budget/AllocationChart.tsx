@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import Svg, { Circle, G, Text as SvgText } from "react-native-svg";
-import { Colors } from "@/constants/theme";
+import { Colors, useColors} from "@/constants/theme";
 import { formatCurrency } from "@/lib/utils";
 
 interface Slice {
@@ -20,6 +20,7 @@ const STROKE = 28;
 const GAP = 2;
 
 export default function AllocationChart({ data, centerLabel, centerValue, size = 180 }: Props) {
+  const Colors = useColors();
   const r = (size - STROKE) / 2;
   const cx = size / 2;
   const cy = size / 2;

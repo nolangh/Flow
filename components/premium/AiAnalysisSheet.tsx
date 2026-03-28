@@ -4,7 +4,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, pillShadow, Fonts } from "@/constants/theme";
+import { Colors, pillShadow, Fonts, useColors} from "@/constants/theme";
 import { formatCurrency } from "@/lib/utils";
 import { openaiConfigured, analyzeBudget, type AnalysisResult, type BudgetSuggestion } from "@/lib/openai";
 import { useBudgetStore } from "@/store/budgetStore";
@@ -30,6 +30,7 @@ const PRIORITY_COLORS = {
 };
 
 export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props) {
+  const Colors = useColors();
   const { categories, monthlyBudget } = useBudgetStore();
   const [priorityGoal, setPriorityGoal] = useState("");
   const [customGoal, setCustomGoal] = useState("");

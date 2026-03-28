@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { format, startOfWeek, endOfWeek, parseISO, isWithinInterval } from "date-fns";
 
-import { Colors, Fonts, getBudgetColor } from "@/constants/theme";
+import { Colors, Fonts, getBudgetColor, useColors} from "@/constants/theme";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { formatCurrency, currentYearMonth } from "@/lib/utils";
@@ -161,6 +161,7 @@ function AllowanceChip({
 // ─── Main Screen ───────────────────────────────────────────────────────────
 
 export default function CategoryDetailScreen() {
+  const Colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const month = useBudgetStore((s) => s.currentMonth);
@@ -224,9 +225,9 @@ export default function CategoryDetailScreen() {
   const remainingWeekDays = daysLeftInWeek();
 
   // ── Color computation ─────────────────────────────────────────────────────
-  const monthColor = getBudgetColor(spentMonthly, limit);
-  const weekColor = getBudgetColor(spentThisWeek, weeklyAllowance);
-  const dayColor = getBudgetColor(spentToday, dailyAllowance);
+  const monthColor = getBudgetColor(spentMonthly, limit, Colors);
+  const weekColor = getBudgetColor(spentThisWeek, weeklyAllowance, Colors);
+  const dayColor = getBudgetColor(spentToday, dailyAllowance, Colors);
 
   // ── Alert ─────────────────────────────────────────────────────────────────
   const triggeredAlert = useMemo<BudgetAlert | null>(() => {

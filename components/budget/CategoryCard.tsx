@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { Colors, getBudgetColor, Fonts } from "@/constants/theme";
+import { Colors, getBudgetColor, Fonts, useColors} from "@/constants/theme";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { formatCurrency } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,9 +11,10 @@ interface CategoryCardProps {
 }
 
 export default function CategoryCard({ category: cat, onPress }: CategoryCardProps) {
+  const Colors = useColors();
   const spent = cat.spent ?? 0;
   const limit = cat.monthly_limit;
-  const activeColor = getBudgetColor(spent, limit);
+  const activeColor = getBudgetColor(spent, limit, Colors);
   const remaining = limit - spent;
   const overBudget = spent > limit;
   const pct = limit > 0 ? Math.min(Math.round((spent / limit) * 100), 100) : 0;

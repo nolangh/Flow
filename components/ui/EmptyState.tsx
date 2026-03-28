@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 
 interface EmptyStateProps {
   icon?: string;
@@ -9,6 +9,7 @@ interface EmptyStateProps {
 }
 
 export default function EmptyState({ icon, title, subtitle }: EmptyStateProps) {
+  const Colors = useColors();
   return (
     <View style={{ alignItems: "center", paddingVertical: 48 }}>
       <View style={{

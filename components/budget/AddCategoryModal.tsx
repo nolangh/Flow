@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useState } from "react";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 import Button from "@/components/ui/Button";
 
 const EMOJI_OPTIONS = ["🍔", "🛒", "🚗", "🏠", "💊", "🎬", "✈️", "📱", "💡", "🎓", "👗", "🐾", "💵", "📦", "🏋️", "🎮"];
@@ -29,6 +29,7 @@ interface AddCategoryModalProps {
 }
 
 export default function AddCategoryModal({ visible, onClose, onAdd }: AddCategoryModalProps) {
+  const Colors = useColors();
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState("📦");
   const [limit, setLimit] = useState("");

@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { Link, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
-import { Colors, pillShadow, Fonts } from "@/constants/theme";
+import { Colors, pillShadow, Fonts, useColors} from "@/constants/theme";
 import {
   biometricAvailable,
   biometricTypes,
@@ -24,6 +24,7 @@ import {
 import * as LocalAuthentication from "expo-local-authentication";
 
 export default function LoginScreen() {
+  const Colors = useColors();
   const { signIn, signInWithGoogle, signInWithApple, signInWithBiometric, isLoading } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -109,10 +110,10 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#000" }}
+      style={{ flex: 1, backgroundColor: Colors.bg.app }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={Colors.statusBar} />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 28, paddingVertical: 40 }}
         keyboardShouldPersistTaps="handled"

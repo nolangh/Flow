@@ -15,6 +15,8 @@ import {
   Outfit_900Black,
 } from "@expo-google-fonts/outfit";
 import { useAuthStore } from "@/store/authStore";
+import { useThemeStore } from "@/store/themeStore";
+import { THEMES } from "@/constants/themes";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -25,6 +27,8 @@ function hideSplash() {
 
 export default function RootLayout() {
   const { refreshSession } = useAuthStore();
+  const { theme } = useThemeStore();
+  const C = THEMES[theme];
 
   useEffect(() => {
     const safetyTimer = setTimeout(hideSplash, 3500);
@@ -65,12 +69,12 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#000000" }}>
-      <StatusBar style="light" backgroundColor="#000000" />
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: C.bg.app }}>
+      <StatusBar style={theme === "fresh" ? "dark" : "light"} backgroundColor={C.bg.app} />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#000000" },
+          contentStyle: { backgroundColor: C.bg.app },
         }}
       >
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />

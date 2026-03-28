@@ -15,7 +15,9 @@ import { router } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors } from "@/constants/theme";
+import { useThemeStore } from "@/store/themeStore";
+import { THEMES, THEME_META, type ThemeKey } from "@/constants/themes";
 import Divider from "@/components/ui/Divider";
 import { parseBudgetCsv, pickCsvFile } from "@/lib/csvUtils";
 import { TIER_LABEL } from "@/constants/features";
@@ -39,6 +41,7 @@ function SettingRow({
   label, value, icon, iconBg, iconColor, onPress, rightElement,
   destructive, showChevron = true, badge,
 }: SettingRowProps) {
+  const Colors = useColors();
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -78,6 +81,7 @@ function SettingRow({
 }
 
 function SectionLabel({ children }: { children: string }) {
+  const Colors = useColors();
   return (
     <Text style={{
       color: Colors.text.muted,
@@ -93,6 +97,7 @@ function SectionLabel({ children }: { children: string }) {
 }
 
 function SettingsCard({ children }: { children: React.ReactNode }) {
+  const Colors = useColors();
   return (
     <View style={{
       marginHorizontal: 20,
@@ -110,6 +115,8 @@ function SettingsCard({ children }: { children: React.ReactNode }) {
 }
 
 export default function SettingsScreen() {
+  const Colors = useColors();
+  const { theme, setTheme } = useThemeStore();
   const { user, household, signOut } = useAuthStore();
   const { categories, createCategory, deleteCategory } = useBudgetStore();
   const [notifications, setNotifications] = useState(true);
@@ -202,8 +209,8 @@ export default function SettingsScreen() {
   const firstName = user?.full_name?.split(" ")[0] ?? "?";
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top"]}>
+      <StatusBar barStyle={Colors.statusBar} />
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
@@ -404,6 +411,59 @@ export default function SettingsScreen() {
             </SettingsCard>
           </>
         )}
+
+        {/* Appearance — theme selector */}
+        <SectionLabel>Appearance</SectionLabel>
+        <View style={{ marginHorizontal: 20, marginBottom: 28, flexDirection: "row", gap: 12 }}>
+          {(Object.keys(THEMES) as ThemeKey[]).map((key) => {
+            const meta = THEME_META[key];
+            const t = THEMES[key];
+            const active = theme === key;
+            return (
+              <TouchableOpacity
+                key={key}
+                onPress={() => setTheme(key)}
+                activeOpacity={0.75}
+                style={{
+                  flex: 1, borderRadius: 18,
+                  borderWidth: 2,
+                  borderColor: active ? Colors.accent : Colors.border.subtle,
+                  overflow: "hidden",
+                }}
+              >
+                {/* Mini preview of the theme */}
+                <View style={{ backgroundColor: t.bg.app, padding: 12, gap: 6 }}>
+                  <View style={{ backgroundColor: t.bg.surface, borderRadius: 8, padding: 8, borderWidth: 1, borderColor: t.border.subtle }}>
+                    <View style={{ width: 32, height: 4, borderRadius: 2, backgroundColor: t.accent, marginBottom: 4 }} />
+                    <View style={{ width: "100%", height: 3, borderRadius: 2, backgroundColor: t.bg.overlay }} />
+                  </View>
+                  <View style={{ flexDirection: "row", gap: 4 }}>
+                    <View style={{ flex: 1, height: 20, borderRadius: 6, backgroundColor: t.bg.surface, borderWidth: 1, borderColor: t.border.subtle }} />
+                    <View style={{ flex: 1, height: 20, borderRadius: 6, backgroundColor: t.accentSoft, borderWidth: 1, borderColor: t.accentBorder }} />
+                  </View>
+                </View>
+                {/* Label */}
+                <View style={{
+                  backgroundColor: active ? Colors.accentSoft : Colors.bg.surface,
+                  padding: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+                  borderTopWidth: 1, borderTopColor: active ? Colors.accentBorder : Colors.border.subtle,
+                }}>
+                  <View>
+                    <Text style={{ color: active ? Colors.accent : Colors.text.primary, fontSize: 13, fontFamily: Fonts.bold }}>
+                      {meta.emoji} {meta.label}
+                    </Text>
+                    <Text style={{ color: Colors.text.muted, fontSize: 10, marginTop: 1 }}>{meta.description}</Text>
+                  </View>
+                  {active && (
+                    <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: Colors.accent, alignItems: "center", justifyContent: "center" }}>
+                      <Ionicons name="checkmark" size={11} color="#000" />
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* Preferences */}
         <SectionLabel>Preferences</SectionLabel>

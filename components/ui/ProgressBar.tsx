@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 
 interface ProgressBarProps {
   spent: number;
@@ -10,6 +10,7 @@ interface ProgressBarProps {
 }
 
 export default function ProgressBar({ spent, limit, showLabel = false, height = 5, color }: ProgressBarProps) {
+  const Colors = useColors();
   const pct = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
   const overBudget = limit > 0 && spent > limit;
   const nearBudget = limit > 0 && spent / limit >= 0.8 && !overBudget;

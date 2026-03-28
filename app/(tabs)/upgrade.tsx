@@ -6,7 +6,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors } from "@/constants/theme";
 import { UPGRADE_BENEFITS, TIER_DEFINITIONS, type TierDefinition } from "@/constants/features";
 import { adaptlyConfigured, showPaywall, restorePurchases } from "@/lib/adaptly";
 import Button from "@/components/ui/Button";
@@ -24,6 +24,7 @@ function TierCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const Colors = useColors();
   const price = billing === "annual" ? tier.annualMonthly : tier.monthlyPrice + "/mo";
   const billed = billing === "annual"
     ? `${tier.annualPrice} billed annually`
@@ -127,6 +128,7 @@ function TierCard({
 }
 
 export default function UpgradeScreen() {
+  const Colors = useColors();
   const [selectedTier, setSelectedTier] = useState<"personal" | "family" | "power">("family");
   const [billing, setBilling] = useState<Billing>("annual");
   const [loading, setLoading] = useState(false);
@@ -174,13 +176,13 @@ export default function UpgradeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top"]}>
+      <StatusBar barStyle={Colors.statusBar} />
       <ScrollView contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
 
         {/* Hero */}
         <LinearGradient
-          colors={["#001a0a", "#000000"]}
+          colors={Colors.statusBar === "dark-content" ? [Colors.accentSoft, Colors.bg.app] : ["#001a0a", "#000000"]}
           style={{ paddingTop: 20, paddingBottom: 32, paddingHorizontal: 24, alignItems: "center" }}
         >
           <View style={{

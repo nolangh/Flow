@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetSummary } from "@/hooks/useBudgetSummary";
-import { Colors, Fonts, getBudgetColor, pillShadow } from "@/constants/theme";
+import { Colors, Fonts, getBudgetColor, pillShadow, useColors} from "@/constants/theme";
 import { formatCurrency, currentYearMonth, formatMonth } from "@/lib/utils";
 import Divider from "@/components/ui/Divider";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -39,6 +39,7 @@ import type { BudgetSuggestion } from "@/lib/openai";
 type BudgetTab = "overview" | "charts" | "transactions";
 
 export default function BudgetScreen() {
+  const Colors = useColors();
   const router = useRouter();
   const { categories, currentMonth, setCurrentMonth, fetchMonthlyBudget, createCategory, updateCategory, deleteCategory, monthlyBudget, setTotalLimit } = useBudgetStore();
   const { transactions, fetchTransactions, addManualTransaction } = useTransactionStore();
@@ -124,7 +125,7 @@ export default function BudgetScreen() {
   const fixedCategories = categories.filter((c) => !c.is_income && c.is_fixed);
   const spendCategories = categories.filter((c) => !c.is_income && !c.is_fixed);
   const totalFixed = fixedCategories.reduce((sum, c) => sum + c.monthly_limit, 0);
-  const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit);
+  const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit, Colors);
 
   const triggeredAlerts = useMemo<BudgetAlert[]>(() => {
     return spendCategories
@@ -147,8 +148,8 @@ export default function BudgetScreen() {
   const { width } = useWindowDimensions();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top"]}>
+      <StatusBar barStyle={Colors.statusBar} />
 
       {/* Header */}
       <View style={{
@@ -612,7 +613,7 @@ export default function BudgetScreen() {
       {/* Bottom CTA */}
       <View style={{
         paddingHorizontal: 20, paddingBottom: 16, paddingTop: 10,
-        backgroundColor: "#000",
+        backgroundColor: Colors.bg.app,
         borderTopWidth: 0.5, borderTopColor: Colors.border.subtle,
       }}>
         <TouchableOpacity

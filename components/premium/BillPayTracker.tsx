@@ -3,7 +3,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts, useColors} from "@/constants/theme";
 import { useBudgetStore } from "@/store/budgetStore";
 import { formatCurrency } from "@/lib/utils";
 import Button from "@/components/ui/Button";
@@ -27,6 +27,7 @@ interface BillLink {
 // In a real app these would live in Supabase.
 // For now they're local state — wire to DB when Plaid is live.
 export default function BillPayTracker() {
+  const Colors = useColors();
   const { categories } = useBudgetStore();
   const fixedBills = categories.filter((c) => c.is_fixed && !c.is_income);
 

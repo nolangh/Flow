@@ -531,7 +531,7 @@ export default function BudgetScreen() {
                   Spending by Category
                 </Text>
                 {categories.filter((c) => !c.is_income).map((c, i) => {
-                  const spent = monthlyBudget.find((m) => m.category_id === c.id)?.spent ?? 0;
+                  const spent = c.spent ?? 0;
                   const pct = c.monthly_limit > 0 ? Math.min((spent / c.monthly_limit) * 100, 100) : 0;
                   const barColor = CHART_COLORS[i % CHART_COLORS.length];
                   return (

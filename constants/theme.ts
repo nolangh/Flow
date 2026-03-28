@@ -25,7 +25,7 @@ export const Fonts = {
 /** Reactive hook — call at the top of every component. */
 export function useColors(): ThemeColors {
   const { theme } = useThemeStore();
-  return THEMES[theme];
+  return THEMES[theme] ?? MIDNIGHT;
 }
 
 /** Static fallback for non-React contexts (always Midnight). */

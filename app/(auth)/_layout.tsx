@@ -4,7 +4,7 @@ import { THEMES } from "@/constants/themes";
 
 export default function AuthLayout() {
   const { theme } = useThemeStore();
-  const C = THEMES[theme];
+  const C = THEMES[theme] ?? THEMES.midnight;
   return (
     <Stack
       screenOptions={{

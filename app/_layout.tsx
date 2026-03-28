@@ -27,8 +27,8 @@ function hideSplash() {
 
 export default function RootLayout() {
   const { refreshSession } = useAuthStore();
-  const { theme } = useThemeStore();
-  const C = THEMES[theme];
+  const { theme, loadTheme } = useThemeStore();
+  const C = THEMES[theme] ?? THEMES.midnight;
 
   useEffect(() => {
     const safetyTimer = setTimeout(hideSplash, 3500);
@@ -60,6 +60,7 @@ export default function RootLayout() {
     Promise.all([
       Promise.race([refreshSession().catch(() => {}), timeoutPromise]),
       loadEverything().catch(() => {}),
+      loadTheme().catch(() => {}),
     ]).finally(() => {
       clearTimeout(safetyTimer);
       hideSplash();

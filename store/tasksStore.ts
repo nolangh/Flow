@@ -29,6 +29,13 @@ interface TasksState {
     due_date?: string | null;
     priority?: "low" | "medium" | "high";
   }) => Promise<void>;
+  updateTask: (id: string, updates: {
+    title?: string;
+    notes?: string | null;
+    due_date?: string | null;
+    priority?: "low" | "medium" | "high";
+    assigned_to?: string | null;
+  }) => Promise<void>;
   toggleTask: (id: string, currentValue: boolean) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
 }
@@ -100,6 +107,17 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       }));
       throw error;
     }
+  },
+
+  updateTask: async (id, updates) => {
+    set((s) => ({
+      tasks: s.tasks.map((t) => t.id === id ? { ...t, ...updates } : t),
+    }));
+    const { error } = await supabase
+      .from("tasks")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
   },
 
   deleteTask: async (id) => {

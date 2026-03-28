@@ -150,7 +150,20 @@ export default function BudgetScreen() {
         </View>
 
         {/* Right actions */}
-        <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+          {/* AI Optimize — prominent labeled button */}
+          <TouchableOpacity
+            onPress={() => setShowAiSheet(true)}
+            style={{
+              flexDirection: "row", alignItems: "center", gap: 6,
+              backgroundColor: Colors.accentSoft, borderRadius: 20,
+              paddingHorizontal: 14, paddingVertical: 8,
+              borderWidth: 1, borderColor: Colors.accentBorder,
+            }}
+          >
+            <Ionicons name="sparkles" size={14} color={Colors.accent} />
+            <Text style={{ color: Colors.accent, fontSize: 13, fontFamily: Fonts.bold }}>AI Optimize</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               Alert.alert("Budget Data", "Choose an action:", [
@@ -185,12 +198,6 @@ export default function BudgetScreen() {
             style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.bg.surface, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: Colors.border.subtle }}
           >
             <Ionicons name="swap-vertical-outline" size={17} color={Colors.text.secondary} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowAiSheet(true)}
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.accentSoft, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: Colors.accentBorder }}
-          >
-            <Ionicons name="sparkles" size={17} color={Colors.accent} />
           </TouchableOpacity>
         </View>
       </View>

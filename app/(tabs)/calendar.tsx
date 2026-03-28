@@ -89,7 +89,7 @@ export default function CalendarScreen() {
   const { events, isLoading: eventsLoading, addEvent, deleteEvent } = useCalendarEvents(viewMonth);
   const { categories } = useBudgetStore();
   const { user, household } = useAuthStore();
-  const { tasks, loadTasks, addTask, toggleTask, deleteTask } = useTasksStore();
+  const { tasks, loadTasks, addTask, updateTask, toggleTask, deleteTask } = useTasksStore();
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -109,6 +109,16 @@ export default function CalendarScreen() {
   const [taskAssignee, setTaskAssignee] = useState<string | null>(null);
   const [taskDueDate, setTaskDueDate] = useState<string | null>(null);
   const [savingTask, setSavingTask] = useState(false);
+
+  // Edit task modal state
+  const [editingTask, setEditingTask] = useState<typeof tasks[number] | null>(null);
+  const [showEditTask, setShowEditTask] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [editPriority, setEditPriority] = useState<Priority>("medium");
+  const [editAssignee, setEditAssignee] = useState<string | null>(null);
+  const [editDueDate, setEditDueDate] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const members: Array<{ id: string; full_name: string | null; email: string }> =
     (household as any)?.members ?? (user ? [user] : []);
@@ -184,6 +194,36 @@ export default function CalendarScreen() {
   const resetEventModal = () => { setNewTitle(""); setStartTime(""); setEndTime(""); setAllDay(true); };
   const resetTaskModal = () => { setTaskTitle(""); setTaskNotes(""); setTaskPriority("medium"); setTaskAssignee(null); setTaskDueDate(selectedDate); };
 
+  const openEditTask = (task: typeof tasks[number]) => {
+    setEditingTask(task);
+    setEditTitle(task.title);
+    setEditNotes(task.notes ?? "");
+    setEditPriority(task.priority);
+    setEditAssignee(task.assigned_to);
+    setEditDueDate(task.due_date);
+    setShowEditTask(true);
+  };
+
+  const handleUpdateTask = async () => {
+    if (!editingTask || !editTitle.trim()) return Alert.alert("Task title is required.");
+    setSavingEdit(true);
+    try {
+      await updateTask(editingTask.id, {
+        title: editTitle.trim(),
+        notes: editNotes.trim() || null,
+        priority: editPriority,
+        assigned_to: editAssignee,
+        due_date: editDueDate,
+      });
+      setShowEditTask(false);
+      setEditingTask(null);
+    } catch (err: unknown) {
+      Alert.alert("Error", (err as Error).message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleAddEvent = async () => {
     if (!newTitle.trim()) return Alert.alert("Enter an event title.");
     if (!selectedDate) return Alert.alert("Select a date first.");
@@ -253,23 +293,30 @@ export default function CalendarScreen() {
     const isOverdue = task.due_date && task.due_date < todayStr && !task.is_completed;
 
     return (
-      <View style={{
-        flexDirection: "row", alignItems: "center", gap: 12,
-        backgroundColor: Colors.bg.surface, borderRadius: 16, padding: 14,
-        borderWidth: 1, borderColor: Colors.border.subtle, marginBottom: 8,
-      }}>
-        {/* Checkbox */}
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => openEditTask(task)}
+        style={{
+          flexDirection: "row", alignItems: "center", gap: 12,
+          backgroundColor: Colors.bg.surface, borderRadius: 16, padding: 14,
+          borderWidth: 1,
+          borderColor: task.is_completed ? Colors.border.dim : isOverdue ? Colors.dangerBorder : Colors.border.subtle,
+          marginBottom: 8,
+        }}
+      >
+        {/* Checkbox — tap stops propagation to prevent opening edit */}
         <TouchableOpacity
-          onPress={() => toggleTask(task.id, task.is_completed)}
+          onPress={(e) => { e.stopPropagation?.(); toggleTask(task.id, task.is_completed); }}
           style={{
-            width: 24, height: 24, borderRadius: 12,
+            width: 26, height: 26, borderRadius: 13,
             borderWidth: 2,
             borderColor: task.is_completed ? Colors.accent : PRIORITY_COLORS[task.priority],
             backgroundColor: task.is_completed ? Colors.accentSoft : "transparent",
             alignItems: "center", justifyContent: "center",
           }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          {task.is_completed && <Ionicons name="checkmark" size={13} color={Colors.accent} />}
+          {task.is_completed && <Ionicons name="checkmark" size={14} color={Colors.accent} />}
         </TouchableOpacity>
 
         {/* Content */}
@@ -278,7 +325,7 @@ export default function CalendarScreen() {
             color: task.is_completed ? Colors.text.muted : Colors.text.primary,
             fontSize: 14, fontFamily: Fonts.semiBold,
             textDecorationLine: task.is_completed ? "line-through" : "none",
-          }}>
+          }} numberOfLines={2}>
             {task.title}
           </Text>
           {task.notes ? (
@@ -287,7 +334,7 @@ export default function CalendarScreen() {
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
             {task.due_date && (
               <Text style={{ color: isOverdue ? Colors.danger : Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
-                {isOverdue ? "Overdue · " : ""}{format(parseISO(task.due_date), "MMM d")}
+                {isOverdue ? "⚠ " : ""}{format(parseISO(task.due_date), "MMM d")}
               </Text>
             )}
             <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: PRIORITY_COLORS[task.priority] }} />
@@ -303,17 +350,9 @@ export default function CalendarScreen() {
           />
         )}
 
-        {/* Delete */}
-        <TouchableOpacity
-          onPress={() => Alert.alert("Delete Task", "Remove this task?", [
-            { text: "Cancel", style: "cancel" },
-            { text: "Delete", style: "destructive", onPress: () => deleteTask(task.id) },
-          ])}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons name="close" size={14} color={Colors.text.muted} />
-        </TouchableOpacity>
-      </View>
+        {/* Edit caret */}
+        <Ionicons name="chevron-forward" size={14} color={Colors.text.muted} />
+      </TouchableOpacity>
     );
   };
 
@@ -424,7 +463,7 @@ export default function CalendarScreen() {
                           <Text style={{
                             color: isSelected ? "#000" : isToday2 ? Colors.accent : day ? Colors.text.primary : "transparent",
                             fontSize: 14,
-                            fontWeight: isToday2 || isSelected ? "700" : "400",
+                            fontFamily: isToday2 || isSelected ? Fonts.bold : Fonts.regular,
                           }}>
                             {day ?? ""}
                           </Text>
@@ -594,6 +633,137 @@ export default function CalendarScreen() {
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Button label="Cancel" variant="ghost" onPress={() => { setShowAddEvent(false); resetEventModal(); }} style={{ flex: 1 }} />
               <Button label="Add Event" variant="primary" loading={savingEvent} onPress={handleAddEvent} style={{ flex: 1 }} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── EDIT TASK MODAL ── */}
+      <Modal visible={showEditTask} transparent animationType="slide" onRequestClose={() => { setShowEditTask(false); setEditingTask(null); }}>
+        <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <View style={{
+            backgroundColor: Colors.bg.raised, borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            borderTopWidth: 1, borderColor: Colors.border.subtle,
+            padding: 24, paddingBottom: Platform.OS === "ios" ? 44 : 28, gap: 16,
+          }}>
+            <View style={{ alignItems: "center", marginTop: -8, marginBottom: 4 }}>
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
+            </View>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>Edit Task</Text>
+              <TouchableOpacity
+                onPress={() => Alert.alert("Delete Task", "Remove this task permanently?", [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Delete", style: "destructive", onPress: async () => {
+                    if (editingTask) { await deleteTask(editingTask.id); setShowEditTask(false); setEditingTask(null); }
+                  }},
+                ])}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: Colors.dangerSoft, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: Colors.dangerBorder }}>
+                  <Ionicons name="trash-outline" size={13} color={Colors.danger} />
+                  <Text style={{ color: Colors.danger, fontSize: 12, fontFamily: Fonts.semiBold }}>Delete</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* Mark complete inline toggle */}
+            {editingTask && (
+              <TouchableOpacity
+                onPress={() => { toggleTask(editingTask.id, editingTask.is_completed); setEditingTask({ ...editingTask, is_completed: !editingTask.is_completed }); }}
+                style={{
+                  flexDirection: "row", alignItems: "center", gap: 10,
+                  backgroundColor: editingTask.is_completed ? Colors.accentSoft : Colors.bg.surface,
+                  borderRadius: 14, padding: 14,
+                  borderWidth: 1.5,
+                  borderColor: editingTask.is_completed ? Colors.accentBorder : Colors.border.subtle,
+                }}
+              >
+                <View style={{
+                  width: 24, height: 24, borderRadius: 12,
+                  borderWidth: 2, borderColor: editingTask.is_completed ? Colors.accent : Colors.text.muted,
+                  backgroundColor: editingTask.is_completed ? Colors.accentSoft : "transparent",
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  {editingTask.is_completed && <Ionicons name="checkmark" size={13} color={Colors.accent} />}
+                </View>
+                <Text style={{ color: editingTask.is_completed ? Colors.accent : Colors.text.secondary, fontSize: 14, fontFamily: Fonts.semiBold }}>
+                  {editingTask.is_completed ? "Completed" : "Mark as complete"}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TextInput
+              style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 15 }}
+              placeholder="Task title"
+              placeholderTextColor={Colors.text.muted}
+              value={editTitle}
+              onChangeText={setEditTitle}
+            />
+            <TextInput
+              style={{ backgroundColor: Colors.bg.surface, borderRadius: 14, padding: 16, color: Colors.text.primary, borderWidth: 1.5, borderColor: Colors.border.subtle, fontSize: 14, minHeight: 60 }}
+              placeholder="Notes (optional)"
+              placeholderTextColor={Colors.text.muted}
+              value={editNotes}
+              onChangeText={setEditNotes}
+              multiline
+            />
+
+            {/* Priority */}
+            <View>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Priority</Text>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {(["low", "medium", "high"] as Priority[]).map((p) => (
+                  <TouchableOpacity
+                    key={p}
+                    onPress={() => setEditPriority(p)}
+                    style={{
+                      flex: 1, paddingVertical: 9, borderRadius: 12, alignItems: "center",
+                      backgroundColor: editPriority === p ? PRIORITY_COLORS[p] + "22" : Colors.bg.surface,
+                      borderWidth: 1.5, borderColor: editPriority === p ? PRIORITY_COLORS[p] : Colors.border.subtle,
+                    }}
+                  >
+                    <Text style={{ color: editPriority === p ? PRIORITY_COLORS[p] : Colors.text.muted, fontSize: 13, fontFamily: Fonts.bold, textTransform: "capitalize" }}>
+                      {PRIORITY_LABELS[p]}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Assignee */}
+            {members.length > 0 && (
+              <View>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>Assign to</Text>
+                <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+                  <TouchableOpacity
+                    onPress={() => setEditAssignee(null)}
+                    style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: !editAssignee ? Colors.bg.overlay : Colors.bg.surface, borderWidth: 1.5, borderColor: !editAssignee ? Colors.border.strong : Colors.border.subtle }}
+                  >
+                    <Text style={{ color: !editAssignee ? Colors.text.primary : Colors.text.muted, fontSize: 13, fontFamily: Fonts.semiBold }}>Unassigned</Text>
+                  </TouchableOpacity>
+                  {members.map((m) => {
+                    const isMe = m.id === user?.id;
+                    const color = isMe ? Colors.accent : TASK_PURPLE;
+                    const selected = editAssignee === m.id;
+                    return (
+                      <TouchableOpacity
+                        key={m.id}
+                        onPress={() => setEditAssignee(m.id)}
+                        style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selected ? color + "22" : Colors.bg.surface, borderWidth: 1.5, borderColor: selected ? color : Colors.border.subtle }}
+                      >
+                        <AssigneeChip name={m.full_name} color={color} size="sm" />
+                        <Text style={{ color: selected ? color : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>{isMe ? "Me" : (m.full_name ?? m.email)}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Button label="Cancel" variant="ghost" onPress={() => { setShowEditTask(false); setEditingTask(null); }} style={{ flex: 1 }} />
+              <Button label="Save Changes" variant="primary" loading={savingEdit} onPress={handleUpdateTask} style={{ flex: 1 }} />
             </View>
           </View>
         </View>

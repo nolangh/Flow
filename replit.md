@@ -1,7 +1,13 @@
 # Flow — Personal Finance App
 
 ## Overview
-Flow is a mobile-first personal and household financial management app built with Expo/React Native. It supports budget tracking, recurring bills, transaction management, a shared "household" model, AI budget analysis, goals tracking, bank account linking (Plaid), CSV import/export, and a premium subscription tier.
+Flow is a mobile-first personal and household financial management app built with Expo/React Native. It supports budget tracking, recurring bills, transaction management, a shared "household" model, AI budget analysis, goals tracking, bank account linking (Plaid), manual account/card entry, CSV import/export, tasks with edit/complete/delete, and a premium subscription tier.
+
+## Fonts
+- **Outfit** font family (`@expo-google-fonts/outfit`) loaded in `app/_layout.tsx`
+- 7 weights registered: Light, Regular, Medium, SemiBold, Bold, ExtraBold, Black
+- Font constants exported from `constants/theme.ts` as `Fonts.regular`, `Fonts.bold`, etc.
+- `Text.defaultProps` patched globally with `Outfit-Regular` after fonts load
 
 ## Tech Stack
 - **Framework**: Expo SDK 54 with Expo Router (file-based routing)

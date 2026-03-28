@@ -28,6 +28,8 @@ import TransactionItem from "@/components/dashboard/TransactionItem";
 import EmptyState from "@/components/ui/EmptyState";
 import AllocationChart from "@/components/budget/AllocationChart";
 import AiAnalysisSheet from "@/components/premium/AiAnalysisSheet";
+import BezierChart from "@/components/ui/BezierChart";
+import { useWindowDimensions } from "react-native";
 import { buildBudgetCsv, buildTransactionCsv, exportCsvFile, pickCsvFile, parseBudgetCsv } from "@/lib/csvUtils";
 import type { BudgetSuggestion } from "@/lib/openai";
 
@@ -118,6 +120,7 @@ export default function BudgetScreen() {
   const spendCategories = categories.filter((c) => !c.is_income && !c.is_fixed);
   const totalFixed = fixedCategories.reduce((sum, c) => sum + c.monthly_limit, 0);
   const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit);
+  const { width } = useWindowDimensions();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
@@ -498,6 +501,21 @@ export default function BudgetScreen() {
                     </View>
                   );
                 })}
+              </View>
+            )}
+
+            {/* Spending trend line chart */}
+            {summary.spendingData.length > 1 && (
+              <View style={{ backgroundColor: Colors.bg.surface, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: Colors.border.subtle }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 14 }}>
+                  Spending Trend
+                </Text>
+                <BezierChart
+                  data={summary.spendingData}
+                  limit={summary.totalLimit}
+                  width={width - 80}
+                  height={120}
+                />
               </View>
             )}
 

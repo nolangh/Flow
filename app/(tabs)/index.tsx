@@ -17,7 +17,6 @@ import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetSummary } from "@/hooks/useBudgetSummary";
 import { Colors, getBudgetColor, pillShadow } from "@/constants/theme";
 import { formatCurrency, currentYearMonth, formatMonth } from "@/lib/utils";
-import BezierChart from "@/components/ui/BezierChart";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Divider from "@/components/ui/Divider";
 import TransactionItem from "@/components/dashboard/TransactionItem";
@@ -180,33 +179,6 @@ export default function DashboardScreen() {
                 </Text>
               </View>
             ))}
-          </View>
-        </View>
-
-        {/* ── Spending Chart ── */}
-        <View style={{ marginHorizontal: 20, marginBottom: 16 }}>
-          <View style={{
-            backgroundColor: Colors.bg.surface,
-            borderRadius: 20,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: Colors.border.subtle,
-          }}>
-            <Text style={{ color: Colors.text.muted, fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-              Spending Trend
-            </Text>
-            {summary.spendingData.length > 1 ? (
-              <BezierChart
-                data={summary.spendingData}
-                limit={summary.totalLimit}
-                width={width - 72}
-                height={110}
-              />
-            ) : (
-              <View style={{ height: 110, alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ color: Colors.text.muted, fontSize: 13 }}>No spending data yet</Text>
-              </View>
-            )}
           </View>
         </View>
 

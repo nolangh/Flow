@@ -153,25 +153,11 @@ export default function BudgetScreen() {
       {/* Header */}
       <View style={{
         flexDirection: "row", justifyContent: "space-between",
-        alignItems: "center", paddingHorizontal: 20, paddingTop: 14, paddingBottom: 8,
+        alignItems: "center", paddingHorizontal: 20, paddingTop: 14, paddingBottom: 10,
       }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-          <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>
-            Budget
-          </Text>
-          {/* Month nav inline */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: Colors.bg.surface, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: Colors.border.subtle }}>
-            <TouchableOpacity onPress={handlePrevMonth}>
-              <Ionicons name="chevron-back" size={14} color={Colors.text.muted} />
-            </TouchableOpacity>
-            <Text style={{ color: Colors.text.secondary, fontSize: 12, fontFamily: Fonts.semiBold }}>
-              {formatMonth(`${currentMonth}-01`)}
-            </Text>
-            <TouchableOpacity onPress={handleNextMonth} disabled={currentMonth >= currentYearMonth()}>
-              <Ionicons name="chevron-forward" size={14} color={currentMonth >= currentYearMonth() ? Colors.border.subtle : Colors.text.muted} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Text style={{ color: Colors.text.primary, fontSize: 26, fontFamily: Fonts.extraBold, letterSpacing: -0.5 }}>
+          Budget
+        </Text>
 
         {/* Right actions */}
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
@@ -226,76 +212,19 @@ export default function BudgetScreen() {
         </View>
       </View>
 
-      {/* Summary strip */}
-      <View style={{ marginHorizontal: 20, marginTop: 12, marginBottom: 14 }}>
-        <View style={{
-          backgroundColor: Colors.bg.surface,
-          borderRadius: 20,
-          padding: 16,
-          borderWidth: 1,
-          borderColor: summary.isOverBudget ? Colors.dangerBorder : Colors.border.subtle,
-          gap: 12,
-        }}>
-          {/* Monthly budget row — tappable to edit */}
-          <TouchableOpacity
-            onPress={() => {
-              setBudgetInput(
-                monthlyBudget?.total_limit && monthlyBudget.total_limit > 0
-                  ? monthlyBudget.total_limit.toString()
-                  : ""
-              );
-              setShowBudgetEdit(true);
-            }}
-            style={{
-              flexDirection: "row", alignItems: "center",
-              justifyContent: "space-between",
-              backgroundColor: Colors.bg.overlay,
-              borderRadius: 12, padding: 12,
-            }}
-          >
-            <View>
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Monthly Budget
-              </Text>
-              <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.extraBold, letterSpacing: -0.5, marginTop: 2 }}>
-                {summary.totalLimit > 0 ? formatCurrency(summary.totalLimit) : "Not set"}
-              </Text>
-            </View>
-            <View style={{
-              flexDirection: "row", alignItems: "center", gap: 4,
-              backgroundColor: Colors.neonGreenGlow,
-              borderWidth: 1, borderColor: Colors.neonGreenBorder,
-              borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
-            }}>
-              <Ionicons name="pencil" size={12} color={Colors.accent} />
-              <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.semiBold }}>Edit</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Stats row */}
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            {[
-              { label: "Income", value: summary.totalIncome, color: Colors.accent },
-              { label: "Spent", value: summary.totalSpent, color: activeColor },
-              { label: "Left", value: Math.abs(summary.totalRemaining), color: summary.isOverBudget ? Colors.danger : Colors.accent },
-            ].map(({ label, value, color }) => (
-              <View key={label} style={{ alignItems: "center" }}>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>{label}</Text>
-                <Text style={{ color, fontSize: 17, fontFamily: Fonts.bold, letterSpacing: -0.5 }}>
-                  {formatCurrency(value)}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          <ProgressBar spent={summary.totalSpent} limit={summary.totalLimit} height={5} />
-          <Text style={{ color: Colors.text.muted, fontSize: 11 }}>
-            {summary.totalLimit > 0
-              ? `${summary.percentUsed.toFixed(0)}% of ${formatCurrency(summary.totalLimit)} used`
-              : "Set a monthly budget to track progress"}
-          </Text>
-        </View>
+      {/* Month nav */}
+      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12, gap: 10 }}>
+        <TouchableOpacity onPress={handlePrevMonth} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="chevron-back" size={16} color={Colors.text.muted} />
+        </TouchableOpacity>
+        <Text style={{ color: Colors.text.primary, fontSize: 15, fontFamily: Fonts.semiBold }}>
+          {formatMonth(`${currentMonth}-01`)}
+        </Text>
+        <TouchableOpacity onPress={handleNextMonth} disabled={currentMonth >= currentYearMonth()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="chevron-forward" size={16} color={currentMonth >= currentYearMonth() ? Colors.border.subtle : Colors.text.muted} />
+        </TouchableOpacity>
       </View>
+
 
       {/* Budget limit edit modal */}
       <Modal visible={showBudgetEdit} transparent animationType="fade" onRequestClose={() => setShowBudgetEdit(false)}>
@@ -402,6 +331,76 @@ export default function BudgetScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} />}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Summary strip (scrolls with content) ─────────────── */}
+        <View style={{
+          backgroundColor: Colors.bg.surface,
+          borderRadius: 20,
+          padding: 16,
+          borderWidth: 1,
+          borderColor: summary.isOverBudget ? Colors.dangerBorder : Colors.border.subtle,
+          gap: 12,
+          marginBottom: 20,
+        }}>
+          {/* Monthly budget row — tappable to edit */}
+          <TouchableOpacity
+            onPress={() => {
+              setBudgetInput(
+                monthlyBudget?.total_limit && monthlyBudget.total_limit > 0
+                  ? monthlyBudget.total_limit.toString()
+                  : ""
+              );
+              setShowBudgetEdit(true);
+            }}
+            style={{
+              flexDirection: "row", alignItems: "center",
+              justifyContent: "space-between",
+              backgroundColor: Colors.bg.overlay,
+              borderRadius: 12, padding: 12,
+            }}
+          >
+            <View>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Monthly Budget
+              </Text>
+              <Text style={{ color: Colors.text.primary, fontSize: 20, fontFamily: Fonts.extraBold, letterSpacing: -0.5, marginTop: 2 }}>
+                {summary.totalLimit > 0 ? formatCurrency(summary.totalLimit) : "Not set"}
+              </Text>
+            </View>
+            <View style={{
+              flexDirection: "row", alignItems: "center", gap: 4,
+              backgroundColor: Colors.neonGreenGlow,
+              borderWidth: 1, borderColor: Colors.neonGreenBorder,
+              borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
+            }}>
+              <Ionicons name="pencil" size={12} color={Colors.accent} />
+              <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.semiBold }}>Edit</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Stats row */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            {[
+              { label: "Income", value: summary.totalIncome, color: Colors.accent },
+              { label: "Spent", value: summary.totalSpent, color: activeColor },
+              { label: "Left", value: Math.abs(summary.totalRemaining), color: summary.isOverBudget ? Colors.danger : Colors.accent },
+            ].map(({ label, value, color }) => (
+              <View key={label} style={{ alignItems: "center" }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, marginBottom: 4 }}>{label}</Text>
+                <Text style={{ color, fontSize: 17, fontFamily: Fonts.bold, letterSpacing: -0.5 }}>
+                  {formatCurrency(value)}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <ProgressBar spent={summary.totalSpent} limit={summary.totalLimit} height={5} />
+          <Text style={{ color: Colors.text.muted, fontSize: 11 }}>
+            {summary.totalLimit > 0
+              ? `${summary.percentUsed.toFixed(0)}% of ${formatCurrency(summary.totalLimit)} used`
+              : "Set a monthly budget to track progress"}
+          </Text>
+        </View>
+
         {tab === "overview" ? (
           <View style={{ gap: 24 }}>
 

@@ -110,11 +110,11 @@ export const FRESH: ThemeColors = {
     dim:    "#EDE9DF",
     strong: "#C0BDB7",
   },
-  // Coral — energetic, trendy, pairs great with cream
-  accent:       "#FF5757",
-  accentDim:    "#E03E3E",
-  accentSoft:   "rgba(255, 87, 87, 0.10)",
-  accentBorder: "rgba(255, 87, 87, 0.24)",
+  // Electric orange — energetic, bold, pairs great with cream
+  accent:       "#FF3C00",
+  accentDim:    "#CC3000",
+  accentSoft:   "rgba(255, 60, 0, 0.10)",
+  accentBorder: "rgba(255, 60, 0, 0.24)",
   danger:       "#E53935",
   dangerDim:    "#C62828",
   dangerSoft:   "rgba(229, 57, 53, 0.10)",

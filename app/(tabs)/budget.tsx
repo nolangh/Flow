@@ -292,7 +292,7 @@ export default function BudgetScreen() {
                   ...pillShadow(Colors.accent),
                 }}
               >
-                <Text style={{ color: "#000", fontFamily: Fonts.bold }}>Save</Text>
+                <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold }}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -626,7 +626,7 @@ export default function BudgetScreen() {
             ...pillShadow(Colors.accent),
           }}
         >
-          <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 15 }}>+ Add Transaction</Text>
+          <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 15 }}>+ Add Transaction</Text>
         </TouchableOpacity>
       </View>
 

@@ -329,7 +329,7 @@ export default function DashboardScreen() {
               ...pillShadow(Colors.accent),
             }}
           >
-            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16 }}>+ Add Transaction</Text>
+            <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 16 }}>+ Add Transaction</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

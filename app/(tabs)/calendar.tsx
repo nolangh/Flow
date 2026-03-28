@@ -522,7 +522,7 @@ export default function CalendarScreen() {
               onPress={() => { resetTaskModal(); setShowAddTask(true); }}
               style={{ backgroundColor: Colors.accent, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, ...pillShadow(Colors.accent) }}
             >
-              <Text style={{ color: "#000", fontSize: 13, fontFamily: Fonts.bold }}>+ Task</Text>
+              <Text style={{ color: Colors.text.inverse, fontSize: 13, fontFamily: Fonts.bold }}>+ Task</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -625,7 +625,7 @@ export default function CalendarScreen() {
                       onPress={() => setShowAddEvent(true)}
                       style={{ backgroundColor: Colors.accent, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, ...pillShadow(Colors.accent) }}
                     >
-                      <Text style={{ color: "#000", fontSize: 12, fontFamily: Fonts.bold }}>+ Event</Text>
+                      <Text style={{ color: Colors.text.inverse, fontSize: 12, fontFamily: Fonts.bold }}>+ Event</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -984,8 +984,8 @@ export default function CalendarScreen() {
                           }}
                         >
                           {savingSubtask
-                            ? <ActivityIndicator size="small" color="#000" />
-                            : <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 13 }}>Add</Text>
+                            ? <ActivityIndicator size="small" color={Colors.text.inverse} />
+                            : <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 13 }}>Add</Text>
                           }
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => { setShowSubtaskInput(false); setNewSubtaskTitle(""); }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>

@@ -51,7 +51,7 @@ function TierCard({
           paddingHorizontal: 12, paddingVertical: 5,
           borderBottomLeftRadius: 14,
         }}>
-          <Text style={{ color: "#000", fontSize: 10, fontFamily: Fonts.extraBold }}>
+          <Text style={{ color: Colors.text.inverse, fontSize: 10, fontFamily: Fonts.extraBold }}>
             MOST POPULAR
           </Text>
         </View>

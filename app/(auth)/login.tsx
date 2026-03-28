@@ -62,7 +62,9 @@ export default function LoginScreen() {
     setSocialLoading("google");
     try {
       await signInWithGoogle();
-      router.replace("/");
+      // Only navigate if sign-in actually completed (browser dismiss is a silent no-op)
+      const { session } = useAuthStore.getState();
+      if (session) router.replace("/");
     } catch (err: unknown) {
       Alert.alert("Google sign-in failed", (err as Error).message);
     } finally {
@@ -180,9 +182,9 @@ export default function LoginScreen() {
           }}
         >
           {isLoading && socialLoading === null ? (
-            <ActivityIndicator color="#000" />
+            <ActivityIndicator color={Colors.text.inverse} />
           ) : (
-            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16, letterSpacing: 0.1 }}>
+            <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 16, letterSpacing: 0.1 }}>
               Sign In
             </Text>
           )}

@@ -200,7 +200,7 @@ export default function GoalsScreen() {
             ...pillShadow(Colors.accent),
           }}
         >
-          <Text style={{ color: "#000", fontSize: 13, fontFamily: Fonts.bold }}>+ New Goal</Text>
+          <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 13 }}>+ New Goal</Text>
         </TouchableOpacity>
       </View>
 
@@ -246,7 +246,7 @@ export default function GoalsScreen() {
                 ...pillShadow(Colors.accent),
               }}
             >
-              <Text style={{ color: "#000", fontSize: 15, fontFamily: Fonts.bold }}>Create my first goal</Text>
+              <Text style={{ color: Colors.text.inverse, fontSize: 15, fontFamily: Fonts.bold }}>Create my first goal</Text>
             </TouchableOpacity>
           </View>
         )}

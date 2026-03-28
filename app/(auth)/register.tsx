@@ -144,9 +144,9 @@ export default function RegisterScreen() {
           }}
         >
           {isLoading ? (
-            <ActivityIndicator color="#000" />
+            <ActivityIndicator color={Colors.text.inverse} />
           ) : (
-            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16 }}>Create Account</Text>
+            <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 16 }}>Create Account</Text>
           )}
         </TouchableOpacity>
 

@@ -65,7 +65,7 @@ function SettingRow({
           </Text>
           {badge && (
             <View style={{ backgroundColor: Colors.accent, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1 }}>
-              <Text style={{ color: "#000", fontSize: 9, fontFamily: Fonts.extraBold }}>{badge}</Text>
+              <Text style={{ color: Colors.text.inverse, fontSize: 9, fontFamily: Fonts.extraBold }}>{badge}</Text>
             </View>
           )}
         </View>

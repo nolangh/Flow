@@ -482,8 +482,8 @@ export default function AccountsScreen() {
                   flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
                 }}
               >
-                <Ionicons name="add-circle-outline" size={18} color="#000" />
-                <Text style={{ color: "#000", fontSize: 14, fontFamily: Fonts.bold }}>Add Account</Text>
+                <Ionicons name="add-circle-outline" size={18} color={Colors.text.inverse} />
+                <Text style={{ color: Colors.text.inverse, fontSize: 14, fontFamily: Fonts.bold }}>Add Account</Text>
               </TouchableOpacity>
               {PLAID_CONFIGURED && (
                 <TouchableOpacity

@@ -153,9 +153,9 @@ export default function HouseholdScreen() {
           }}
         >
           {isLoading ? (
-            <ActivityIndicator color="#000" />
+            <ActivityIndicator color={Colors.text.inverse} />
           ) : (
-            <Text style={{ color: "#000", fontFamily: Fonts.bold, fontSize: 16 }}>
+            <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 16 }}>
               {mode === "create" ? "Create Household" : "Join Household"}
             </Text>
           )}

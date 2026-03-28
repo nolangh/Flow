@@ -10,14 +10,13 @@ module.exports = function (api) {
         // NativeWind's jsxImportSource breaks jest — use react in test env
         { jsxImportSource: isTest ? "react" : "nativewind" },
       ],
+      ...(isTest ? [] : ["nativewind/babel"]),
     ],
     plugins: [
       // These plugins are not compatible with jest — skip in test env
       ...(isTest ? [] : [
         require("./node_modules/react-native-css-interop/dist/babel-plugin").default,
-        ["@babel/plugin-transform-react-jsx", { runtime: "automatic", importSource: "react-native-css-interop" }],
         "react-native-worklets/plugin",
-        "nativewind/babel",
       ]),
     ],
   };

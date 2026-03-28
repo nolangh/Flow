@@ -35,7 +35,7 @@ export async function exchangePublicToken(
  * The Edge Function dispatches a Trigger.dev task.
  */
 export async function triggerTransactionSync(householdId: string): Promise<void> {
-  const { error } = await supabase.functions.invoke("trigger-plaid-sync", {
+  const { error } = await supabase.functions.invoke("plaid-sync-transactions", {
     body: { household_id: householdId },
   });
 

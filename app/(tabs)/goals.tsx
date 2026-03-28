@@ -23,6 +23,7 @@ function GoalCard({ goal, onContribute, onDelete }: {
   onContribute: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const Colors = useColors();
   const pct = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0;
   const remaining = goal.target_amount - goal.current_amount;
 

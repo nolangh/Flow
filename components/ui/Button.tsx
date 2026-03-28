@@ -26,7 +26,7 @@ function buildVariantStyles(C: ThemeColors) {
     primary: {
       bg: C.accent,
       border: C.accentDim,
-      text: "#000000",
+      text: C.text.inverse,
       shadow: pillShadow(C.accent),
     },
     danger: {

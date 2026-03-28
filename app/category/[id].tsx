@@ -72,6 +72,7 @@ function StatBar({
   color: string;
   sublabel?: string;
 }) {
+  const Colors = useColors();
   const over = spent > limit && limit > 0;
   const pct = limit > 0 ? Math.min(spent / limit, 1) : 0;
   const remaining = limit - spent;
@@ -138,6 +139,7 @@ function AllowanceChip({
   label: string;
   amount: number;
 }) {
+  const Colors = useColors();
   return (
     <View style={{
       flex: 1,

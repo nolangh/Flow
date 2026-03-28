@@ -182,7 +182,7 @@ export default function UpgradeScreen() {
 
         {/* Hero */}
         <LinearGradient
-          colors={Colors.statusBar === "dark-content" ? [Colors.accentSoft, Colors.bg.app] : ["#001a0a", "#000000"]}
+          colors={Colors.statusBar === "dark-content" ? [Colors.neonGreenGlow, Colors.bg.app] : ["#001a0a", "#000000"]}
           style={{ paddingTop: 20, paddingBottom: 32, paddingHorizontal: 24, alignItems: "center" }}
         >
           <View style={{

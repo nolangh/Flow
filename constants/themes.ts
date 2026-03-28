@@ -2,7 +2,7 @@
  * Flow Theme Definitions
  *
  * Midnight — sleek dark fintech aesthetic (original)
- * Fresh    — bold light theme inspired by high-contrast green-forward design
+ * Fresh    — editorial light mode: cream backgrounds, charcoal actions, mint highlights
  */
 
 export interface ThemeColors {
@@ -91,44 +91,51 @@ export const MIDNIGHT: ThemeColors = {
   statusBar: "light-content",
 };
 
+/**
+ * Fresh — editorial light mode
+ * Inspired by bold print + bold design: cream base, charcoal primary actions,
+ * mint green as a decorative highlight (not the primary action color).
+ */
 export const FRESH: ThemeColors = {
   bg: {
-    app:     "#F0EDE3",
+    app:     "#F5F1E8",  // warm cream
     surface: "#FFFFFF",
-    raised:  "#FAFAF6",
-    overlay: "#E8E4D8",
+    raised:  "#FAFAF7",
+    overlay: "#EDEAE0",
     card:    "#FFFFFF",
   },
   border: {
-    subtle: "#DEDAD0",
-    dim:    "#ECE9DF",
-    strong: "#B5B2A8",
+    subtle: "#E0DDD5",
+    dim:    "#EAE7DF",
+    strong: "#BBBAB4",
   },
-  accent:       "#00D632",
-  accentDim:    "#00A828",
-  accentSoft:   "rgba(0, 214, 50, 0.14)",
-  accentBorder: "rgba(0, 214, 50, 0.35)",
+  // Primary accent = charcoal — for buttons, active states, badges
+  accent:       "#111111",
+  accentDim:    "#2C2C2C",
+  accentSoft:   "rgba(17, 17, 17, 0.07)",
+  accentBorder: "rgba(17, 17, 17, 0.16)",
   danger:       "#E53935",
   dangerDim:    "#C62828",
   dangerSoft:   "rgba(229, 57, 53, 0.10)",
-  dangerBorder: "rgba(229, 57, 53, 0.28)",
+  dangerBorder: "rgba(229, 57, 53, 0.25)",
   warning:      "#E67700",
   warningSoft:  "rgba(230, 119, 0, 0.10)",
   text: {
     primary:   "#111111",
     secondary: "#444444",
     muted:     "#888888",
-    inverse:   "#FFFFFF",
+    inverse:   "#FFFFFF",  // white text on dark/charcoal buttons
   },
-  neonGreen:       "#00D632",
-  neonGreenDim:    "#00A828",
-  neonGreenGlow:   "rgba(0, 214, 50, 0.14)",
-  neonGreenBorder: "rgba(0, 214, 50, 0.35)",
+  // Mint green — decorative highlight (income, goals, success indicators)
+  neonGreen:       "#5DDE82",
+  neonGreenDim:    "#3BC463",
+  neonGreenGlow:   "rgba(93, 222, 130, 0.22)",
+  neonGreenBorder: "rgba(93, 222, 130, 0.42)",
   dangerPink:       "#E53935",
   dangerPinkDim:    "#C62828",
   dangerPinkGlow:   "rgba(229, 57, 53, 0.10)",
-  dangerPinkBorder: "rgba(229, 57, 53, 0.28)",
-  income:  "#00D632",
+  dangerPinkBorder: "rgba(229, 57, 53, 0.25)",
+  income:  "#2ECC71",   // mint green for positive money flows
   expense: "#E53935",
   neutral: "#888888",
   statusBar: "dark-content",
@@ -150,6 +157,6 @@ export const THEME_META: Record<ThemeKey, { label: string; emoji: string; descri
   fresh: {
     label:       "Fresh",
     emoji:       "🌿",
-    description: "Bold light mode with green energy",
+    description: "Editorial light mode, bold & clean",
   },
 };

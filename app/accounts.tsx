@@ -69,18 +69,18 @@ const ACCOUNT_ICONS: Record<string, string> = {
   investment: "trending-up-outline",
 };
 
-const ACCOUNT_COLORS: Record<string, string> = {
-  depository: Colors.accent,
-  checking:   Colors.accent,
-  savings:    "#06b6d4",
-  credit:     "#8b5cf6",
-  loan:       Colors.warning,
-  investment: "#f59e0b",
-};
-
 function AccountCard({ account, item }: { account: PlaidAccount; item: PlaidItem }) {
+  const Colors = useColors();
+  const accountColors: Record<string, string> = {
+    depository: Colors.income,
+    checking:   Colors.income,
+    savings:    "#06b6d4",
+    credit:     "#8b5cf6",
+    loan:       Colors.warning,
+    investment: "#f59e0b",
+  };
   const icon = ACCOUNT_ICONS[account.type] ?? "card-outline";
-  const color = ACCOUNT_COLORS[account.type] ?? Colors.text.muted;
+  const color = accountColors[account.type] ?? Colors.text.muted;
   const balance = account.available_balance ?? account.current_balance;
 
   return (

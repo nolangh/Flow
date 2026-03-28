@@ -21,7 +21,6 @@ import EmptyState from "@/components/ui/EmptyState";
 import type { CalendarEvent } from "@/types";
 
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-const PRIORITY_COLORS = { low: "#6b7280", medium: Colors.warning, high: Colors.danger };
 const PRIORITY_LABELS = { low: "Low", medium: "Medium", high: "High" };
 const TASK_PURPLE = "#8b5cf6";
 
@@ -29,6 +28,7 @@ type CalTab = "calendar" | "tasks";
 type Priority = "low" | "medium" | "high";
 
 function TimeInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const Colors = useColors();
   return (
     <View style={{ flex: 1 }}>
       <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
@@ -86,6 +86,7 @@ function AssigneeChip({ name, color, size = "sm" }: { name: string | null; color
 
 export default function CalendarScreen() {
   const Colors = useColors();
+  const PRIORITY_COLORS = { low: "#6b7280", medium: Colors.warning, high: Colors.danger };
   const [calTab, setCalTab] = useState<CalTab>("calendar");
   const [viewMonth, setViewMonth] = useState(currentYearMonth());
   const { events, isLoading: eventsLoading, addEvent, deleteEvent } = useCalendarEvents(viewMonth);

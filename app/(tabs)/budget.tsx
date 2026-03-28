@@ -28,6 +28,8 @@ import TransactionItem from "@/components/dashboard/TransactionItem";
 import EmptyState from "@/components/ui/EmptyState";
 import AllocationChart from "@/components/budget/AllocationChart";
 import AiAnalysisSheet from "@/components/premium/AiAnalysisSheet";
+import BudgetAlertBanner from "@/components/budget/BudgetAlertBanner";
+import type { BudgetAlert } from "@/components/budget/BudgetAlertBanner";
 import BezierChart from "@/components/ui/BezierChart";
 import { useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
@@ -50,6 +52,7 @@ export default function BudgetScreen() {
   const [showAiSheet, setShowAiSheet] = useState(false);
   const [budgetInput, setBudgetInput] = useState("");
   const [editingCategory, setEditingCategory] = useState<import("@/types").BudgetCategory | null>(null);
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
 
   const CHART_COLORS = ["#00D632","#3b82f6","#8b5cf6","#f59e0b","#ef4444","#06b6d4","#ec4899","#14b8a6","#f97316","#a78bfa"];
 
@@ -122,6 +125,25 @@ export default function BudgetScreen() {
   const spendCategories = categories.filter((c) => !c.is_income && !c.is_fixed);
   const totalFixed = fixedCategories.reduce((sum, c) => sum + c.monthly_limit, 0);
   const activeColor = getBudgetColor(summary.totalSpent, summary.totalLimit);
+
+  const triggeredAlerts = useMemo<BudgetAlert[]>(() => {
+    return spendCategories
+      .filter((c) => {
+        if (!c.alert_threshold || c.monthly_limit <= 0 || dismissedAlerts.has(c.id)) return false;
+        const spent = c.spent ?? 0;
+        const pct = (spent / c.monthly_limit) * 100;
+        return pct >= c.alert_threshold;
+      })
+      .map((c) => ({
+        categoryId: c.id,
+        categoryName: c.name,
+        emoji: c.emoji ?? "📦",
+        pct: ((c.spent ?? 0) / c.monthly_limit) * 100,
+        spent: c.spent ?? 0,
+        limit: c.monthly_limit,
+        threshold: c.alert_threshold!,
+      }));
+  }, [spendCategories, dismissedAlerts]);
   const { width } = useWindowDimensions();
 
   return (
@@ -382,6 +404,19 @@ export default function BudgetScreen() {
       >
         {tab === "overview" ? (
           <View style={{ gap: 24 }}>
+
+            {/* ── Spend alerts ─────────────────────────────────────── */}
+            {triggeredAlerts.length > 0 && (
+              <View style={{ gap: 8 }}>
+                {triggeredAlerts.map((alert) => (
+                  <BudgetAlertBanner
+                    key={alert.categoryId}
+                    alert={alert}
+                    onDismiss={(id) => setDismissedAlerts((prev) => new Set([...prev, id]))}
+                  />
+                ))}
+              </View>
+            )}
 
             {/* ── Fixed Bills ─────────────────────────────────────── */}
             {fixedCategories.length > 0 && (

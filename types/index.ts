@@ -87,6 +87,7 @@ export interface BudgetCategory {
   is_income: boolean;
   is_fixed: boolean;          // fixed recurring bill
   fixed_day_of_month: number | null;
+  alert_threshold: number | null;   // 1–100 percent; null = no alert
   created_at: string;
   updated_at: string;
   // computed

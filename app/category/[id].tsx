@@ -19,6 +19,8 @@ import { useTransactionStore } from "@/store/transactionStore";
 import { formatCurrency, currentYearMonth } from "@/lib/utils";
 import type { BudgetCategory } from "@/types";
 import EditCategoryModal from "@/components/budget/EditCategoryModal";
+import BudgetAlertBanner from "@/components/budget/BudgetAlertBanner";
+import type { BudgetAlert } from "@/components/budget/BudgetAlertBanner";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -169,6 +171,7 @@ export default function CategoryDetailScreen() {
 
   const [showEdit, setShowEdit] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [alertDismissed, setAlertDismissed] = useState(false);
 
   const category = useMemo(
     () => categories.find((c) => c.id === id) ?? null,
@@ -224,6 +227,22 @@ export default function CategoryDetailScreen() {
   const monthColor = getBudgetColor(spentMonthly, limit);
   const weekColor = getBudgetColor(spentThisWeek, weeklyAllowance);
   const dayColor = getBudgetColor(spentToday, dailyAllowance);
+
+  // ── Alert ─────────────────────────────────────────────────────────────────
+  const triggeredAlert = useMemo<BudgetAlert | null>(() => {
+    if (!category || !category.alert_threshold || limit <= 0 || alertDismissed) return null;
+    const pct = (spentMonthly / limit) * 100;
+    if (pct < category.alert_threshold) return null;
+    return {
+      categoryId: category.id,
+      categoryName: category.name,
+      emoji: category.emoji ?? "📦",
+      pct,
+      spent: spentMonthly,
+      limit,
+      threshold: category.alert_threshold,
+    };
+  }, [category, spentMonthly, limit, alertDismissed]);
 
   // ── Grouped transactions ──────────────────────────────────────────────────
   const grouped = useMemo(() => {
@@ -303,6 +322,14 @@ export default function CategoryDetailScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} />
         }
       >
+        {/* ── Alert banner ────────────────────────────────────────────── */}
+        {triggeredAlert && (
+          <BudgetAlertBanner
+            alert={triggeredAlert}
+            onDismiss={(_id) => setAlertDismissed(true)}
+          />
+        )}
+
         {/* ── Allowance chips ─────────────────────────────────────────── */}
         <View style={{ flexDirection: "row", gap: 10, marginBottom: 4 }}>
           <AllowanceChip icon="📅" label="per day" amount={dailyAllowance} />

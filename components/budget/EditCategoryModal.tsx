@@ -10,11 +10,20 @@ import {
   Platform,
 } from "react-native";
 import { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors, Fonts } from "@/constants/theme";
 import Button from "@/components/ui/Button";
 import type { BudgetCategory } from "@/types";
 
 const EMOJI_OPTIONS = ["🍔", "🛒", "🚗", "🏠", "💊", "🎬", "✈️", "📱", "💡", "🎓", "👗", "🐾", "💵", "📦", "🏋️", "🎮", "📋", "⚡", "💧", "🌊", "🏥", "📶", "🙏", "☀️"];
+
+const THRESHOLD_PRESETS = [
+  { label: "50%", value: 50 },
+  { label: "75%", value: 75 },
+  { label: "80%", value: 80 },
+  { label: "90%", value: 90 },
+  { label: "Off", value: null },
+];
 
 interface EditCategoryModalProps {
   visible: boolean;
@@ -31,6 +40,7 @@ export default function EditCategoryModal({ visible, category, onClose, onSave, 
   const [isIncome, setIsIncome] = useState(false);
   const [isFixed, setIsFixed] = useState(false);
   const [fixedDay, setFixedDay] = useState("");
+  const [alertThreshold, setAlertThreshold] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -42,6 +52,7 @@ export default function EditCategoryModal({ visible, category, onClose, onSave, 
       setIsIncome(category.is_income);
       setIsFixed(category.is_fixed);
       setFixedDay(category.fixed_day_of_month?.toString() ?? "");
+      setAlertThreshold(category.alert_threshold ?? null);
     }
   }, [category]);
 
@@ -59,6 +70,7 @@ export default function EditCategoryModal({ visible, category, onClose, onSave, 
         is_income: isIncome,
         is_fixed: isFixed,
         fixed_day_of_month: isFixed ? (parseInt(fixedDay) || null) : null,
+        alert_threshold: alertThreshold,
       });
       onClose();
     } catch (err: unknown) {
@@ -93,6 +105,8 @@ export default function EditCategoryModal({ visible, category, onClose, onSave, 
       ]
     );
   };
+
+  const isSpending = !isIncome && !isFixed;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -201,6 +215,69 @@ export default function EditCategoryModal({ visible, category, onClose, onSave, 
                     value={fixedDay}
                     onChangeText={setFixedDay}
                   />
+                </View>
+              )}
+
+              {/* ── Spend Alert Threshold (spending categories only) ── */}
+              {isSpending && (
+                <View style={{
+                  backgroundColor: Colors.bg.surface,
+                  borderRadius: 14, padding: 14,
+                  borderWidth: 1, borderColor: Colors.border.subtle,
+                  gap: 10,
+                }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Ionicons name="notifications-outline" size={16} color={Colors.text.secondary} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: Colors.text.primary, fontSize: 14, fontFamily: Fonts.semiBold }}>
+                        Spend alert
+                      </Text>
+                      <Text style={{ color: Colors.text.muted, fontSize: 11, marginTop: 1 }}>
+                        Get notified when you reach this % of the budget
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+                    {THRESHOLD_PRESETS.map((p) => {
+                      const active = alertThreshold === p.value;
+                      return (
+                        <TouchableOpacity
+                          key={String(p.value)}
+                          onPress={() => setAlertThreshold(p.value)}
+                          style={{
+                            paddingHorizontal: 14, paddingVertical: 8,
+                            borderRadius: 9999,
+                            backgroundColor: active
+                              ? (p.value === null ? Colors.bg.raised : Colors.accentBorder)
+                              : Colors.bg.raised,
+                            borderWidth: 1,
+                            borderColor: active
+                              ? (p.value === null ? Colors.border.strong : Colors.accent)
+                              : Colors.border.subtle,
+                          }}
+                        >
+                          <Text style={{
+                            fontFamily: Fonts.bold, fontSize: 13,
+                            color: active
+                              ? (p.value === null ? Colors.text.secondary : Colors.accent)
+                              : Colors.text.muted,
+                          }}>
+                            {p.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {alertThreshold !== null && (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingTop: 2 }}>
+                      <Ionicons name="checkmark-circle" size={14} color={Colors.accent} />
+                      <Text style={{ color: Colors.text.muted, fontSize: 12, fontFamily: Fonts.medium }}>
+                        Alert at {alertThreshold}% spent · ${((parseFloat(limit) || 0) * alertThreshold / 100).toFixed(2)} of ${parseFloat(limit) ? parseFloat(limit).toFixed(2) : "0.00"}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               )}
 

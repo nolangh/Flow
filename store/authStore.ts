@@ -113,11 +113,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         provider: "google",
         options: { redirectTo: redirectUri, skipBrowserRedirect: true },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message?.toLowerCase().includes("provider") || error.message?.toLowerCase().includes("not enabled")) {
+          throw new Error("Google sign-in is not yet configured. Please sign in with email.");
+        }
+        throw error;
+      }
       if (!data.url) throw new Error("No OAuth URL returned");
 
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
       if (result.type !== "success") {
+        // Browser dismissed — check if a session was established anyway (Android deep-link quirk)
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session) {
+          await get().refreshSession();
+        }
         set({ isLoading: false });
         return;
       }

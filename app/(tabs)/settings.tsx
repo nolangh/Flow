@@ -413,7 +413,7 @@ export default function SettingsScreen() {
 
         {/* Appearance — theme selector */}
         <SectionLabel>Appearance</SectionLabel>
-        <View style={{ marginHorizontal: 20, marginBottom: 28, flexDirection: "row", gap: 12 }}>
+        <View style={{ marginHorizontal: 20, marginBottom: 28, flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
           {(Object.keys(THEMES) as ThemeKey[]).map((key) => {
             const meta = THEME_META[key];
             const t = THEMES[key];
@@ -424,7 +424,7 @@ export default function SettingsScreen() {
                 onPress={() => setTheme(key)}
                 activeOpacity={0.75}
                 style={{
-                  flex: 1, borderRadius: 18,
+                  width: "30%", flexGrow: 1, borderRadius: 18,
                   borderWidth: 2,
                   borderColor: active ? Colors.accent : Colors.border.subtle,
                   overflow: "hidden",

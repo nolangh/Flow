@@ -3,6 +3,7 @@
  *
  * Midnight — sleek dark fintech aesthetic (original)
  * Fresh    — editorial light mode: cream base, vibrant coral accent, Space Grotesk type
+ * Garden   — cream base, bright lime green accent (inspired by Spectory palette)
  */
 
 export interface ThemeColors {
@@ -142,9 +143,60 @@ export const FRESH: ThemeColors = {
   statusBar: "dark-content",
 };
 
+/**
+ * Garden — cream base with bright lime green accent
+ * Accent: #A8D147 — the exact lime/chartreuse from the Spectory palette
+ * Base:   same warm cream as Fresh (#F5F1E8)
+ * Text on accent buttons uses dark ink (green is too light for white text)
+ */
+export const GARDEN: ThemeColors = {
+  bg: {
+    app:     "#F5F1E8",   // warm cream (same as Fresh)
+    surface: "#FFFFFF",
+    raised:  "#FBF9F5",
+    overlay: "#ECEAE0",
+    card:    "#FFFFFF",
+  },
+  border: {
+    subtle: "#E4E0D6",
+    dim:    "#EDE9DF",
+    strong: "#C0BDB7",
+  },
+  // Bright lime green — matched from Spectory image
+  accent:       "#A8D147",
+  accentDim:    "#88B430",
+  accentSoft:   "rgba(168, 209, 71, 0.14)",
+  accentBorder: "rgba(168, 209, 71, 0.35)",
+  danger:       "#E53935",
+  dangerDim:    "#C62828",
+  dangerSoft:   "rgba(229, 57, 53, 0.10)",
+  dangerBorder: "rgba(229, 57, 53, 0.25)",
+  warning:      "#D97B0E",
+  warningSoft:  "rgba(217, 123, 14, 0.12)",
+  text: {
+    primary:   "#1A1A1A",
+    secondary: "#444444",
+    muted:     "#888888",
+    inverse:   "#1A1A1A",   // dark ink on lime buttons — lime is too light for white text
+  },
+  neonGreen:       "#A8D147",
+  neonGreenDim:    "#88B430",
+  neonGreenGlow:   "rgba(168, 209, 71, 0.20)",
+  neonGreenBorder: "rgba(168, 209, 71, 0.40)",
+  dangerPink:       "#FF2D78",
+  dangerPinkDim:    "#CC2461",
+  dangerPinkGlow:   "rgba(255, 45, 120, 0.12)",
+  dangerPinkBorder: "rgba(255, 45, 120, 0.28)",
+  income:  "#A8D147",
+  expense: "#E53935",
+  neutral: "#888888",
+  statusBar: "dark-content",
+};
+
 export const THEMES = {
   midnight: MIDNIGHT,
   fresh:    FRESH,
+  garden:   GARDEN,
 } as const;
 
 export type ThemeKey = keyof typeof THEMES;
@@ -157,7 +209,12 @@ export const THEME_META: Record<ThemeKey, { label: string; emoji: string; descri
   },
   fresh: {
     label:       "Fresh",
+    emoji:       "🍊",
+    description: "Cream & bold coral",
+  },
+  garden: {
+    label:       "Garden",
     emoji:       "🌿",
-    description: "Editorial light mode, bold & vibrant",
+    description: "Cream & lime green",
   },
 };

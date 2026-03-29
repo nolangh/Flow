@@ -193,3 +193,46 @@ export interface ChartPoint {
   x: number;
   y: number;
 }
+
+// ─── Lists ─────────────────────────────────────────────────────────────────
+
+export interface ListItem {
+  id: string;
+  list_id: string;
+  household_id: string;
+  added_by: string | null;
+  text: string;
+  is_checked: boolean;
+  checked_by: string | null;
+  checked_at: string | null;
+  position: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShoppingList {
+  id: string;
+  household_id: string;
+  created_by: string | null;
+  name: string;
+  emoji: string;
+  color: string | null;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+  items: ListItem[];
+}
+
+export interface ListState {
+  lists: ShoppingList[];
+  isLoading: boolean;
+  error: string | null;
+  fetchLists: () => Promise<void>;
+  createList: (data: { name: string; emoji?: string; color?: string }) => Promise<void>;
+  updateList: (id: string, data: Partial<ShoppingList>) => Promise<void>;
+  deleteList: (id: string) => Promise<void>;
+  addItem: (listId: string, text: string) => Promise<void>;
+  toggleItem: (itemId: string, checked: boolean) => Promise<void>;
+  deleteItem: (itemId: string) => Promise<void>;
+  clearCheckedItems: (listId: string) => Promise<void>;
+}

@@ -68,6 +68,28 @@ export function subscribeToCalendarEvents(
     .subscribe();
 }
 
+export function subscribeToLists(
+  householdId: string,
+  onUpdate: (payload: Record<string, unknown>) => void
+) {
+  if (!supabaseConfigured) return { unsubscribe: () => {} } as ReturnType<typeof supabase.channel>;
+  // Subscribe to both lists and list_items so any change triggers a refresh
+  const ch = supabase
+    .channel(`lists:${householdId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "lists", filter: `household_id=eq.${householdId}` },
+      onUpdate
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "list_items", filter: `household_id=eq.${householdId}` },
+      onUpdate
+    )
+    .subscribe();
+  return ch;
+}
+
 export function subscribeToBudgetCategories(
   householdId: string,
   onUpdate: (payload: Record<string, unknown>) => void

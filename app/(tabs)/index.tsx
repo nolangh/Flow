@@ -6,6 +6,7 @@ import {
   RefreshControl,
   useWindowDimensions,
   StatusBar,
+  Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
@@ -68,7 +69,7 @@ export default function DashboardScreen() {
     if (next <= currentYearMonth()) setCurrentMonth(next);
   };
 
-  const recentTxs = transactions.slice(0, 6);
+  const recentTxs = transactions.slice(0, 3);
   const firstName = user?.full_name?.split(" ")[0] ?? "there";
 
   return (
@@ -76,7 +77,7 @@ export default function DashboardScreen() {
       <StatusBar barStyle={Colors.statusBar} />
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} />
@@ -142,24 +143,34 @@ export default function DashboardScreen() {
 
           {/* Big balance */}
           <View style={{ alignItems: "center", marginBottom: 20 }}>
-            <Text style={{ color: Colors.text.muted, fontSize: 12, fontFamily: Fonts.semiBold, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>
-              Total Spent
-            </Text>
-            <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)}>
-              <Text style={{
-                color: activeColor,
-                fontSize: 48,
-                fontFamily: Fonts.extraBold,
-                letterSpacing: -2,
-                lineHeight: 54,
-              }}>
-                {balanceVisible ? formatCurrency(summary.totalSpent) : "••••••"}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <Text style={{ color: Colors.text.muted, fontSize: 12, fontFamily: Fonts.semiBold, letterSpacing: 0.8, textTransform: "uppercase" }}>
+                Total Spent
               </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setBalanceVisible(!balanceVisible)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name={balanceVisible ? "eye-outline" : "eye-off-outline"}
+                  size={16}
+                  color={Colors.text.muted}
+                />
+              </TouchableOpacity>
+            </View>
+            <Text style={{
+              color: activeColor,
+              fontSize: 48,
+              fontFamily: Fonts.extraBold,
+              letterSpacing: -2,
+              lineHeight: 54,
+            }}>
+              {balanceVisible ? formatCurrency(summary.totalSpent) : "••••••"}
+            </Text>
             <Text style={{ color: Colors.text.muted, fontSize: 13, marginTop: 4 }}>
               {balanceVisible
                 ? `${formatCurrency(Math.abs(summary.totalRemaining))} ${summary.isOverBudget ? "over budget" : "remaining"}`
-                : "tap to reveal"}
+                : "tap the eye to reveal"}
             </Text>
           </View>
 
@@ -317,22 +328,29 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* ── Add Transaction ── */}
-        <View style={{ paddingHorizontal: 20, marginTop: 20 }}>
-          <TouchableOpacity
-            onPress={() => setShowAddTx(true)}
-            style={{
-              backgroundColor: Colors.accent,
-              borderRadius: 9999,
-              paddingVertical: 17,
-              alignItems: "center",
-              ...pillShadow(Colors.accent),
-            }}
-          >
-            <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 16 }}>+ Add Transaction</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+
+      {/* ── Floating Add Button ── */}
+      <View style={{
+        position: "absolute",
+        bottom: Platform.OS === "ios" ? 104 : 84,
+        left: 20,
+        right: 20,
+        pointerEvents: "box-none",
+      }}>
+        <TouchableOpacity
+          onPress={() => setShowAddTx(true)}
+          style={{
+            backgroundColor: Colors.accent,
+            borderRadius: 9999,
+            paddingVertical: 16,
+            alignItems: "center",
+            ...pillShadow(Colors.accent),
+          }}
+        >
+          <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 16 }}>+ Add Transaction</Text>
+        </TouchableOpacity>
+      </View>
 
       <AddTransactionModal
         visible={showAddTx}

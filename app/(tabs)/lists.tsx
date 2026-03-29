@@ -59,17 +59,27 @@ export default function ListsScreen() {
   const checkedCount = (l: ShoppingList) => l.items.filter((i) => i.is_checked && i.item_type === "item").length;
   const totalCount = (l: ShoppingList) => l.items.filter((i) => i.item_type === "item").length;
 
+  const handleLongPress = (list: ShoppingList) => {
+    Alert.alert(list.name, undefined, [
+      { text: "Delete", style: "destructive", onPress: () => handleDelete(list) },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
   const renderCard = (list: ShoppingList) => {
     const checked = checkedCount(list);
     const total = totalCount(list);
     const progress = total > 0 ? checked / total : 0;
-    const preview = list.items.filter((i) => !i.is_checked && i.item_type === "item").slice(0, 3);
+    const uncheckedItems = list.items.filter((i) => !i.is_checked && i.item_type === "item");
+    const previewItem = uncheckedItems[0];
 
     return (
       <TouchableOpacity
         key={list.id}
         onPress={() => setSelectedList(list)}
+        onLongPress={() => handleLongPress(list)}
         activeOpacity={0.8}
+        delayLongPress={400}
         style={{
           backgroundColor: Colors.bg.surface,
           borderRadius: Radius.lg,
@@ -78,7 +88,7 @@ export default function ListsScreen() {
           borderColor: list.is_starred ? Colors.accentBorder : Colors.border.subtle,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "flex-start", gap: Spacing.sm }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.sm }}>
           <Text style={{ fontSize: 26 }}>{list.emoji}</Text>
           <View style={{ flex: 1 }}>
             <Text style={{
@@ -91,10 +101,10 @@ export default function ListsScreen() {
             </Text>
             <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }}>
               {total === 0
-                ? "No items"
+                ? "Empty"
                 : checked === total && total > 0
                   ? "All done ✓"
-                  : `${checked} of ${total} checked`}
+                  : `${checked} / ${total} done`}
               {list.list_type !== "checklist" && (
                 <Text style={{ color: Colors.text.muted }}> · {list.list_type}</Text>
               )}
@@ -104,21 +114,13 @@ export default function ListsScreen() {
           {/* Star button */}
           <TouchableOpacity
             onPress={() => toggleStar(list.id)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
               name={list.is_starred ? "star" : "star-outline"}
               size={18}
               color={list.is_starred ? Colors.warning : Colors.text.muted}
             />
-          </TouchableOpacity>
-
-          {/* Delete button */}
-          <TouchableOpacity
-            onPress={() => handleDelete(list)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="trash-outline" size={16} color={Colors.text.muted} />
           </TouchableOpacity>
         </View>
 
@@ -140,24 +142,20 @@ export default function ListsScreen() {
           </View>
         )}
 
-        {/* Preview */}
-        {preview.map((item) => (
+        {/* Single item preview */}
+        {previewItem && (
           <Text
-            key={item.id}
             numberOfLines={1}
-            style={{ color: Colors.text.secondary, fontSize: 13, marginTop: 4 }}
+            style={{ color: Colors.text.secondary, fontSize: 13, marginTop: 6 }}
           >
             {list.list_type === "numbered"
-              ? `${list.items.filter((i) => i.item_type === "item").indexOf(item) + 1}. ${item.text}`
+              ? `1. ${previewItem.text}`
               : list.list_type === "bulleted"
-                ? `• ${item.text}`
-                : `· ${item.text}`}
-            {item.quantity ? <Text style={{ color: Colors.text.muted }}> ×{item.quantity}</Text> : null}
-          </Text>
-        ))}
-        {list.items.filter((i) => !i.is_checked && i.item_type === "item").length > 3 && (
-          <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 2 }}>
-            +{list.items.filter((i) => !i.is_checked && i.item_type === "item").length - 3} more
+                ? `• ${previewItem.text}`
+                : `· ${previewItem.text}`}
+            {uncheckedItems.length > 1
+              ? <Text style={{ color: Colors.text.muted }}>{" "}+{uncheckedItems.length - 1} more</Text>
+              : null}
           </Text>
         )}
       </TouchableOpacity>

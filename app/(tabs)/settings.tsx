@@ -18,7 +18,6 @@ import { useBudgetStore } from "@/store/budgetStore";
 import { Colors, Fonts, useColors } from "@/constants/theme";
 import { useThemeStore } from "@/store/themeStore";
 import { THEMES, THEME_META, type ThemeKey } from "@/constants/themes";
-import Divider from "@/components/ui/Divider";
 import { parseBudgetCsv, pickCsvFile } from "@/lib/csvUtils";
 import { TIER_LABEL } from "@/constants/features";
 
@@ -295,7 +294,7 @@ export default function SettingsScreen() {
             label={household?.name ?? "No household"}
             value="Your shared space"
           />
-          <Divider />
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow
             icon="key-outline"
             label="Invite Code"
@@ -315,13 +314,13 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             }
           />
-          <Divider />
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow
             icon="people-outline"
             label="Members"
             value={`${(household?.members?.length ?? 1)} of 6 members`}
           />
-          <Divider />
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow
             icon="help-circle-outline"
             label="Support ID"
@@ -355,7 +354,7 @@ export default function SettingsScreen() {
             onPress={() => router.push("/accounts" as any)}
             badge="NEW"
           />
-          <Divider />
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow
             icon="sync-outline"
             label="Auto Sync Transactions"
@@ -383,7 +382,7 @@ export default function SettingsScreen() {
             value={importing ? "Picking file…" : "Import categories from a CSV file"}
             onPress={importing ? undefined : handleImportCsv}
           />
-          <Divider />
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow
             icon="download-outline"
             label="Export Budget"
@@ -488,9 +487,9 @@ export default function SettingsScreen() {
         <SectionLabel>About</SectionLabel>
         <SettingsCard>
           <SettingRow icon="document-text-outline" label="Terms of Service" onPress={() => {}} />
-          <Divider />
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow icon="lock-closed-outline" label="Privacy Policy" onPress={() => {}} />
-          <Divider />
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow icon="information-circle-outline" label="Version" value="1.0.0" showChevron={false} />
         </SettingsCard>
 

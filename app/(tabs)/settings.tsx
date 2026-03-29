@@ -404,7 +404,7 @@ export default function SettingsScreen() {
                     value={`${formatCurrencySimple(bill.monthly_limit)} · Day ${bill.fixed_day_of_month ?? "—"}`}
                     onPress={() => handleDeleteCategory(bill.id, bill.name)}
                   />
-                  {idx < fixedBills.length - 1 && <Divider />}
+                  {idx < fixedBills.length - 1 && <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />}
                 </View>
               ))}
             </SettingsCard>

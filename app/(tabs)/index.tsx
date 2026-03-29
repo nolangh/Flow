@@ -6,7 +6,6 @@ import {
   RefreshControl,
   useWindowDimensions,
   StatusBar,
-  Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
@@ -77,7 +76,7 @@ export default function DashboardScreen() {
       <StatusBar barStyle={Colors.statusBar} />
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} />
@@ -330,14 +329,8 @@ export default function DashboardScreen() {
 
       </ScrollView>
 
-      {/* ── Floating Add Button ── */}
-      <View style={{
-        position: "absolute",
-        bottom: Platform.OS === "ios" ? 104 : 84,
-        left: 20,
-        right: 20,
-        pointerEvents: "box-none",
-      }}>
+      {/* ── Add Button — anchored above tab bar ── */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 }}>
         <TouchableOpacity
           onPress={() => setShowAddTx(true)}
           style={{

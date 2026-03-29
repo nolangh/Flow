@@ -162,119 +162,155 @@ export default function ListsScreen() {
     );
   };
 
+  const hasLists = lists.length > 0;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }}>
       <StatusBar barStyle={Colors.statusBar as any} />
 
-      {/* Header */}
-      <View style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingHorizontal: Spacing.lg,
-        paddingTop: Spacing.sm,
-        paddingBottom: Spacing.sm,
-      }}>
-        <Text style={{
-          color: Colors.text.primary,
-          fontSize: 28,
-          fontFamily: Fonts.extraBold,
-          letterSpacing: -0.8,
+      {/* Header — only shown when lists exist */}
+      {hasLists && (
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: Spacing.lg,
+          paddingTop: Spacing.sm,
+          paddingBottom: Spacing.sm,
         }}>
-          Lists
-        </Text>
-        <TouchableOpacity
-          onPress={() => setShowCreate(true)}
-          style={{
-            backgroundColor: Colors.accent,
-            width: 36,
-            height: 36,
-            borderRadius: Radius.full,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Ionicons name="add" size={22} color="#000" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Search bar */}
-      <View style={{
-        flexDirection: "row",
-        alignItems: "center",
-        marginHorizontal: Spacing.lg,
-        marginBottom: Spacing.md,
-        backgroundColor: Colors.bg.surface,
-        borderRadius: Radius.md,
-        borderWidth: 1.5,
-        borderColor: searchFocused ? Colors.accentBorder : Colors.border.subtle,
-        paddingHorizontal: Spacing.md,
-        gap: Spacing.sm,
-      }}>
-        <Ionicons name="search" size={16} color={Colors.text.muted} />
-        <TextInput
-          style={{
-            flex: 1,
+          <Text style={{
             color: Colors.text.primary,
-            fontSize: 15,
-            fontFamily: Fonts.regular,
-            paddingVertical: 10,
-          }}
-          placeholder="Search lists and items..."
-          placeholderTextColor={Colors.text.muted}
-          value={query}
-          onChangeText={setQuery}
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setSearchFocused(false)}
-          clearButtonMode="while-editing"
-        />
-        {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery("")}>
-            <Ionicons name="close-circle" size={16} color={Colors.text.muted} />
+            fontSize: 28,
+            fontFamily: Fonts.extraBold,
+            letterSpacing: -0.8,
+          }}>
+            Lists
+          </Text>
+        </View>
+      )}
+
+      {/* Search bar — only shown when lists exist */}
+      {hasLists && (
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginHorizontal: Spacing.lg,
+          marginBottom: Spacing.md,
+          backgroundColor: Colors.bg.surface,
+          borderRadius: Radius.md,
+          borderWidth: 1.5,
+          borderColor: searchFocused ? Colors.accentBorder : Colors.border.subtle,
+          paddingHorizontal: Spacing.md,
+          gap: Spacing.sm,
+        }}>
+          <Ionicons name="search" size={16} color={Colors.text.muted} />
+          <TextInput
+            style={{
+              flex: 1,
+              color: Colors.text.primary,
+              fontSize: 15,
+              fontFamily: Fonts.regular,
+              paddingVertical: 10,
+            }}
+            placeholder="Search lists and items..."
+            placeholderTextColor={Colors.text.muted}
+            value={query}
+            onChangeText={setQuery}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
+            clearButtonMode="while-editing"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery("")}>
+              <Ionicons name="close-circle" size={16} color={Colors.text.muted} />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      {/* Empty state — centered CTA */}
+      {!hasLists && !isLoading && (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40, gap: Spacing.md }}>
+          <Text style={{ fontSize: 56 }}>📋</Text>
+          <Text style={{ color: Colors.text.primary, fontSize: 22, fontFamily: Fonts.extraBold, textAlign: "center", letterSpacing: -0.5 }}>
+            Your lists live here
+          </Text>
+          <Text style={{ color: Colors.text.muted, fontSize: 15, textAlign: "center", lineHeight: 22 }}>
+            Grocery runs, to-dos, anything you want to share with your household.
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowCreate(true)}
+            style={{
+              marginTop: Spacing.sm,
+              backgroundColor: Colors.accent,
+              borderRadius: 9999,
+              paddingVertical: 16,
+              paddingHorizontal: 32,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 16 }}>
+              + Create your first list
+            </Text>
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      )}
 
-      <ScrollView
-        contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 120, gap: Spacing.md }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} />}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Starred section */}
-        {starred.length > 0 && (
-          <>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.xs }}>
-              <Ionicons name="star" size={13} color={Colors.warning} />
-              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
-                STARRED
-              </Text>
-            </View>
-            {starred.map(renderCard)}
-            {unstarred.length > 0 && (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.xs, marginTop: Spacing.xs }}>
-                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
-                  ALL LISTS
-                </Text>
+      {/* List content */}
+      {hasLists && (
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 16, gap: Spacing.md }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} />}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {starred.length > 0 && (
+            <>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.xs }}>
+                <Ionicons name="star" size={13} color={Colors.warning} />
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>STARRED</Text>
               </View>
-            )}
-          </>
-        )}
+              {starred.map(renderCard)}
+              {unstarred.length > 0 && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: Spacing.xs, marginTop: Spacing.xs }}>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>ALL LISTS</Text>
+                </View>
+              )}
+            </>
+          )}
 
-        {unstarred.map(renderCard)}
+          {unstarred.map(renderCard)}
 
-        {filtered.length === 0 && !isLoading && (
-          <View style={{ alignItems: "center", paddingTop: 60, gap: Spacing.sm }}>
-            <Text style={{ fontSize: 44 }}>{query ? "🔍" : "📋"}</Text>
-            <Text style={{ color: Colors.text.primary, fontSize: 17, fontFamily: Fonts.bold }}>
-              {query ? "No results" : "No lists yet"}
-            </Text>
-            <Text style={{ color: Colors.text.muted, fontSize: 14, textAlign: "center" }}>
-              {query ? `Nothing matched "${query}"` : "Tap + to create your first shared list"}
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+          {filtered.length === 0 && query.length > 0 && (
+            <View style={{ alignItems: "center", paddingTop: 60, gap: Spacing.sm }}>
+              <Text style={{ fontSize: 44 }}>🔍</Text>
+              <Text style={{ color: Colors.text.primary, fontSize: 17, fontFamily: Fonts.bold }}>No results</Text>
+              <Text style={{ color: Colors.text.muted, fontSize: 14 }}>Nothing matched "{query}"</Text>
+            </View>
+          )}
+        </ScrollView>
+      )}
+
+      {/* FAB — only shown when lists exist */}
+      {hasLists && (
+        <View style={{ paddingHorizontal: Spacing.lg, paddingTop: 8, paddingBottom: 16 }}>
+          <TouchableOpacity
+            onPress={() => setShowCreate(true)}
+            style={{
+              backgroundColor: Colors.accent,
+              borderRadius: 9999,
+              paddingVertical: 15,
+              alignItems: "center",
+              flexDirection: "row",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            <Ionicons name="add" size={20} color={Colors.text.inverse} />
+            <Text style={{ color: Colors.text.inverse, fontFamily: Fonts.bold, fontSize: 15 }}>New List</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <CreateListModal visible={showCreate} onClose={() => setShowCreate(false)} />
 

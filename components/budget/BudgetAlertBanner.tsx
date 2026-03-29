@@ -23,9 +23,9 @@ export default function BudgetAlertBanner({ alert, onDismiss }: Props) {
   const remaining = alert.limit - alert.spent;
   const over = remaining < 0;
 
-  const bgColor = over ? "#2a1212" : "#1a1a0d";
-  const borderColor = over ? Colors.dangerBorder : "#5a4a00";
-  const iconColor = over ? Colors.danger : "#f59e0b";
+  const bgColor = over ? Colors.dangerSoft : Colors.warningSoft;
+  const borderColor = over ? Colors.dangerBorder : `${Colors.warning}40`;
+  const iconColor = over ? Colors.danger : Colors.warning;
   const icon = over ? "warning" : "alert-circle";
 
   return (
@@ -41,7 +41,7 @@ export default function BudgetAlertBanner({ alert, onDismiss }: Props) {
     }}>
       <View style={{
         width: 32, height: 32, borderRadius: 10,
-        backgroundColor: over ? Colors.dangerSoft : "rgba(245,158,11,0.12)",
+        backgroundColor: over ? Colors.dangerSoft : Colors.warningSoft,
         alignItems: "center", justifyContent: "center",
         flexShrink: 0,
       }}>
@@ -55,7 +55,7 @@ export default function BudgetAlertBanner({ alert, onDismiss }: Props) {
             {alert.categoryName}
           </Text>
           <View style={{
-            backgroundColor: over ? Colors.dangerSoft : "rgba(245,158,11,0.15)",
+            backgroundColor: over ? Colors.dangerSoft : Colors.warningSoft,
             borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1,
           }}>
             <Text style={{ color: iconColor, fontSize: 11, fontFamily: Fonts.bold }}>

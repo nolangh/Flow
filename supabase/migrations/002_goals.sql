@@ -1,4 +1,4 @@
--- Goals table for Flow premium tier
+-- Goals table for Honeydo premium tier
 -- Run this in Supabase SQL Editor
 
 create table if not exists public.goals (

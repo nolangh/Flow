@@ -1,5 +1,5 @@
 /**
- * CSV import/export utilities for Flow budget data.
+ * CSV import/export utilities for Honeydo budget data.
  */
 
 import * as FileSystem from "expo-file-system";

@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import * as LocalAuthentication from "expo-local-authentication";
 
-const CREDS_KEY = "flow_biometric_creds";
+const CREDS_KEY = "honeydo_biometric_creds";
 
 export interface StoredCredentials {
   email: string;
@@ -35,7 +35,7 @@ export async function clearCredentials(): Promise<void> {
   await SecureStore.deleteItemAsync(CREDS_KEY).catch(() => {});
 }
 
-export async function authenticateWithBiometric(promptMessage = "Sign in to Flow"): Promise<boolean> {
+export async function authenticateWithBiometric(promptMessage = "Sign in to Honeydo"): Promise<boolean> {
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage,
     fallbackLabel: "Use password",

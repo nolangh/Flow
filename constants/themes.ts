@@ -1,5 +1,5 @@
 /**
- * Flow Theme Definitions
+ * Honeydo Theme Definitions
  *
  * Midnight — sleek dark fintech aesthetic (original)
  * Fresh    — editorial light mode: cream base, vibrant coral accent, Space Grotesk type

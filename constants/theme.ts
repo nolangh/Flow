@@ -1,5 +1,5 @@
 /**
- * Flow Design System
+ * Honeydo Design System
  *
  * useColors() — reactive hook, call inside every component.
  *               Also syncs the global Fonts object so all components

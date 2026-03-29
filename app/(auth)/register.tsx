@@ -84,7 +84,7 @@ export default function RegisterScreen() {
             Create account
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, marginTop: 6 }}>
-            Set up your Flow profile
+            Set up your Honeydo profile
           </Text>
         </View>
 

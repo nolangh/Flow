@@ -48,7 +48,7 @@ serve(async (req) => {
         client_id: PLAID_CLIENT_ID,
         secret: PLAID_SECRET,
         user: { client_user_id: user_id ?? user.id },
-        client_name: "Flow Finance",
+        client_name: "Honeydo",
         products: ["transactions"],
         country_codes: ["US"],
         language: "en",

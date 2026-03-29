@@ -151,7 +151,7 @@ export default function UpgradeScreen() {
         : activeTier.monthlyProductId;
       const purchased = await showPaywall("upgrade_screen", productId);
       if (purchased) {
-        Alert.alert("Welcome to Flow Premium!", `Your ${activeTier.name} plan is now active.`);
+        Alert.alert("Welcome to Honeydo Premium!", `Your ${activeTier.name} plan is now active.`);
       }
     } catch (err: unknown) {
       Alert.alert("Purchase failed", (err as Error).message);
@@ -195,7 +195,7 @@ export default function UpgradeScreen() {
             <Ionicons name="sparkles" size={32} color={Colors.accent} />
           </View>
           <Text style={{ color: Colors.text.primary, fontSize: 28, fontFamily: Fonts.extraBold, letterSpacing: -0.5, textAlign: "center", marginBottom: 10 }}>
-            Flow Premium
+            Honeydo Premium
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, textAlign: "center", lineHeight: 22 }}>
             Every plan includes all features. Pay once per household — every member is covered.

@@ -107,7 +107,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signInWithGoogle: async () => {
     set({ isLoading: true, error: null });
     try {
-      const redirectUri = makeRedirectUri({ scheme: "flow", path: "auth/callback" });
+      const redirectUri = makeRedirectUri({ scheme: "honeydo", path: "auth/callback" });
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -255,7 +255,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const creds = await loadCredentials();
     if (!creds) throw new Error("No saved credentials. Please sign in with email first.");
 
-    const passed = await authenticateWithBiometric("Sign in to Flow");
+    const passed = await authenticateWithBiometric("Sign in to Honeydo");
     if (!passed) throw new Error("Biometric authentication failed");
 
     await get().signIn(creds.email, creds.password);

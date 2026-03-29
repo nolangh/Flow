@@ -137,7 +137,7 @@ export default function LoginScreen() {
             Welcome back
           </Text>
           <Text style={{ color: Colors.text.muted, fontSize: 15, marginTop: 6, lineHeight: 22 }}>
-            Sign in to your Flow account
+            Sign in to your Honeydo account
           </Text>
         </View>
 

@@ -1,5 +1,5 @@
 -- =============================================================================
--- Flow — Initial Database Schema
+-- Honeydo — Initial Database Schema
 -- =============================================================================
 -- Run this migration in the Supabase SQL editor or via supabase db push.
 -- Enables: Row-Level Security on all tables, Realtime on key tables.

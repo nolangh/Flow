@@ -124,7 +124,7 @@ export default function SettingsScreen() {
 
   const handleShareInvite = async () => {
     if (!household?.invite_code) return;
-    await Share.share({ message: `Join my household on Flow! Invite code: ${household.invite_code}` });
+    await Share.share({ message: `Join my household on Honeydo! Invite code: ${household.invite_code}` });
   };
 
   const handleCopyHouseholdId = async () => {

@@ -13,12 +13,14 @@ import { useAuthStore } from "@/store/authStore";
 import { useTransactionStore } from "@/store/transactionStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useListStore } from "@/store/listStore";
+// useListStore also accessed via getState() in the realtime callback below
 
 export function useRealtimeSync() {
   const { household } = useAuthStore();
   const { fetchTransactions } = useTransactionStore();
   const { fetchCategories, currentMonth } = useBudgetStore();
   const { fetchLists } = useListStore();
+  // Note: refreshList accessed via getState() in callback to avoid stale closure
   const channelsRef = useRef<RealtimeChannel[]>([]);
 
   useEffect(() => {
@@ -36,8 +38,13 @@ export function useRealtimeSync() {
       fetchCategories();
     });
 
-    const listChannel = subscribeToLists(household.id, () => {
-      fetchLists();
+    const listChannel = subscribeToLists(household.id, (listId) => {
+      if (listId) {
+        // Targeted refresh — only reload the changed list, preserving optimistic state elsewhere
+        useListStore.getState().refreshList(listId);
+      } else {
+        fetchLists();
+      }
     });
 
     channelsRef.current = [txChannel, calChannel, catChannel, listChannel];

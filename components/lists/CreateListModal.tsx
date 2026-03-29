@@ -9,13 +9,16 @@ import {
   Platform,
 } from "react-native";
 import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { useListStore } from "@/store/listStore";
 import { useColors, Fonts, Spacing, Radius } from "@/constants/theme";
 import Button from "@/components/ui/Button";
+import type { ListType } from "@/types";
 
 const EMOJIS = [
   "📋", "🛒", "🏠", "🎉", "✈️", "🎁", "📚", "💊",
   "🔧", "🌱", "🍽️", "💪", "🎯", "🧹", "👗", "🐾",
+  "🎮", "💰", "📦", "🎵", "🌍", "🏋️", "🐶", "🌿",
 ];
 
 const COLORS = [
@@ -23,30 +26,64 @@ const COLORS = [
   "#BF5AF2", "#FF2D55", "#5AC8FA", "#30D158",
 ];
 
+const LIST_TYPES: { id: ListType; label: string; icon: string; desc: string }[] = [
+  { id: "checklist", label: "Checklist", icon: "checkbox-outline", desc: "Check items off as you go" },
+  { id: "bulleted",  label: "Bulleted",  icon: "list-outline",     desc: "Simple bullet points" },
+  { id: "numbered",  label: "Numbered",  icon: "list-circle-outline", desc: "Numbered order" },
+];
+
 interface Props {
   visible: boolean;
   onClose: () => void;
+  /** Pre-populated values for editing an existing list */
+  editId?: string;
+  defaultName?: string;
+  defaultEmoji?: string;
+  defaultColor?: string | null;
+  defaultType?: ListType;
 }
 
-export default function CreateListModal({ visible, onClose }: Props) {
+export default function CreateListModal({
+  visible,
+  onClose,
+  editId,
+  defaultName = "",
+  defaultEmoji = "📋",
+  defaultColor = null,
+  defaultType = "checklist",
+}: Props) {
   const Colors = useColors();
-  const { createList } = useListStore();
-  const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("📋");
-  const [color, setColor] = useState<string | null>(null);
+  const { createList, updateList } = useListStore();
+  const [name, setName] = useState(defaultName);
+  const [emoji, setEmoji] = useState(defaultEmoji);
+  const [color, setColor] = useState<string | null>(defaultColor);
+  const [listType, setListType] = useState<ListType>(defaultType);
   const [loading, setLoading] = useState(false);
+
+  // Sync defaults when modal opens for editing
+  const handleOpen = () => {
+    setName(defaultName);
+    setEmoji(defaultEmoji);
+    setColor(defaultColor);
+    setListType(defaultType);
+  };
 
   const reset = () => {
     setName("");
     setEmoji("📋");
     setColor(null);
+    setListType("checklist");
   };
 
-  const handleCreate = async () => {
+  const handleSubmit = async () => {
     if (!name.trim()) return Alert.alert("Name required", "Give your list a name.");
     setLoading(true);
     try {
-      await createList({ name, emoji, color: color ?? undefined });
+      if (editId) {
+        await updateList(editId, { name: name.trim(), emoji, color, list_type: listType });
+      } else {
+        await createList({ name, emoji, color: color ?? undefined, list_type: listType });
+      }
       reset();
       onClose();
     } catch (err: unknown) {
@@ -56,20 +93,8 @@ export default function CreateListModal({ visible, onClose }: Props) {
     }
   };
 
-  const inputStyle = {
-    backgroundColor: Colors.bg.raised,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 14,
-    color: Colors.text.primary,
-    fontSize: 16,
-    fontFamily: Fonts.regular,
-    borderWidth: 1.5,
-    borderColor: Colors.border.subtle,
-  };
-
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} onShow={handleOpen}>
       <TouchableOpacity
         style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
         activeOpacity={1}
@@ -82,9 +107,9 @@ export default function CreateListModal({ visible, onClose }: Props) {
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             paddingBottom: Platform.OS === "ios" ? 40 : 24,
+            maxHeight: "92%",
           }}
         >
-          {/* Drag handle */}
           <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}>
             <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
           </View>
@@ -97,23 +122,65 @@ export default function CreateListModal({ visible, onClose }: Props) {
                 fontFamily: Fonts.bold,
                 letterSpacing: -0.4,
               }}>
-                New List
+                {editId ? "Edit List" : "New List"}
               </Text>
 
-              {/* Name input */}
+              {/* Name */}
               <TextInput
-                style={inputStyle}
-                placeholder="List name (e.g. Grocery List)"
+                style={{
+                  backgroundColor: Colors.bg.raised,
+                  borderRadius: Radius.md,
+                  paddingHorizontal: Spacing.md,
+                  paddingVertical: 14,
+                  color: Colors.text.primary,
+                  fontSize: 16,
+                  fontFamily: Fonts.regular,
+                  borderWidth: 1.5,
+                  borderColor: Colors.border.subtle,
+                }}
+                placeholder="List name"
                 placeholderTextColor={Colors.text.muted}
                 value={name}
                 onChangeText={setName}
-                autoFocus
+                autoFocus={!editId}
                 maxLength={60}
               />
 
-              {/* Emoji picker */}
+              {/* List type */}
               <View>
-                <Text style={{ color: Colors.text.muted, fontSize: 12, fontFamily: Fonts.semiBold, marginBottom: Spacing.sm }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: Spacing.sm }}>
+                  LIST TYPE
+                </Text>
+                <View style={{ gap: Spacing.xs }}>
+                  {LIST_TYPES.map((t) => (
+                    <TouchableOpacity
+                      key={t.id}
+                      onPress={() => setListType(t.id)}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: Spacing.md,
+                        padding: Spacing.md,
+                        borderRadius: Radius.md,
+                        backgroundColor: listType === t.id ? Colors.accentSoft : Colors.bg.raised,
+                        borderWidth: 1.5,
+                        borderColor: listType === t.id ? Colors.accentBorder : "transparent",
+                      }}
+                    >
+                      <Ionicons name={t.icon as any} size={20} color={listType === t.id ? Colors.accent : Colors.text.muted} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: Colors.text.primary, fontFamily: Fonts.semiBold, fontSize: 14 }}>{t.label}</Text>
+                        <Text style={{ color: Colors.text.muted, fontSize: 12 }}>{t.desc}</Text>
+                      </View>
+                      {listType === t.id && <Ionicons name="checkmark-circle" size={18} color={Colors.accent} />}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Emoji */}
+              <View>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: Spacing.sm }}>
                   ICON
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: Spacing.sm }}>
@@ -138,9 +205,9 @@ export default function CreateListModal({ visible, onClose }: Props) {
                 </View>
               </View>
 
-              {/* Color picker (optional) */}
+              {/* Color */}
               <View>
-                <Text style={{ color: Colors.text.muted, fontSize: 12, fontFamily: Fonts.semiBold, marginBottom: Spacing.sm }}>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: Spacing.sm }}>
                   COLOR (OPTIONAL)
                 </Text>
                 <View style={{ flexDirection: "row", gap: Spacing.sm, flexWrap: "wrap" }}>
@@ -161,14 +228,13 @@ export default function CreateListModal({ visible, onClose }: Props) {
                 </View>
               </View>
 
-              {/* Buttons */}
               <View style={{ flexDirection: "row", gap: Spacing.sm, marginTop: Spacing.xs }}>
                 <Button label="Cancel" variant="ghost" onPress={onClose} style={{ flex: 1 }} />
                 <Button
-                  label="Create List"
+                  label={editId ? "Save Changes" : "Create List"}
                   variant="primary"
                   loading={loading}
-                  onPress={handleCreate}
+                  onPress={handleSubmit}
                   style={{ flex: 1 }}
                 />
               </View>

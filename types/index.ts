@@ -196,6 +196,9 @@ export interface ChartPoint {
 
 // ─── Lists ─────────────────────────────────────────────────────────────────
 
+export type ListType = "checklist" | "bulleted" | "numbered";
+export type ListItemType = "item" | "section";
+
 export interface ListItem {
   id: string;
   list_id: string;
@@ -206,6 +209,9 @@ export interface ListItem {
   checked_by: string | null;
   checked_at: string | null;
   position: number;
+  item_type: ListItemType;
+  note: string | null;
+  quantity: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -217,7 +223,9 @@ export interface ShoppingList {
   name: string;
   emoji: string;
   color: string | null;
+  is_starred: boolean;
   is_archived: boolean;
+  list_type: ListType;
   created_at: string;
   updated_at: string;
   items: ListItem[];
@@ -228,10 +236,13 @@ export interface ListState {
   isLoading: boolean;
   error: string | null;
   fetchLists: () => Promise<void>;
-  createList: (data: { name: string; emoji?: string; color?: string }) => Promise<void>;
+  refreshList: (listId: string) => Promise<void>;
+  createList: (data: { name: string; emoji?: string; color?: string; list_type?: ListType }) => Promise<void>;
   updateList: (id: string, data: Partial<ShoppingList>) => Promise<void>;
+  toggleStar: (id: string) => Promise<void>;
   deleteList: (id: string) => Promise<void>;
-  addItem: (listId: string, text: string) => Promise<void>;
+  addItem: (listId: string, data: { text: string; item_type?: ListItemType; note?: string; quantity?: string }) => Promise<void>;
+  updateItem: (itemId: string, data: Partial<ListItem>) => Promise<void>;
   toggleItem: (itemId: string, checked: boolean) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
   clearCheckedItems: (listId: string) => Promise<void>;

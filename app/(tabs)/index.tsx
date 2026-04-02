@@ -14,7 +14,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { useTransactionStore } from "@/store/transactionStore";
+import { useTasksStore } from "@/store/tasksStore";
 import { useBudgetSummary } from "@/hooks/useBudgetSummary";
+import { useTodaySummary } from "@/hooks/useTodaySummary";
 import { Colors, Fonts, getBudgetColor, pillShadow, useColors} from "@/constants/theme";
 import { formatCurrency, currentYearMonth, formatMonth } from "@/lib/utils";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -22,6 +24,126 @@ import Divider from "@/components/ui/Divider";
 import TransactionItem from "@/components/dashboard/TransactionItem";
 import AddTransactionModal from "@/components/budget/AddTransactionModal";
 import EmptyState from "@/components/ui/EmptyState";
+import { format, parseISO } from "date-fns";
+import type { TodaySummary } from "@/hooks/useTodaySummary";
+import type { ThemeColors } from "@/constants/themes";
+
+const TASK_PURPLE = "#8b5cf6";
+
+function TodayCard({ summary, Colors }: { summary: TodaySummary; Colors: ThemeColors }) {
+  const hasTasks = summary.todayTasks.length > 0;
+  const hasEvents = summary.todayEvents.length > 0;
+  const hasOverdue = summary.overdueCount > 0;
+  if (!hasTasks && !hasEvents && !hasOverdue) return null;
+
+  const pendingTasks = summary.todayTasks.filter((t) => !t.is_completed);
+  const displayTasks = pendingTasks.slice(0, 3);
+  const displayEvents = summary.todayEvents.slice(0, 2);
+
+  return (
+    <View style={{
+      marginHorizontal: 20,
+      marginBottom: 16,
+      backgroundColor: Colors.bg.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: Colors.accentBorder,
+      overflow: "hidden",
+    }}>
+      {/* Header strip */}
+      <View style={{
+        backgroundColor: Colors.accentSoft,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Text style={{ fontSize: 14 }}>☀️</Text>
+          <Text style={{ color: Colors.accent, fontSize: 13, fontFamily: Fonts.bold }}>
+            {summary.date}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/calendar")}>
+          <Text style={{ color: Colors.accent, fontSize: 12, fontFamily: Fonts.semiBold }}>
+            See all →
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}>
+        {/* Overdue warning */}
+        {hasOverdue && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons name="warning-outline" size={13} color={Colors.danger} />
+            <Text style={{ color: Colors.danger, fontSize: 12, fontFamily: Fonts.semiBold }}>
+              {summary.overdueCount} overdue task{summary.overdueCount > 1 ? "s" : ""}
+            </Text>
+          </View>
+        )}
+
+        {/* Today's tasks */}
+        {displayTasks.map((task) => (
+          <View key={task.id} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View style={{
+              width: 6, height: 6, borderRadius: 3,
+              backgroundColor: task.priority === "high" ? Colors.danger : task.priority === "medium" ? Colors.warning : Colors.text.muted,
+            }} />
+            <Text style={{ flex: 1, color: Colors.text.primary, fontSize: 13, fontFamily: Fonts.medium }} numberOfLines={1}>
+              {task.title}
+            </Text>
+            {task.assigneeName && (
+              <View style={{
+                backgroundColor: task.assignedByPartner ? TASK_PURPLE + "22" : Colors.accentSoft,
+                borderRadius: 10,
+                paddingHorizontal: 7,
+                paddingVertical: 2,
+              }}>
+                <Text style={{
+                  color: task.assignedByPartner ? TASK_PURPLE : Colors.accent,
+                  fontSize: 10,
+                  fontFamily: Fonts.bold,
+                }}>
+                  {task.assignedByPartner ? task.assigneeName : "You"}
+                </Text>
+              </View>
+            )}
+          </View>
+        ))}
+
+        {pendingTasks.length > 3 && (
+          <Text style={{ color: Colors.text.muted, fontSize: 12, marginLeft: 14 }}>
+            +{pendingTasks.length - 3} more tasks
+          </Text>
+        )}
+
+        {/* Today's events */}
+        {displayEvents.map((ev) => (
+          <View key={ev.id} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Ionicons name="calendar-outline" size={13} color={Colors.text.muted} />
+            <Text style={{ flex: 1, color: Colors.text.secondary, fontSize: 13 }} numberOfLines={1}>
+              {!ev.all_day && ev.start_at
+                ? `${format(parseISO(ev.start_at), "h:mm a")} — `
+                : ""}
+              {ev.title}
+            </Text>
+          </View>
+        ))}
+
+        {summary.todayEvents.length > 2 && (
+          <Text style={{ color: Colors.text.muted, fontSize: 12, marginLeft: 20 }}>
+            +{summary.todayEvents.length - 2} more events
+          </Text>
+        )}
+
+        {pendingTasks.length === 0 && !hasOverdue && displayEvents.length === 0 && (
+          <Text style={{ color: Colors.text.muted, fontSize: 13 }}>All clear today ✓</Text>
+        )}
+      </View>
+    </View>
+  );
+}
 
 export default function DashboardScreen() {
   const Colors = useColors();
@@ -29,7 +151,9 @@ export default function DashboardScreen() {
   const { user, household } = useAuthStore();
   const { fetchMonthlyBudget, categories, currentMonth, setCurrentMonth } = useBudgetStore();
   const { transactions, fetchTransactions, addManualTransaction } = useTransactionStore();
+  const { loadTasks } = useTasksStore();
   const summary = useBudgetSummary();
+  const todaySummary = useTodaySummary();
 
   const [refreshing, setRefreshing] = useState(false);
   const [showAddTx, setShowAddTx] = useState(false);
@@ -49,6 +173,7 @@ export default function DashboardScreen() {
   };
 
   useEffect(() => { load(); }, [currentMonth]);
+  useEffect(() => { if (household?.id) loadTasks(household.id); }, [household?.id]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -109,6 +234,9 @@ export default function DashboardScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* ── Today Summary ── */}
+        <TodayCard summary={todaySummary} Colors={Colors} />
 
         {/* ── Balance Hero ── */}
         <View style={{

@@ -1,6 +1,8 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
+const MORNING_BRIEFING_ID = "honeydo_morning_briefing";
+
 // Configure how notifications appear when the app is foregrounded
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -53,6 +55,43 @@ export async function cancelTaskReminder(taskId: string): Promise<void> {
     // ignore if no notification exists with this id
   }
 }
+
+// ─── Morning Briefing ─────────────────────────────────────────────────────────
+
+/**
+ * Schedule (or reschedule) the daily morning briefing notification.
+ * Fires every day at `hour`:00 local time.
+ */
+export async function scheduleMorningBriefing(hour: number): Promise<void> {
+  if (Platform.OS === "web") return;
+  await cancelMorningBriefing();
+  const granted = await requestNotificationPermissions();
+  if (!granted) return;
+  await Notifications.scheduleNotificationAsync({
+    identifier: MORNING_BRIEFING_ID,
+    content: {
+      title: "Good morning! ☀️",
+      body: "Check what's on your plate today in Honeydo.",
+      sound: true,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      hour,
+      minute: 0,
+    },
+  });
+}
+
+export async function cancelMorningBriefing(): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    await Notifications.cancelScheduledNotificationAsync(MORNING_BRIEFING_ID);
+  } catch {
+    // ignore
+  }
+}
+
+// ─── Task reminders ────────────────────────────────────────────────────────────
 
 export type ReminderPreset = "none" | "morning" | "evening_before" | "two_days_before";
 

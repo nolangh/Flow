@@ -21,7 +21,7 @@ export const useThemeStore = create<ThemeState>((set) => ({
   loadTheme: async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored === "midnight" || stored === "fresh") {
+      if (stored === "midnight" || stored === "fresh" || stored === "garden") {
         set({ theme: stored });
       }
     } catch {

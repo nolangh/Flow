@@ -1,8 +1,11 @@
 import { Tabs } from "expo-router";
 import { View, Platform } from "react-native";
+import { useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Fonts, useColors} from "@/constants/theme";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import { usePreferencesStore } from "@/store/preferencesStore";
+import { scheduleMorningBriefing, cancelMorningBriefing } from "@/lib/notifications";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -20,6 +23,20 @@ function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
 export default function TabsLayout() {
   const Colors = useColors();
   useRealtimeSync();
+
+  const { morningBriefingEnabled, morningBriefingHour, loadPreferences, loaded } =
+    usePreferencesStore();
+
+  useEffect(() => { loadPreferences(); }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    if (morningBriefingEnabled) {
+      scheduleMorningBriefing(morningBriefingHour);
+    } else {
+      cancelMorningBriefing();
+    }
+  }, [loaded, morningBriefingEnabled, morningBriefingHour]);
 
   return (
     <Tabs

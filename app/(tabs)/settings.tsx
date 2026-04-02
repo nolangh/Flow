@@ -17,6 +17,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useBudgetStore } from "@/store/budgetStore";
 import { Colors, Fonts, useColors } from "@/constants/theme";
 import { useThemeStore } from "@/store/themeStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
 import { THEMES, THEME_META, type ThemeKey } from "@/constants/themes";
 import { parseBudgetCsv, pickCsvFile } from "@/lib/csvUtils";
 import { TIER_LABEL } from "@/constants/features";
@@ -113,9 +114,13 @@ function SettingsCard({ children }: { children: React.ReactNode }) {
   );
 }
 
+const HOUR_OPTIONS = [6, 7, 8, 9, 10] as const;
+const HOUR_LABELS: Record<number, string> = { 6: "6 AM", 7: "7 AM", 8: "8 AM", 9: "9 AM", 10: "10 AM" };
+
 export default function SettingsScreen() {
   const Colors = useColors();
   const { theme, setTheme } = useThemeStore();
+  const { morningBriefingEnabled, morningBriefingHour, setMorningBriefing, setMorningBriefingHour } = usePreferencesStore();
   const { user, household, signOut } = useAuthStore();
   const { categories, createCategory, deleteCategory } = useBudgetStore();
   const [notifications, setNotifications] = useState(true);
@@ -467,6 +472,51 @@ export default function SettingsScreen() {
         {/* Preferences */}
         <SectionLabel>Preferences</SectionLabel>
         <SettingsCard>
+          <SettingRow
+            icon="sunny-outline"
+            iconBg={Colors.accentSoft}
+            iconColor={Colors.accent}
+            label="Morning Briefing"
+            value="Daily summary of tasks and events"
+            showChevron={false}
+            rightElement={
+              <Switch
+                value={morningBriefingEnabled}
+                onValueChange={setMorningBriefing}
+                trackColor={{ false: Colors.bg.overlay, true: Colors.accentDim }}
+                thumbColor={morningBriefingEnabled ? Colors.accent : Colors.text.muted}
+              />
+            }
+          />
+          {morningBriefingEnabled && (
+            <View style={{ paddingBottom: 14, paddingLeft: 50, gap: 8 }}>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
+                Notification time
+              </Text>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {HOUR_OPTIONS.map((h) => (
+                  <TouchableOpacity
+                    key={h}
+                    onPress={() => setMorningBriefingHour(h)}
+                    style={{
+                      paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16,
+                      backgroundColor: morningBriefingHour === h ? Colors.accentSoft : Colors.bg.overlay,
+                      borderWidth: 1.5,
+                      borderColor: morningBriefingHour === h ? Colors.accentBorder : Colors.border.subtle,
+                    }}
+                  >
+                    <Text style={{
+                      color: morningBriefingHour === h ? Colors.accent : Colors.text.muted,
+                      fontSize: 12, fontFamily: Fonts.semiBold,
+                    }}>
+                      {HOUR_LABELS[h]}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+          <View style={{ height: 0.5, backgroundColor: Colors.border.dim, marginLeft: 50 }} />
           <SettingRow
             icon="notifications-outline"
             label="Budget Alerts"

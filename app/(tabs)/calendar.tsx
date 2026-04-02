@@ -15,6 +15,12 @@ import { useBudgetStore } from "@/store/budgetStore";
 import { useAuthStore } from "@/store/authStore";
 import { useTasksStore } from "@/store/tasksStore";
 import { Colors, Fonts, pillShadow, useColors} from "@/constants/theme";
+import {
+  type ReminderPreset,
+  REMINDER_LABELS,
+  computeReminderAt,
+  reminderPresetFromAt,
+} from "@/lib/notifications";
 import { formatCurrency, formatMonth, currentYearMonth } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
@@ -111,6 +117,7 @@ export default function CalendarScreen() {
   const [taskPriority, setTaskPriority] = useState<Priority>("medium");
   const [taskAssignee, setTaskAssignee] = useState<string | null>(null);
   const [taskDueDate, setTaskDueDate] = useState<string | null>(null);
+  const [taskReminder, setTaskReminder] = useState<ReminderPreset>("none");
   const [savingTask, setSavingTask] = useState(false);
 
   // Edit task modal state
@@ -121,6 +128,7 @@ export default function CalendarScreen() {
   const [editPriority, setEditPriority] = useState<Priority>("medium");
   const [editAssignee, setEditAssignee] = useState<string | null>(null);
   const [editDueDate, setEditDueDate] = useState<string | null>(null);
+  const [editReminder, setEditReminder] = useState<ReminderPreset>("none");
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Subtask state
@@ -204,7 +212,7 @@ export default function CalendarScreen() {
   };
 
   const resetEventModal = () => { setNewTitle(""); setStartTime(""); setEndTime(""); setAllDay(true); };
-  const resetTaskModal = () => { setTaskTitle(""); setTaskNotes(""); setTaskPriority("medium"); setTaskAssignee(null); setTaskDueDate(selectedDate); };
+  const resetTaskModal = () => { setTaskTitle(""); setTaskNotes(""); setTaskPriority("medium"); setTaskAssignee(null); setTaskDueDate(selectedDate); setTaskReminder("none"); };
 
   const openEditTask = (task: typeof tasks[number]) => {
     setEditingTask(task);
@@ -213,6 +221,7 @@ export default function CalendarScreen() {
     setEditPriority(task.priority);
     setEditAssignee(task.assigned_to);
     setEditDueDate(task.due_date);
+    setEditReminder(reminderPresetFromAt(task.reminder_at ?? null, task.due_date));
     setNewSubtaskTitle("");
     setShowSubtaskInput(false);
     setShowEditTask(true);
@@ -241,6 +250,9 @@ export default function CalendarScreen() {
 
   const handleUpdateTask = async () => {
     if (!editingTask || !editTitle.trim()) return Alert.alert("Task title is required.");
+    if (editReminder !== "none" && !editDueDate) {
+      return Alert.alert("Set a due date first", "A due date is required to set a reminder.");
+    }
     setSavingEdit(true);
     try {
       await updateTask(editingTask.id, {
@@ -249,6 +261,7 @@ export default function CalendarScreen() {
         priority: editPriority,
         assigned_to: editAssignee,
         due_date: editDueDate,
+        reminder_at: computeReminderAt(editDueDate, editReminder),
       });
       setShowEditTask(false);
       setEditingTask(null);
@@ -289,6 +302,9 @@ export default function CalendarScreen() {
   const handleAddTask = async () => {
     if (!taskTitle.trim()) return Alert.alert("Enter a task title.");
     if (!user) return;
+    if (taskReminder !== "none" && !taskDueDate) {
+      return Alert.alert("Set a due date first", "A due date is required to set a reminder.");
+    }
     setSavingTask(true);
     try {
       await addTask({
@@ -298,6 +314,7 @@ export default function CalendarScreen() {
         title: taskTitle,
         notes: taskNotes || null,
         due_date: taskDueDate,
+        reminder_at: computeReminderAt(taskDueDate, taskReminder),
         priority: taskPriority,
       });
       resetTaskModal();
@@ -393,6 +410,9 @@ export default function CalendarScreen() {
                 <Text style={{ color: isOverdue ? Colors.danger : Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold }}>
                   {isOverdue ? "⚠ " : ""}{format(parseISO(task.due_date), "MMM d")}
                 </Text>
+              )}
+              {task.reminder_at && (
+                <Ionicons name="notifications-outline" size={11} color={Colors.accent} />
               )}
               <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: PRIORITY_COLORS[task.priority] }} />
               <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{PRIORITY_LABELS[task.priority]}</Text>
@@ -1009,6 +1029,41 @@ export default function CalendarScreen() {
                   </View>
                 )}
 
+                {/* Reminder */}
+                <View>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
+                    🔔 Reminder
+                  </Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                    {(Object.keys(REMINDER_LABELS) as ReminderPreset[]).map((preset) => (
+                      <TouchableOpacity
+                        key={preset}
+                        onPress={() => setEditReminder(preset)}
+                        style={{
+                          paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                          backgroundColor: editReminder === preset ? Colors.accentSoft : Colors.bg.surface,
+                          borderWidth: 1.5,
+                          borderColor: editReminder === preset ? Colors.accentBorder : Colors.border.subtle,
+                        }}
+                      >
+                        <Text style={{ color: editReminder === preset ? Colors.accent : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
+                          {REMINDER_LABELS[preset]}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  {editReminder !== "none" && !editDueDate && (
+                    <Text style={{ color: Colors.warning, fontSize: 12, marginTop: 6 }}>
+                      ⚠ A due date is required to set a reminder
+                    </Text>
+                  )}
+                  {editReminder !== "none" && editDueDate && editingTask?.reminder_at && (
+                    <Text style={{ color: Colors.text.muted, fontSize: 12, marginTop: 6 }}>
+                      Reminder set for {new Date(computeReminderAt(editDueDate, editReminder) ?? "").toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+                    </Text>
+                  )}
+                </View>
+
                 {/* Actions */}
                 <View style={{ flexDirection: "row", gap: 10 }}>
                   <Button label="Cancel" variant="ghost" onPress={() => { setShowEditTask(false); setEditingTask(null); }} style={{ flex: 1 }} />
@@ -1123,6 +1178,36 @@ export default function CalendarScreen() {
                 </View>
               </View>
             )}
+
+            {/* Reminder */}
+            <View>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
+                🔔 Reminder
+              </Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {(Object.keys(REMINDER_LABELS) as ReminderPreset[]).map((preset) => (
+                  <TouchableOpacity
+                    key={preset}
+                    onPress={() => setTaskReminder(preset)}
+                    style={{
+                      paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                      backgroundColor: taskReminder === preset ? Colors.accentSoft : Colors.bg.surface,
+                      borderWidth: 1.5,
+                      borderColor: taskReminder === preset ? Colors.accentBorder : Colors.border.subtle,
+                    }}
+                  >
+                    <Text style={{ color: taskReminder === preset ? Colors.accent : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
+                      {REMINDER_LABELS[preset]}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {taskReminder !== "none" && !taskDueDate && (
+                <Text style={{ color: Colors.warning, fontSize: 12, marginTop: 6 }}>
+                  ⚠ Select a due date on the calendar to enable reminders
+                </Text>
+              )}
+            </View>
 
             <View style={{ flexDirection: "row", gap: 10 }}>
               <Button label="Cancel" variant="ghost" onPress={() => { setShowAddTask(false); resetTaskModal(); }} style={{ flex: 1 }} />

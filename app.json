@@ -36,6 +36,14 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#A8D147",
+          "defaultChannel": "reminders"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#000000",

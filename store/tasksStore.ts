@@ -1,5 +1,10 @@
 import { create } from "zustand";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
+import {
+  scheduleTaskReminder,
+  cancelTaskReminder,
+  requestNotificationPermissions,
+} from "@/lib/notifications";
 
 export interface Task {
   id: string;
@@ -10,6 +15,7 @@ export interface Task {
   title: string;
   notes: string | null;
   due_date: string | null;
+  reminder_at: string | null;
   priority: "low" | "medium" | "high";
   is_completed: boolean;
   completed_at: string | null;
@@ -29,12 +35,14 @@ interface TasksState {
     title: string;
     notes?: string | null;
     due_date?: string | null;
+    reminder_at?: string | null;
     priority?: "low" | "medium" | "high";
   }) => Promise<Task>;
   updateTask: (id: string, updates: {
     title?: string;
     notes?: string | null;
     due_date?: string | null;
+    reminder_at?: string | null;
     priority?: "low" | "medium" | "high";
     assigned_to?: string | null;
   }) => Promise<void>;
@@ -79,6 +87,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
         title: payload.title.trim(),
         notes: payload.notes?.trim() ?? null,
         due_date: payload.due_date ?? null,
+        reminder_at: payload.reminder_at ?? null,
         priority: payload.priority ?? "medium",
         is_completed: false,
       })
@@ -88,6 +97,15 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     if (error) throw error;
     const task = data as Task;
     set((s) => ({ tasks: [...s.tasks, task] }));
+
+    // Schedule local notification if reminder is set
+    if (task.reminder_at) {
+      const granted = await requestNotificationPermissions();
+      if (granted) {
+        await scheduleTaskReminder(task.id, task.title, new Date(task.reminder_at));
+      }
+    }
+
     return task;
   },
 
@@ -123,9 +141,25 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", id);
     if (error) throw error;
+
+    // Re-schedule or cancel reminder
+    if ("reminder_at" in updates) {
+      if (updates.reminder_at) {
+        const task = get().tasks.find((t) => t.id === id);
+        const title = updates.title ?? task?.title ?? "Task";
+        const granted = await requestNotificationPermissions();
+        if (granted) {
+          await scheduleTaskReminder(id, title, new Date(updates.reminder_at));
+        }
+      } else {
+        await cancelTaskReminder(id);
+      }
+    }
   },
 
   deleteTask: async (id) => {
+    // Cancel any scheduled reminder
+    await cancelTaskReminder(id);
     // Optimistically remove the task AND its subtasks
     set((s) => ({
       tasks: s.tasks.filter((t) => t.id !== id && t.parent_task_id !== id),

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 import type { ShoppingList, ListItem, ListState, ListType, ListItemType } from "@/types";
+import { isListDueForReset } from "@/lib/recurrence";
 
 async function getHouseholdId(): Promise<{ userId: string; householdId: string }> {
   const { data: session } = await supabase.auth.getSession();
@@ -41,6 +42,18 @@ export const useListStore = create<ListState>((set, get) => ({
         items: sortItems((l.items ?? []) as ListItem[]),
       })) as ShoppingList[];
       set({ lists, isLoading: false });
+
+      // Auto-reset any lists that are due for a reset
+      for (const list of lists) {
+        if (isListDueForReset(
+          list.recurrence_rule,
+          list.recurrence_day_of_week,
+          list.recurrence_day_of_month,
+          list.recurrence_last_reset,
+        )) {
+          get().resetList(list.id);
+        }
+      }
     } catch (err: unknown) {
       set({ error: (err as Error).message, isLoading: false });
     }
@@ -62,7 +75,7 @@ export const useListStore = create<ListState>((set, get) => ({
     } catch { /* silent */ }
   },
 
-  createList: async ({ name, emoji, color, list_type }) => {
+  createList: async ({ name, emoji, color, list_type, recurrence_rule, recurrence_day_of_week, recurrence_day_of_month }) => {
     const { userId, householdId } = await getHouseholdId();
     const { data, error } = await supabase.from("lists").insert({
       household_id: householdId,
@@ -71,10 +84,37 @@ export const useListStore = create<ListState>((set, get) => ({
       emoji: emoji ?? "📋",
       color: color ?? null,
       list_type: list_type ?? "checklist",
+      recurrence_rule: recurrence_rule ?? null,
+      recurrence_day_of_week: recurrence_day_of_week ?? null,
+      recurrence_day_of_month: recurrence_day_of_month ?? null,
     }).select("*, items:list_items(*)").single();
     if (error) throw error;
     const newList = { ...data, items: [] } as ShoppingList;
     set((state) => ({ lists: [...state.lists, newList] }));
+  },
+
+  resetList: async (listId) => {
+    const today = new Date().toISOString().slice(0, 10);
+    // Optimistic: uncheck all items
+    set((state) => ({
+      lists: state.lists.map((l) =>
+        l.id === listId
+          ? {
+              ...l,
+              recurrence_last_reset: today,
+              items: l.items.map((i) => ({ ...i, is_checked: false, checked_by: null, checked_at: null })),
+            }
+          : l
+      ),
+    }));
+    // Uncheck all items in DB
+    await supabase.from("list_items")
+      .update({ is_checked: false, checked_by: null, checked_at: null })
+      .eq("list_id", listId);
+    // Update last reset date
+    await supabase.from("lists")
+      .update({ recurrence_last_reset: today })
+      .eq("id", listId);
   },
 
   updateList: async (id, data) => {

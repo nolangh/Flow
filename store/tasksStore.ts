@@ -5,6 +5,7 @@ import {
   cancelTaskReminder,
   requestNotificationPermissions,
 } from "@/lib/notifications";
+import { type RecurrenceRule, nextDueDate } from "@/lib/recurrence";
 
 export interface Task {
   id: string;
@@ -16,6 +17,7 @@ export interface Task {
   notes: string | null;
   due_date: string | null;
   reminder_at: string | null;
+  recurrence_rule: RecurrenceRule;
   priority: "low" | "medium" | "high";
   is_completed: boolean;
   completed_at: string | null;
@@ -36,6 +38,7 @@ interface TasksState {
     notes?: string | null;
     due_date?: string | null;
     reminder_at?: string | null;
+    recurrence_rule?: RecurrenceRule;
     priority?: "low" | "medium" | "high";
   }) => Promise<Task>;
   updateTask: (id: string, updates: {
@@ -43,6 +46,7 @@ interface TasksState {
     notes?: string | null;
     due_date?: string | null;
     reminder_at?: string | null;
+    recurrence_rule?: RecurrenceRule;
     priority?: "low" | "medium" | "high";
     assigned_to?: string | null;
   }) => Promise<void>;
@@ -88,6 +92,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
         notes: payload.notes?.trim() ?? null,
         due_date: payload.due_date ?? null,
         reminder_at: payload.reminder_at ?? null,
+        recurrence_rule: payload.recurrence_rule ?? null,
         priority: payload.priority ?? "medium",
         is_completed: false,
       })
@@ -111,6 +116,8 @@ export const useTasksStore = create<TasksState>((set, get) => ({
 
   toggleTask: async (id, currentValue) => {
     const completedAt = currentValue ? null : new Date().toISOString();
+    const task = get().tasks.find((t) => t.id === id);
+
     set((s) => ({
       tasks: s.tasks.map((t) =>
         t.id === id ? { ...t, is_completed: !currentValue, completed_at: completedAt } : t
@@ -129,6 +136,21 @@ export const useTasksStore = create<TasksState>((set, get) => ({
         ),
       }));
       throw error;
+    }
+
+    // Spawn the next occurrence when a recurring task is marked complete
+    if (!currentValue && task?.recurrence_rule && task.due_date && !task.parent_task_id) {
+      const newDueDate = nextDueDate(task.due_date, task.recurrence_rule);
+      await get().addTask({
+        household_id: task.household_id,
+        created_by: task.created_by,
+        assigned_to: task.assigned_to,
+        title: task.title,
+        notes: task.notes,
+        due_date: newDueDate,
+        recurrence_rule: task.recurrence_rule,
+        priority: task.priority,
+      });
     }
   },
 

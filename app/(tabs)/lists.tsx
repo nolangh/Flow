@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useListStore } from "@/store/listStore";
 import { useColors, Fonts, Spacing, Radius } from "@/constants/theme";
 import type { ShoppingList } from "@/types";
+import { LIST_RESET_LABELS } from "@/lib/recurrence";
 import CreateListModal from "@/components/lists/CreateListModal";
 import ListDetailModal from "@/components/lists/ListDetailModal";
 
@@ -110,6 +111,24 @@ export default function ListsScreen() {
               )}
             </Text>
           </View>
+
+          {/* Recurrence badge */}
+          {list.recurrence_rule && (
+            <View style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 3,
+              backgroundColor: Colors.accentSoft,
+              paddingHorizontal: 7,
+              paddingVertical: 3,
+              borderRadius: Radius.full,
+            }}>
+              <Ionicons name="refresh-outline" size={11} color={Colors.accent} />
+              <Text style={{ color: Colors.accent, fontSize: 11, fontFamily: Fonts.semiBold }}>
+                {LIST_RESET_LABELS[list.recurrence_rule]}
+              </Text>
+            </View>
+          )}
 
           {/* Star button */}
           <TouchableOpacity

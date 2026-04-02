@@ -198,6 +198,7 @@ export interface ChartPoint {
 
 export type ListType = "checklist" | "bulleted" | "numbered";
 export type ListItemType = "item" | "section";
+export type ListResetRule = "daily" | "weekly" | "monthly" | null;
 
 export interface ListItem {
   id: string;
@@ -226,6 +227,10 @@ export interface ShoppingList {
   is_starred: boolean;
   is_archived: boolean;
   list_type: ListType;
+  recurrence_rule: ListResetRule;
+  recurrence_day_of_week: number | null;
+  recurrence_day_of_month: number | null;
+  recurrence_last_reset: string | null;
   created_at: string;
   updated_at: string;
   items: ListItem[];
@@ -237,7 +242,8 @@ export interface ListState {
   error: string | null;
   fetchLists: () => Promise<void>;
   refreshList: (listId: string) => Promise<void>;
-  createList: (data: { name: string; emoji?: string; color?: string; list_type?: ListType }) => Promise<void>;
+  createList: (data: { name: string; emoji?: string; color?: string; list_type?: ListType; recurrence_rule?: ListResetRule; recurrence_day_of_week?: number | null; recurrence_day_of_month?: number | null }) => Promise<void>;
+  resetList: (listId: string) => Promise<void>;
   updateList: (id: string, data: Partial<ShoppingList>) => Promise<void>;
   toggleStar: (id: string) => Promise<void>;
   deleteList: (id: string) => Promise<void>;

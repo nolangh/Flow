@@ -21,6 +21,10 @@ import {
   computeReminderAt,
   reminderPresetFromAt,
 } from "@/lib/notifications";
+import {
+  type RecurrenceRule,
+  RECURRENCE_LABELS,
+} from "@/lib/recurrence";
 import { formatCurrency, formatMonth, currentYearMonth } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
@@ -118,6 +122,7 @@ export default function CalendarScreen() {
   const [taskAssignee, setTaskAssignee] = useState<string | null>(null);
   const [taskDueDate, setTaskDueDate] = useState<string | null>(null);
   const [taskReminder, setTaskReminder] = useState<ReminderPreset>("none");
+  const [taskRecurrence, setTaskRecurrence] = useState<RecurrenceRule>(null);
   const [savingTask, setSavingTask] = useState(false);
 
   // Edit task modal state
@@ -129,6 +134,7 @@ export default function CalendarScreen() {
   const [editAssignee, setEditAssignee] = useState<string | null>(null);
   const [editDueDate, setEditDueDate] = useState<string | null>(null);
   const [editReminder, setEditReminder] = useState<ReminderPreset>("none");
+  const [editRecurrence, setEditRecurrence] = useState<RecurrenceRule>(null);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Subtask state
@@ -212,7 +218,7 @@ export default function CalendarScreen() {
   };
 
   const resetEventModal = () => { setNewTitle(""); setStartTime(""); setEndTime(""); setAllDay(true); };
-  const resetTaskModal = () => { setTaskTitle(""); setTaskNotes(""); setTaskPriority("medium"); setTaskAssignee(null); setTaskDueDate(selectedDate); setTaskReminder("none"); };
+  const resetTaskModal = () => { setTaskTitle(""); setTaskNotes(""); setTaskPriority("medium"); setTaskAssignee(null); setTaskDueDate(selectedDate); setTaskReminder("none"); setTaskRecurrence(null); };
 
   const openEditTask = (task: typeof tasks[number]) => {
     setEditingTask(task);
@@ -222,6 +228,7 @@ export default function CalendarScreen() {
     setEditAssignee(task.assigned_to);
     setEditDueDate(task.due_date);
     setEditReminder(reminderPresetFromAt(task.reminder_at ?? null, task.due_date));
+    setEditRecurrence(task.recurrence_rule ?? null);
     setNewSubtaskTitle("");
     setShowSubtaskInput(false);
     setShowEditTask(true);
@@ -262,6 +269,7 @@ export default function CalendarScreen() {
         assigned_to: editAssignee,
         due_date: editDueDate,
         reminder_at: computeReminderAt(editDueDate, editReminder),
+        recurrence_rule: editRecurrence,
       });
       setShowEditTask(false);
       setEditingTask(null);
@@ -315,6 +323,7 @@ export default function CalendarScreen() {
         notes: taskNotes || null,
         due_date: taskDueDate,
         reminder_at: computeReminderAt(taskDueDate, taskReminder),
+        recurrence_rule: taskRecurrence,
         priority: taskPriority,
       });
       resetTaskModal();
@@ -413,6 +422,9 @@ export default function CalendarScreen() {
               )}
               {task.reminder_at && (
                 <Ionicons name="notifications-outline" size={11} color={Colors.accent} />
+              )}
+              {task.recurrence_rule && (
+                <Ionicons name="repeat" size={11} color={Colors.accent} />
               )}
               <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: PRIORITY_COLORS[task.priority] }} />
               <Text style={{ color: Colors.text.muted, fontSize: 11 }}>{PRIORITY_LABELS[task.priority]}</Text>
@@ -1029,6 +1041,33 @@ export default function CalendarScreen() {
                   </View>
                 )}
 
+                {/* Recurrence */}
+                <View>
+                  <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
+                    🔁 Repeat
+                  </Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                    {(Object.keys(RECURRENCE_LABELS) as Array<"none" | NonNullable<RecurrenceRule>>).map((key) => {
+                      const active = (editRecurrence ?? "none") === key;
+                      return (
+                        <TouchableOpacity
+                          key={key}
+                          onPress={() => setEditRecurrence(key === "none" ? null : key as RecurrenceRule)}
+                          style={{
+                            paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                            backgroundColor: active ? Colors.accentSoft : Colors.bg.surface,
+                            borderWidth: 1.5, borderColor: active ? Colors.accentBorder : Colors.border.subtle,
+                          }}
+                        >
+                          <Text style={{ color: active ? Colors.accent : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
+                            {RECURRENCE_LABELS[key]}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+
                 {/* Reminder */}
                 <View>
                   <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
@@ -1178,6 +1217,33 @@ export default function CalendarScreen() {
                 </View>
               </View>
             )}
+
+            {/* Recurrence */}
+            <View>
+              <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.bold, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
+                🔁 Repeat
+              </Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                {(Object.keys(RECURRENCE_LABELS) as Array<"none" | NonNullable<RecurrenceRule>>).map((key) => {
+                  const active = (taskRecurrence ?? "none") === key;
+                  return (
+                    <TouchableOpacity
+                      key={key}
+                      onPress={() => setTaskRecurrence(key === "none" ? null : key as RecurrenceRule)}
+                      style={{
+                        paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                        backgroundColor: active ? Colors.accentSoft : Colors.bg.surface,
+                        borderWidth: 1.5, borderColor: active ? Colors.accentBorder : Colors.border.subtle,
+                      }}
+                    >
+                      <Text style={{ color: active ? Colors.accent : Colors.text.secondary, fontSize: 13, fontFamily: Fonts.semiBold }}>
+                        {RECURRENCE_LABELS[key]}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
 
             {/* Reminder */}
             <View>

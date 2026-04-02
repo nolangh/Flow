@@ -13,7 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useListStore } from "@/store/listStore";
 import { useColors, Fonts, Spacing, Radius } from "@/constants/theme";
 import Button from "@/components/ui/Button";
-import type { ListType } from "@/types";
+import type { ListType, ListResetRule } from "@/types";
+import { LIST_RESET_LABELS, DAY_NAMES, type ListResetRule as LRR } from "@/lib/recurrence";
 
 const EMOJIS = [
   "📋", "🛒", "🏠", "🎉", "✈️", "🎁", "📚", "💊",
@@ -41,6 +42,9 @@ interface Props {
   defaultEmoji?: string;
   defaultColor?: string | null;
   defaultType?: ListType;
+  defaultResetRule?: ListResetRule;
+  defaultResetDayOfWeek?: number | null;
+  defaultResetDayOfMonth?: number | null;
 }
 
 export default function CreateListModal({
@@ -51,6 +55,9 @@ export default function CreateListModal({
   defaultEmoji = "📋",
   defaultColor = null,
   defaultType = "checklist",
+  defaultResetRule = null,
+  defaultResetDayOfWeek = null,
+  defaultResetDayOfMonth = null,
 }: Props) {
   const Colors = useColors();
   const { createList, updateList } = useListStore();
@@ -58,6 +65,9 @@ export default function CreateListModal({
   const [emoji, setEmoji] = useState(defaultEmoji);
   const [color, setColor] = useState<string | null>(defaultColor);
   const [listType, setListType] = useState<ListType>(defaultType);
+  const [resetRule, setResetRule] = useState<ListResetRule>(defaultResetRule);
+  const [resetDayOfWeek, setResetDayOfWeek] = useState<number>(defaultResetDayOfWeek ?? 0);
+  const [resetDayOfMonth, setResetDayOfMonth] = useState<number>(defaultResetDayOfMonth ?? 1);
   const [loading, setLoading] = useState(false);
 
   // Sync defaults when modal opens for editing
@@ -66,6 +76,9 @@ export default function CreateListModal({
     setEmoji(defaultEmoji);
     setColor(defaultColor);
     setListType(defaultType);
+    setResetRule(defaultResetRule);
+    setResetDayOfWeek(defaultResetDayOfWeek ?? 0);
+    setResetDayOfMonth(defaultResetDayOfMonth ?? 1);
   };
 
   const reset = () => {
@@ -73,6 +86,9 @@ export default function CreateListModal({
     setEmoji("📋");
     setColor(null);
     setListType("checklist");
+    setResetRule(null);
+    setResetDayOfWeek(0);
+    setResetDayOfMonth(1);
   };
 
   const handleSubmit = async () => {
@@ -80,9 +96,19 @@ export default function CreateListModal({
     setLoading(true);
     try {
       if (editId) {
-        await updateList(editId, { name: name.trim(), emoji, color, list_type: listType });
+        await updateList(editId, {
+          name: name.trim(), emoji, color, list_type: listType,
+          recurrence_rule: resetRule,
+          recurrence_day_of_week: resetRule === "weekly" ? resetDayOfWeek : null,
+          recurrence_day_of_month: resetRule === "monthly" ? resetDayOfMonth : null,
+        });
       } else {
-        await createList({ name, emoji, color: color ?? undefined, list_type: listType });
+        await createList({
+          name, emoji, color: color ?? undefined, list_type: listType,
+          recurrence_rule: resetRule,
+          recurrence_day_of_week: resetRule === "weekly" ? resetDayOfWeek : null,
+          recurrence_day_of_month: resetRule === "monthly" ? resetDayOfMonth : null,
+        });
       }
       reset();
       onClose();
@@ -226,6 +252,111 @@ export default function CreateListModal({
                     />
                   ))}
                 </View>
+              </View>
+
+              {/* Reset schedule */}
+              <View>
+                <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: Spacing.sm }}>
+                  AUTO-RESET SCHEDULE
+                </Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: Spacing.xs }}>
+                  {(["none", "daily", "weekly", "monthly"] as const).map((r) => {
+                    const active = resetRule === (r === "none" ? null : r);
+                    return (
+                      <TouchableOpacity
+                        key={r}
+                        onPress={() => setResetRule(r === "none" ? null : r)}
+                        style={{
+                          paddingHorizontal: Spacing.md,
+                          paddingVertical: 8,
+                          borderRadius: Radius.full,
+                          backgroundColor: active ? Colors.accentSoft : Colors.bg.raised,
+                          borderWidth: 1.5,
+                          borderColor: active ? Colors.accentBorder : "transparent",
+                        }}
+                      >
+                        <Text style={{
+                          color: active ? Colors.accent : Colors.text.secondary,
+                          fontFamily: Fonts.semiBold,
+                          fontSize: 13,
+                        }}>
+                          {LIST_RESET_LABELS[r]}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Day-of-week picker for weekly */}
+                {resetRule === "weekly" && (
+                  <View style={{ marginTop: Spacing.sm }}>
+                    <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: Spacing.xs }}>
+                      RESET ON
+                    </Text>
+                    <View style={{ flexDirection: "row", gap: Spacing.xs }}>
+                      {DAY_NAMES.map((day, idx) => (
+                        <TouchableOpacity
+                          key={day}
+                          onPress={() => setResetDayOfWeek(idx)}
+                          style={{
+                            flex: 1,
+                            paddingVertical: 8,
+                            borderRadius: Radius.md,
+                            alignItems: "center",
+                            backgroundColor: resetDayOfWeek === idx ? Colors.accentSoft : Colors.bg.raised,
+                            borderWidth: 1.5,
+                            borderColor: resetDayOfWeek === idx ? Colors.accentBorder : "transparent",
+                          }}
+                        >
+                          <Text style={{
+                            color: resetDayOfWeek === idx ? Colors.accent : Colors.text.muted,
+                            fontFamily: Fonts.semiBold,
+                            fontSize: 11,
+                          }}>
+                            {day}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Day-of-month picker for monthly */}
+                {resetRule === "monthly" && (
+                  <View style={{ marginTop: Spacing.sm }}>
+                    <Text style={{ color: Colors.text.muted, fontSize: 11, fontFamily: Fonts.semiBold, marginBottom: Spacing.xs }}>
+                      RESET ON DAY
+                    </Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                      <View style={{ flexDirection: "row", gap: Spacing.xs }}>
+                        {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                          <TouchableOpacity
+                            key={day}
+                            onPress={() => setResetDayOfMonth(day)}
+                            style={{
+                              width: 38,
+                              height: 38,
+                              borderRadius: Radius.md,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: resetDayOfMonth === day ? Colors.accentSoft : Colors.bg.raised,
+                              borderWidth: 1.5,
+                              borderColor: resetDayOfMonth === day ? Colors.accentBorder : "transparent",
+                            }}
+                          >
+                            <Text style={{
+                              color: resetDayOfMonth === day ? Colors.accent : Colors.text.muted,
+                              fontFamily: Fonts.semiBold,
+                              fontSize: 13,
+                            }}>
+                              {day}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  </View>
+                )}
               </View>
 
               <View style={{ flexDirection: "row", gap: Spacing.sm, marginTop: Spacing.xs }}>

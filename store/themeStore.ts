@@ -1,7 +1,8 @@
 import { create } from "zustand";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MMKV } from "react-native-mmkv";
 import type { ThemeKey } from "@/constants/themes";
 
+const storage = new MMKV({ id: "theme-store" });
 const STORAGE_KEY = "flow-theme-v1";
 
 interface ThemeState {
@@ -15,17 +16,14 @@ export const useThemeStore = create<ThemeState>((set) => ({
 
   setTheme: (theme: ThemeKey) => {
     set({ theme });
-    AsyncStorage.setItem(STORAGE_KEY, theme).catch(() => {});
+    storage.set(STORAGE_KEY, theme);
   },
 
+  // Synchronous under the hood — MMKV reads don't need await
   loadTheme: async () => {
-    try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored === "midnight" || stored === "fresh" || stored === "garden") {
-        set({ theme: stored });
-      }
-    } catch {
-      // keep default
+    const stored = storage.getString(STORAGE_KEY);
+    if (stored === "midnight" || stored === "fresh" || stored === "garden") {
+      set({ theme: stored });
     }
   },
 }));

@@ -1,0 +1,34 @@
+appId: com.honeydo.app
+name: Add Manual Transaction
+---
+- launchApp
+
+# ── Navigate to Budget tab ────────────────────────────────────────────────────
+- tapOn:
+    text: "Budget"
+
+- assertVisible: "Budget"
+
+# ── Open Add Transaction modal ────────────────────────────────────────────────
+- tapOn:
+    text: "Add Transaction"
+
+- assertVisible: "Add Transaction"
+
+# ── Fill in transaction details ───────────────────────────────────────────────
+- tapOn:
+    id: "transaction-name-input"
+- inputText: "Whole Foods"
+
+- tapOn:
+    id: "transaction-amount-input"
+- inputText: "85.50"
+
+# ── Save ─────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Save"
+
+# ── Verify transaction appears in the list ────────────────────────────────────
+- assertVisible:
+    text: "Whole Foods"
+    timeout: 3000

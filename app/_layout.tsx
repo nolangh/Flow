@@ -24,9 +24,19 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { useThemeStore } from "@/store/themeStore";
 import { THEMES } from "@/constants/themes";
+import { logger } from "@/lib/logger";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// Global unhandled JS error → BetterStack
+if (typeof ErrorUtils !== "undefined") {
+  const previousHandler = ErrorUtils.getGlobalHandler();
+  ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+    logger.captureError(error, { isFatal: isFatal ?? false, source: "global" });
+    previousHandler(error, isFatal);
+  });
+}
 
 function hideSplash() {
   SplashScreen.hideAsync().catch(() => {});

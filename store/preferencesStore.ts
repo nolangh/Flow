@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MMKV } from "react-native-mmkv";
 
+const storage = new MMKV({ id: "preferences-store" });
 const STORAGE_KEY = "honeydo-prefs-v1";
 
 interface PreferencesState {
@@ -12,6 +13,10 @@ interface PreferencesState {
   loadPreferences: () => Promise<void>;
 }
 
+function persist(state: { morningBriefingEnabled: boolean; morningBriefingHour: number }) {
+  storage.set(STORAGE_KEY, JSON.stringify(state));
+}
+
 export const usePreferencesStore = create<PreferencesState>((set, get) => ({
   morningBriefingEnabled: true,
   morningBriefingHour: 8,
@@ -19,23 +24,18 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => ({
 
   setMorningBriefing: (enabled) => {
     set({ morningBriefingEnabled: enabled });
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
-      morningBriefingEnabled: enabled,
-      morningBriefingHour: get().morningBriefingHour,
-    })).catch(() => {});
+    persist({ morningBriefingEnabled: enabled, morningBriefingHour: get().morningBriefingHour });
   },
 
   setMorningBriefingHour: (hour) => {
     set({ morningBriefingHour: hour });
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
-      morningBriefingEnabled: get().morningBriefingEnabled,
-      morningBriefingHour: hour,
-    })).catch(() => {});
+    persist({ morningBriefingEnabled: get().morningBriefingEnabled, morningBriefingHour: hour });
   },
 
+  // Synchronous under the hood — MMKV reads don't need await
   loadPreferences: async () => {
     try {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      const raw = storage.getString(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         set({

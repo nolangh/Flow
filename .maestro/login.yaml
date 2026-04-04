@@ -1,0 +1,24 @@
+appId: com.honeydo.app
+name: User Login Flow
+---
+- launchApp:
+    clearState: true
+
+# ── Login screen ─────────────────────────────────────────────────────────────
+- assertVisible: "Sign In"
+
+- tapOn:
+    text: "Email"
+- inputText: "${EMAIL:-test@honeydo.app}"
+
+- tapOn:
+    text: "Password"
+- inputText: "${PASSWORD:-TestPassword123!}"
+
+- tapOn:
+    text: "Sign In"
+
+# ── Post-login: Dashboard should be visible ───────────────────────────────────
+- assertVisible:
+    text: "Home"
+    timeout: 5000

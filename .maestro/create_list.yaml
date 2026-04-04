@@ -1,0 +1,45 @@
+appId: com.honeydo.app
+name: Create Shopping List and Add Items
+---
+- launchApp
+
+# ── Navigate to Lists tab ─────────────────────────────────────────────────────
+- tapOn:
+    text: "Lists"
+
+# ── Create a new list ─────────────────────────────────────────────────────────
+- tapOn:
+    text: "New List"
+
+- assertVisible: "Create List"
+
+- tapOn:
+    id: "list-name-input"
+- inputText: "Weekly Groceries"
+
+- tapOn:
+    text: "Create List"
+
+# ── Verify list appears ───────────────────────────────────────────────────────
+- assertVisible:
+    text: "Weekly Groceries"
+    timeout: 3000
+
+# ── Open list and add an item ─────────────────────────────────────────────────
+- tapOn:
+    text: "Weekly Groceries"
+
+- tapOn:
+    id: "add-item-input"
+- inputText: "Milk"
+
+- tapOn:
+    text: "Add"
+
+- assertVisible: "Milk"
+
+# ── Check the item off ────────────────────────────────────────────────────────
+- tapOn:
+    text: "Milk"
+
+- assertVisible: "1 / 1 done"

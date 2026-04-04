@@ -23,9 +23,9 @@ jest.mock("expo-haptics", () => ({
 }));
 
 jest.mock("expo-secure-store", () => ({
-  getItemAsync: jest.fn(),
-  setItemAsync: jest.fn(),
-  deleteItemAsync: jest.fn(),
+  getItemAsync: jest.fn().mockResolvedValue(null),
+  setItemAsync: jest.fn().mockResolvedValue(undefined),
+  deleteItemAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock("expo-linear-gradient", () => ({
@@ -93,37 +93,72 @@ jest.mock("react-native-svg", () => {
 });
 
 // ─── Mock Supabase ─────────────────────────────────────────────────────────
-jest.mock("@/lib/supabase", () => ({
-  supabase: {
-    auth: {
-      getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
-      signInWithPassword: jest.fn(),
-      signUp: jest.fn(),
-      signOut: jest.fn(),
+jest.mock("@/lib/supabase", () => {
+  // Creates a chainable + thenable mock (so `await chain` and .then().catch() work).
+  // Must be defined inside the factory to satisfy jest.mock hoisting rules.
+  function createChain(defaultResult: { data?: unknown; error?: unknown } = {}) {
+    const resolved = { data: defaultResult.data ?? null, error: defaultResult.error ?? null };
+    const chain: Record<string, (...args: unknown[]) => unknown> = {};
+    [
+      "select", "insert", "update", "delete",
+      "eq", "neq", "gte", "lte", "lt", "gt", "in", "is", "not",
+      "order", "limit", "range", "filter",
+    ].forEach((m) => {
+      chain[m] = jest.fn().mockReturnThis();
+    });
+    chain.single = jest.fn().mockResolvedValue(resolved);
+    chain.then = jest.fn().mockImplementation((onFulfilled: (v: unknown) => unknown) =>
+      Promise.resolve(resolved).then(onFulfilled)
+    );
+    chain.catch = jest.fn().mockImplementation((onRejected: (v: unknown) => unknown) =>
+      Promise.resolve(resolved).catch(onRejected)
+    );
+    return chain;
+  }
+
+  return {
+    supabase: {
+      auth: {
+        getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
+        signInWithPassword: jest.fn(),
+        signUp: jest.fn(),
+        signOut: jest.fn(),
+      },
+      from: jest.fn(() => createChain()),
+      channel: jest.fn(() => ({
+        on: jest.fn().mockReturnThis(),
+        subscribe: jest.fn().mockReturnThis(),
+      })),
+      removeChannel: jest.fn(),
+      functions: {
+        invoke: jest.fn().mockResolvedValue({ data: {}, error: null }),
+      },
     },
-    from: jest.fn(() => ({
-      select: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      gte: jest.fn().mockReturnThis(),
-      lte: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ data: null, error: null }),
-    })),
-    channel: jest.fn(() => ({
-      on: jest.fn().mockReturnThis(),
-      subscribe: jest.fn().mockReturnThis(),
-    })),
-    removeChannel: jest.fn(),
-    functions: {
-      invoke: jest.fn().mockResolvedValue({ data: {}, error: null }),
-    },
-  },
-  subscribeToTransactions: jest.fn(() => ({ unsubscribe: jest.fn() })),
-  subscribeToCalendarEvents: jest.fn(() => ({ unsubscribe: jest.fn() })),
-  subscribeToBudgetCategories: jest.fn(() => ({ unsubscribe: jest.fn() })),
+    supabaseConfigured: true,
+    subscribeToTransactions: jest.fn(() => ({ unsubscribe: jest.fn() })),
+    subscribeToCalendarEvents: jest.fn(() => ({ unsubscribe: jest.fn() })),
+    subscribeToBudgetCategories: jest.fn(() => ({ unsubscribe: jest.fn() })),
+  };
+});
+
+// ─── Mock expo-notifications ───────────────────────────────────────────────
+jest.mock("expo-notifications", () => ({
+  setNotificationHandler: jest.fn(),
+  getPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
+  scheduleNotificationAsync: jest.fn().mockResolvedValue("notification-id"),
+  cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
+  getAllScheduledNotificationsAsync: jest.fn().mockResolvedValue([]),
+  SchedulableTriggerInputTypes: { DATE: "date", DAILY: "daily", WEEKLY: "weekly" },
+}));
+
+// ─── Mock expo-local-authentication ────────────────────────────────────────
+jest.mock("expo-local-authentication", () => ({
+  hasHardwareAsync: jest.fn().mockResolvedValue(true),
+  isEnrolledAsync: jest.fn().mockResolvedValue(true),
+  supportedAuthenticationTypesAsync: jest.fn().mockResolvedValue([1, 2]),
+  authenticateAsync: jest.fn().mockResolvedValue({ success: true }),
+  AuthenticationType: { FINGERPRINT: 1, FACIAL_RECOGNITION: 2, IRIS: 3 },
 }));
 
 // ─── Mock async storage ────────────────────────────────────────────────────

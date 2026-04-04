@@ -75,16 +75,17 @@ describe("CalendarScreen", () => {
     expect(getByText("Doctor Appointment")).toBeTruthy();
   });
 
-  it("shows + Add button when a day is selected", () => {
+  it("shows + Task and + Event buttons when a day is selected", () => {
     const { getByText } = render(<CalendarScreen />);
     fireEvent.press(getByText("15"));
-    expect(getByText("+ Add")).toBeTruthy();
+    expect(getByText("+ Task")).toBeTruthy();
+    expect(getByText("+ Event")).toBeTruthy();
   });
 
-  it("opens Add Event modal when + Add is pressed", () => {
+  it("opens Add Event modal when + Event is pressed", () => {
     const { getByText } = render(<CalendarScreen />);
     fireEvent.press(getByText("15"));
-    fireEvent.press(getByText("+ Add"));
+    fireEvent.press(getByText("+ Event"));
     expect(getByText(/New Event/)).toBeTruthy();
   });
 

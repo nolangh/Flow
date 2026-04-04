@@ -52,7 +52,8 @@ describe("SettingsScreen", () => {
 
   it("displays member count", () => {
     const { getByText } = render(<SettingsScreen />);
-    expect(getByText("2 members")).toBeTruthy();
+    // Displayed as "X of 6 members"
+    expect(getByText(/2 of 6 members/)).toBeTruthy();
   });
 
   it("shows Recurring Bills section with Netflix", () => {

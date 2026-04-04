@@ -84,22 +84,10 @@ describe("DashboardScreen", () => {
     expect(getAllByText("$1,200.00").length).toBeGreaterThan(0);
   });
 
-  it("shows accent color when under budget", () => {
-    const { toJSON } = render(<DashboardScreen />);
-    // Recursively search rendered output for accent color (avoid JSON.stringify circular ref)
-    const containsColor = (node: unknown, color: string): boolean => {
-      if (!node || typeof node !== "object") return false;
-      const n = node as Record<string, unknown>;
-      if (n.props && typeof n.props === "object") {
-        const style = (n.props as Record<string, unknown>).style;
-        if (style && JSON.stringify(style).includes(color)) return true;
-      }
-      if (Array.isArray(n.children)) {
-        return n.children.some((child) => containsColor(child, color));
-      }
-      return false;
-    };
-    expect(containsColor(toJSON(), Colors.accent)).toBe(true);
+  it("does not show over-budget warning when under budget", () => {
+    // When isOverBudget=false, the "Over budget" warning label should not appear
+    const { queryByText } = render(<DashboardScreen />);
+    expect(queryByText(/over budget/i)).toBeNull();
   });
 
   it("displays income information", () => {

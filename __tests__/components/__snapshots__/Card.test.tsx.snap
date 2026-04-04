@@ -1,0 +1,99 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Card matches snapshot (custom padding) 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#141414",
+        "borderColor": "#2C2C2E",
+        "borderRadius": 20,
+        "borderWidth": 1,
+        "padding": 32,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text>
+    Padded
+  </Text>
+</View>
+`;
+
+exports[`Card matches snapshot (default) 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#141414",
+        "borderColor": "#2C2C2E",
+        "borderRadius": 20,
+        "borderWidth": 1,
+        "padding": 16,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text>
+    Content
+  </Text>
+</View>
+`;
+
+exports[`Card matches snapshot (glow=green) 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#141414",
+        "borderColor": "rgba(0, 214, 50, 0.25)",
+        "borderRadius": 20,
+        "borderWidth": 1,
+        "padding": 16,
+        "shadowColor": "#00D632",
+        "shadowOffset": {
+          "height": 2,
+          "width": 0,
+        },
+        "shadowOpacity": 0.2,
+        "shadowRadius": 16,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text>
+    Green
+  </Text>
+</View>
+`;
+
+exports[`Card matches snapshot (glow=pink) 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "#141414",
+        "borderColor": "rgba(255, 69, 58, 0.25)",
+        "borderRadius": 20,
+        "borderWidth": 1,
+        "padding": 16,
+        "shadowColor": "#FF453A",
+        "shadowOffset": {
+          "height": 2,
+          "width": 0,
+        },
+        "shadowOpacity": 0.2,
+        "shadowRadius": 16,
+      },
+      undefined,
+    ]
+  }
+>
+  <Text>
+    Pink
+  </Text>
+</View>
+`;

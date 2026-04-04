@@ -22,10 +22,49 @@ const baseTransaction: Transaction = {
   notes: null,
   created_at: "2025-03-15T10:00:00Z",
   updated_at: "2025-03-15T10:00:00Z",
-  category: { id: "cat-1", household_id: "hh-1", name: "Groceries", emoji: "🛒", monthly_limit: 600, color: null, is_income: false, is_fixed: false, fixed_day_of_month: null, created_at: "", updated_at: "" },
+  category: {
+    id: "cat-1", household_id: "hh-1", name: "Groceries", emoji: "🛒",
+    monthly_limit: 600, color: null, is_income: false, is_fixed: false,
+    fixed_day_of_month: null, created_at: "", updated_at: "",
+  },
 };
 
 describe("TransactionItem", () => {
+  // ─── Snapshot ─────────────────────────────────────────────────────────────
+  it("matches snapshot (debit transaction)", () => {
+    const { toJSON } = render(<TransactionItem transaction={baseTransaction} />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (credit transaction)", () => {
+    const credit = { ...baseTransaction, type: "credit" as const, amount: 2000 };
+    const { toJSON } = render(<TransactionItem transaction={credit} />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (pending transaction)", () => {
+    const pending = { ...baseTransaction, pending: true };
+    const { toJSON } = render(<TransactionItem transaction={pending} />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (uncategorized transaction)", () => {
+    const uncat = { ...baseTransaction, category: undefined };
+    const { toJSON } = render(<TransactionItem transaction={uncat} />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  // ─── Accessibility ─────────────────────────────────────────────────────────
+  it("is pressable (has onPress handler)", () => {
+    const onPress = jest.fn();
+    const { getByText } = render(
+      <TransactionItem transaction={baseTransaction} onPress={onPress} />
+    );
+    fireEvent.press(getByText("Whole Foods"));
+    expect(onPress).toHaveBeenCalledWith(baseTransaction);
+  });
+
+  // ─── Behaviour ────────────────────────────────────────────────────────────
   it("renders merchant name when available", () => {
     const { getByText } = render(<TransactionItem transaction={baseTransaction} />);
     expect(getByText("Whole Foods")).toBeTruthy();
@@ -68,18 +107,8 @@ describe("TransactionItem", () => {
     expect(getByText(/Pending/)).toBeTruthy();
   });
 
-  it("calls onPress when tapped", () => {
-    const onPress = jest.fn();
-    const { getByText } = render(
-      <TransactionItem transaction={baseTransaction} onPress={onPress} />
-    );
-    fireEvent.press(getByText("Whole Foods"));
-    expect(onPress).toHaveBeenCalledWith(baseTransaction);
-  });
-
   it("renders an icon for the transaction category", () => {
     const { UNSAFE_getAllByType } = render(<TransactionItem transaction={baseTransaction} />);
-    // Component uses Ionicons (mocked as "Ionicons" string component) for category icons
     expect(UNSAFE_getAllByType("Ionicons").length).toBeGreaterThan(0);
   });
 });

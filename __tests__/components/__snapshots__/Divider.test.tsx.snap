@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Divider matches snapshot (default) 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#2C2C2E",
+      "height": 1,
+      "marginBottom": 0,
+      "marginTop": 0,
+    }
+  }
+/>
+`;
+
+exports[`Divider matches snapshot (with mt and mb) 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#2C2C2E",
+      "height": 1,
+      "marginBottom": 8,
+      "marginTop": 16,
+    }
+  }
+/>
+`;

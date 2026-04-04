@@ -1,0 +1,507 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CategoryCard matches snapshot (expense category) 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "backgroundColor": "#141414",
+      "borderColor": "#2C2C2E",
+      "borderRadius": 16,
+      "borderWidth": 1,
+      "gap": 8,
+      "opacity": 1,
+      "padding": 14,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "fontSize": 22,
+        }
+      }
+    >
+      🛒
+    </Text>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 4,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#636366",
+            "fontSize": 11,
+          }
+        }
+      >
+        50
+        %
+      </Text>
+      <Ionicons
+        color="#636366"
+        name="chevron-forward"
+        size={13}
+      />
+    </View>
+  </View>
+  <Text
+    style={
+      {
+        "color": "#AFAFB8",
+        "fontFamily": "Outfit-Medium",
+        "fontSize": 12,
+      }
+    }
+  >
+    Groceries
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#00D632",
+        "fontFamily": "Outfit-Bold",
+        "fontSize": 17,
+        "letterSpacing": -0.5,
+      }
+    }
+  >
+    $250.00
+  </Text>
+  <View>
+    <View
+      style={
+        {
+          "backgroundColor": "#2C2C2E",
+          "borderRadius": 5,
+          "height": 5,
+          "overflow": "hidden",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#00D632",
+            "borderRadius": 5,
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "top": 0,
+            "width": "50%",
+          }
+        }
+      />
+    </View>
+  </View>
+  <Text
+    style={
+      {
+        "color": "#636366",
+        "fontSize": 11,
+      }
+    }
+  >
+    $250.00 left
+  </Text>
+</View>
+`;
+
+exports[`CategoryCard matches snapshot (fixed bill) 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "alignItems": "center",
+      "flexDirection": "row",
+      "gap": 12,
+      "opacity": 1,
+      "paddingHorizontal": 16,
+      "paddingVertical": 14,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#141414",
+        "borderColor": "#2C2C2E",
+        "borderRadius": 12,
+        "borderWidth": 1,
+        "height": 40,
+        "justifyContent": "center",
+        "width": 40,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "fontSize": 20,
+        }
+      }
+    >
+      📺
+    </Text>
+  </View>
+  <View
+    style={
+      {
+        "flex": 1,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#FFFFFF",
+          "fontFamily": "Outfit-SemiBold",
+          "fontSize": 14,
+        }
+      }
+    >
+      Netflix
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#636366",
+          "fontSize": 12,
+          "marginTop": 1,
+        }
+      }
+    >
+      Due the 
+      10
+      th
+       each month
+    </Text>
+  </View>
+  <Text
+    style={
+      {
+        "color": "#FFFFFF",
+        "fontFamily": "Outfit-Bold",
+        "fontSize": 16,
+        "letterSpacing": -0.3,
+      }
+    }
+  >
+    $15.99
+  </Text>
+</View>
+`;
+
+exports[`CategoryCard matches snapshot (income category) 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "backgroundColor": "#141414",
+      "borderColor": "rgba(0, 214, 50, 0.25)",
+      "borderRadius": 16,
+      "borderWidth": 1,
+      "gap": 2,
+      "opacity": 1,
+      "padding": 14,
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "fontSize": 22,
+        "marginBottom": 4,
+      }
+    }
+  >
+    💵
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#636366",
+        "fontFamily": "Outfit-Medium",
+        "fontSize": 11,
+      }
+    }
+  >
+    Salary
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#00D632",
+        "fontFamily": "Outfit-Bold",
+        "fontSize": 17,
+        "letterSpacing": -0.3,
+      }
+    }
+  >
+    $4,000.00
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#636366",
+        "fontSize": 11,
+      }
+    }
+  >
+    per month
+  </Text>
+</View>
+`;
+
+exports[`CategoryCard matches snapshot (over budget) 1`] = `
+<View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "backgroundColor": "#141414",
+      "borderColor": "rgba(255, 69, 58, 0.25)",
+      "borderRadius": 16,
+      "borderWidth": 1,
+      "gap": 8,
+      "opacity": 1,
+      "padding": 14,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "fontSize": 22,
+        }
+      }
+    >
+      🍔
+    </Text>
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 4,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "rgba(255, 69, 58, 0.12)",
+            "borderRadius": 6,
+            "paddingHorizontal": 7,
+            "paddingVertical": 2,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#FF453A",
+              "fontFamily": "Outfit-Bold",
+              "fontSize": 10,
+            }
+          }
+        >
+          OVER
+        </Text>
+      </View>
+      <Ionicons
+        color="#636366"
+        name="chevron-forward"
+        size={13}
+      />
+    </View>
+  </View>
+  <Text
+    style={
+      {
+        "color": "#AFAFB8",
+        "fontFamily": "Outfit-Medium",
+        "fontSize": 12,
+      }
+    }
+  >
+    Dining Out
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#FF453A",
+        "fontFamily": "Outfit-Bold",
+        "fontSize": 17,
+        "letterSpacing": -0.5,
+      }
+    }
+  >
+    $350.00
+  </Text>
+  <View>
+    <View
+      style={
+        {
+          "backgroundColor": "#2C2C2E",
+          "borderRadius": 5,
+          "height": 5,
+          "overflow": "hidden",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#FF453A",
+            "borderRadius": 5,
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "top": 0,
+            "width": "100%",
+          }
+        }
+      />
+    </View>
+  </View>
+  <Text
+    style={
+      {
+        "color": "#636366",
+        "fontSize": 11,
+      }
+    }
+  >
+    $150.00 over limit
+  </Text>
+</View>
+`;

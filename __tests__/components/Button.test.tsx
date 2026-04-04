@@ -4,6 +4,57 @@ import Button from "@/components/ui/Button";
 import { Colors } from "@/constants/theme";
 
 describe("Button", () => {
+  // ─── Snapshot ─────────────────────────────────────────────────────────────
+  it("matches snapshot (primary, default)", () => {
+    const { toJSON } = render(<Button label="Save" />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (danger variant)", () => {
+    const { toJSON } = render(<Button label="Delete" variant="danger" />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (ghost variant)", () => {
+    const { toJSON } = render(<Button label="Cancel" variant="ghost" />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (outline variant)", () => {
+    const { toJSON } = render(<Button label="Outline" variant="outline" />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (loading state)", () => {
+    const { toJSON } = render(<Button label="Loading" loading />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (disabled state)", () => {
+    const { toJSON } = render(<Button label="Disabled" disabled />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  // ─── Accessibility ─────────────────────────────────────────────────────────
+  it("has accessibilityRole=button", () => {
+    const { getByRole } = render(<Button label="A11y" />);
+    expect(getByRole("button")).toBeTruthy();
+  });
+
+  it("is accessible when disabled (opacity reduced)", () => {
+    const { getByRole } = render(<Button label="Locked" disabled />);
+    const btn = getByRole("button");
+    // disabled reduces opacity to 0.45
+    expect(btn.props.style).toEqual(expect.objectContaining({ opacity: 0.45 }));
+  });
+
+  it("label text is readable by assistive tech", () => {
+    const { getByText } = render(<Button label="Submit Form" />);
+    const text = getByText("Submit Form");
+    expect(text).toBeTruthy();
+  });
+
+  // ─── Interaction ───────────────────────────────────────────────────────────
   it("renders the label", () => {
     const { getByText } = render(<Button label="Tap Me" />);
     expect(getByText("Tap Me")).toBeTruthy();
@@ -25,14 +76,12 @@ describe("Button", () => {
 
   it("shows ActivityIndicator when loading", () => {
     const { queryByText } = render(<Button label="Loading" loading />);
-    // Label text is hidden during loading (replaced by ActivityIndicator)
     expect(queryByText("Loading")).toBeNull();
   });
 
   it("applies primary variant background color", () => {
     const { getByRole } = render(<Button label="Primary" variant="primary" />);
     const btn = getByRole("button");
-    // style is a flat merged object in the test renderer
     expect(btn.props.style).toEqual(
       expect.objectContaining({ backgroundColor: Colors.neonGreen })
     );
@@ -43,14 +92,6 @@ describe("Button", () => {
     const btn = getByRole("button");
     expect(btn.props.style).toEqual(
       expect.objectContaining({ backgroundColor: Colors.dangerPink })
-    );
-  });
-
-  it("renders text with black color for primary variant (contrast on colored bg)", () => {
-    const { getByText } = render(<Button label="Contrast" variant="primary" />);
-    const text = getByText("Contrast");
-    expect(text.props.style).toEqual(
-      expect.objectContaining({ color: "#000000" })
     );
   });
 

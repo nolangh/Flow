@@ -3,7 +3,6 @@ import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import DashboardScreen from "@/app/(tabs)/index";
 import { Colors } from "@/constants/theme";
 
-// ── Store mocks ──────────────────────────────────────────────────────────────
 const mockFetchMonthlyBudget = jest.fn().mockResolvedValue(undefined);
 const mockFetchTransactions = jest.fn().mockResolvedValue(undefined);
 const mockAddManualTransaction = jest.fn().mockResolvedValue(undefined);
@@ -65,6 +64,14 @@ describe("DashboardScreen", () => {
     jest.clearAllMocks();
   });
 
+  // ─── Accessibility ─────────────────────────────────────────────────────────
+  it("Add Transaction button has accessible label text", () => {
+    const { getByText } = render(<DashboardScreen />);
+    // Button renders with visible label — accessible to screen readers
+    expect(getByText("+ Add Transaction")).toBeTruthy();
+  });
+
+  // ─── Behaviour ────────────────────────────────────────────────────────────
   it("renders without crashing", () => {
     expect(() => render(<DashboardScreen />)).not.toThrow();
   });
@@ -85,14 +92,12 @@ describe("DashboardScreen", () => {
   });
 
   it("does not show over-budget warning when under budget", () => {
-    // When isOverBudget=false, the "Over budget" warning label should not appear
     const { queryByText } = render(<DashboardScreen />);
     expect(queryByText(/over budget/i)).toBeNull();
   });
 
   it("displays income information", () => {
     const { getAllByText } = render(<DashboardScreen />);
-    // Income label and value are rendered separately
     expect(getAllByText("Income").length).toBeGreaterThan(0);
     expect(getAllByText("$4,000.00").length).toBeGreaterThan(0);
   });
@@ -123,15 +128,12 @@ describe("DashboardScreen", () => {
   it("opens AddTransactionModal when Add Transaction is pressed", () => {
     const { getByText } = render(<DashboardScreen />);
     fireEvent.press(getByText("+ Add Transaction"));
-    // Modal title appears
     expect(getByText("Add Transaction")).toBeTruthy();
   });
 
   it("navigates to previous month when left arrow pressed", () => {
     const { UNSAFE_getAllByType } = render(<DashboardScreen />);
-    // Navigation uses Ionicons chevron-back/forward; find all TouchableOpacity and press the prev one
     const allTouchables = UNSAFE_getAllByType(require("react-native").TouchableOpacity);
-    // Press each touchable until mockSetCurrentMonth is called with prev month
     for (const t of allTouchables) {
       fireEvent.press(t);
       if (mockSetCurrentMonth.mock.calls.some((c) => c[0] === "2025-02")) break;
@@ -139,8 +141,3 @@ describe("DashboardScreen", () => {
     expect(mockSetCurrentMonth).toHaveBeenCalledWith("2025-02");
   });
 });
-
-// Over-budget color logic is unit-tested in __tests__/constants/theme.test.ts.
-// getBudgetColor(spent > limit) → dangerPink is verified there without
-// needing to re-render a full screen with reset modules (which causes
-// React to have multiple instances and breaks hook rules).

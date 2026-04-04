@@ -26,6 +26,14 @@ jest.mock("@/store/budgetStore", () => ({
 }));
 
 describe("SettingsScreen", () => {
+  // ─── Accessibility ─────────────────────────────────────────────────────────
+  it("Sign Out button is accessible", () => {
+    const { getByText } = render(<SettingsScreen />);
+    const btn = getByText("Sign Out");
+    expect(btn).toBeTruthy();
+  });
+
+  // ─── Behaviour ────────────────────────────────────────────────────────────
   it("renders without crashing", () => {
     expect(() => render(<SettingsScreen />)).not.toThrow();
   });
@@ -52,7 +60,6 @@ describe("SettingsScreen", () => {
 
   it("displays member count", () => {
     const { getByText } = render(<SettingsScreen />);
-    // Displayed as "X of 6 members"
     expect(getByText(/2 of 6 members/)).toBeTruthy();
   });
 
@@ -73,7 +80,6 @@ describe("SettingsScreen", () => {
 
   it("shows confirmation alert before signing out", () => {
     const { getByText } = render(<SettingsScreen />);
-    // Pressing Sign Out triggers an Alert — just verify the button exists and is pressable
     expect(() => fireEvent.press(getByText("Sign Out"))).not.toThrow();
   });
 

@@ -1,0 +1,325 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BudgetAlertBanner matches snapshot (over budget) 1`] = `
+<View
+  style={
+    {
+      "alignItems": "flex-start",
+      "backgroundColor": "rgba(255, 69, 58, 0.12)",
+      "borderColor": "rgba(255, 69, 58, 0.25)",
+      "borderRadius": 14,
+      "borderWidth": 1,
+      "flexDirection": "row",
+      "gap": 10,
+      "padding": 14,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "rgba(255, 69, 58, 0.12)",
+        "borderRadius": 10,
+        "flexShrink": 0,
+        "height": 32,
+        "justifyContent": "center",
+        "width": 32,
+      }
+    }
+  >
+    <Ionicons
+      color="#FF453A"
+      name="warning"
+      size={16}
+    />
+  </View>
+  <View
+    style={
+      {
+        "flex": 1,
+        "gap": 2,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 6,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "fontSize": 14,
+          }
+        }
+      >
+        🍔
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#FFFFFF",
+            "fontFamily": "Outfit-Bold",
+            "fontSize": 14,
+          }
+        }
+      >
+        Dining Out
+      </Text>
+      <View
+        style={
+          {
+            "backgroundColor": "rgba(255, 69, 58, 0.12)",
+            "borderRadius": 6,
+            "paddingHorizontal": 6,
+            "paddingVertical": 1,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#FF453A",
+              "fontFamily": "Outfit-Bold",
+              "fontSize": 11,
+            }
+          }
+        >
+          120
+          %
+        </Text>
+      </View>
+    </View>
+    <Text
+      style={
+        {
+          "color": "#AFAFB8",
+          "fontFamily": "Outfit-Regular",
+          "fontSize": 13,
+          "lineHeight": 18,
+        }
+      }
+    >
+      You've gone over your Dining Out budget by $40.00.
+       
+      Consider reviewing your spending.
+    </Text>
+  </View>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    hitSlop={
+      {
+        "bottom": 8,
+        "left": 8,
+        "right": 8,
+        "top": 8,
+      }
+    }
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+        "paddingTop": 2,
+      }
+    }
+  >
+    <Ionicons
+      color="#636366"
+      name="close"
+      size={16}
+    />
+  </View>
+</View>
+`;
+
+exports[`BudgetAlertBanner matches snapshot (warning — near budget) 1`] = `
+<View
+  style={
+    {
+      "alignItems": "flex-start",
+      "backgroundColor": "rgba(255, 159, 10, 0.12)",
+      "borderColor": "#FF9F0A40",
+      "borderRadius": 14,
+      "borderWidth": 1,
+      "flexDirection": "row",
+      "gap": 10,
+      "padding": 14,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "rgba(255, 159, 10, 0.12)",
+        "borderRadius": 10,
+        "flexShrink": 0,
+        "height": 32,
+        "justifyContent": "center",
+        "width": 32,
+      }
+    }
+  >
+    <Ionicons
+      color="#FF9F0A"
+      name="alert-circle"
+      size={16}
+    />
+  </View>
+  <View
+    style={
+      {
+        "flex": 1,
+        "gap": 2,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "gap": 6,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "fontSize": 14,
+          }
+        }
+      >
+        🛒
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#FFFFFF",
+            "fontFamily": "Outfit-Bold",
+            "fontSize": 14,
+          }
+        }
+      >
+        Groceries
+      </Text>
+      <View
+        style={
+          {
+            "backgroundColor": "rgba(255, 159, 10, 0.12)",
+            "borderRadius": 6,
+            "paddingHorizontal": 6,
+            "paddingVertical": 1,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#FF9F0A",
+              "fontFamily": "Outfit-Bold",
+              "fontSize": 11,
+            }
+          }
+        >
+          85
+          %
+        </Text>
+      </View>
+    </View>
+    <Text
+      style={
+        {
+          "color": "#AFAFB8",
+          "fontFamily": "Outfit-Regular",
+          "fontSize": 13,
+          "lineHeight": 18,
+        }
+      }
+    >
+      You've spent 85% of your Groceries budget.
+       
+      $75.00 left for the month.
+    </Text>
+  </View>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    hitSlop={
+      {
+        "bottom": 8,
+        "left": 8,
+        "right": 8,
+        "top": 8,
+      }
+    }
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "opacity": 1,
+        "paddingTop": 2,
+      }
+    }
+  >
+    <Ionicons
+      color="#636366"
+      name="close"
+      size={16}
+    />
+  </View>
+</View>
+`;

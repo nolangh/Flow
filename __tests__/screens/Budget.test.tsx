@@ -46,6 +46,13 @@ jest.mock("@/hooks/useBudgetSummary", () => ({
 describe("BudgetScreen", () => {
   beforeEach(() => jest.clearAllMocks());
 
+  // ─── Accessibility ────────────────────────────────────────────────────
+  it("Add Category button has accessible label text", () => {
+    const { getByText } = render(<BudgetScreen />);
+    expect(getByText("Add Category")).toBeTruthy();
+  });
+
+  // ─── Behaviour ─────────────────────────────────────────────────────────
   it("renders without crashing", () => {
     expect(() => render(<BudgetScreen />)).not.toThrow();
   });

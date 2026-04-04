@@ -5,6 +5,28 @@ import Card from "@/components/ui/Card";
 import { Colors } from "@/constants/theme";
 
 describe("Card", () => {
+  // ─── Snapshot ─────────────────────────────────────────────────────────────
+  it("matches snapshot (default)", () => {
+    const { toJSON } = render(<Card><Text>Content</Text></Card>);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (glow=green)", () => {
+    const { toJSON } = render(<Card glow="green"><Text>Green</Text></Card>);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (glow=pink)", () => {
+    const { toJSON } = render(<Card glow="pink"><Text>Pink</Text></Card>);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  it("matches snapshot (custom padding)", () => {
+    const { toJSON } = render(<Card padding={32}><Text>Padded</Text></Card>);
+    expect(toJSON()).toMatchSnapshot();
+  });
+
+  // ─── Behaviour ────────────────────────────────────────────────────────────
   it("renders children", () => {
     const { getByText } = render(<Card><Text>Hello</Text></Card>);
     expect(getByText("Hello")).toBeTruthy();

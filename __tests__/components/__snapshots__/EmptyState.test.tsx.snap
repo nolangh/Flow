@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EmptyState matches snapshot (title only) 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "paddingVertical": 48,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#2C2C2E",
+        "borderRadius": 28,
+        "height": 56,
+        "justifyContent": "center",
+        "marginBottom": 16,
+        "width": 56,
+      }
+    }
+  >
+    <Ionicons
+      color="#636366"
+      name="receipt-outline"
+      size={24}
+    />
+  </View>
+  <Text
+    style={
+      {
+        "color": "#AFAFB8",
+        "fontFamily": "Outfit-SemiBold",
+        "fontSize": 16,
+        "marginBottom": 4,
+      }
+    }
+  >
+    Nothing here
+  </Text>
+</View>
+`;
+
+exports[`EmptyState matches snapshot (with subtitle) 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "paddingVertical": 48,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "backgroundColor": "#2C2C2E",
+        "borderRadius": 28,
+        "height": 56,
+        "justifyContent": "center",
+        "marginBottom": 16,
+        "width": 56,
+      }
+    }
+  >
+    <Ionicons
+      color="#636366"
+      name="receipt-outline"
+      size={24}
+    />
+  </View>
+  <Text
+    style={
+      {
+        "color": "#AFAFB8",
+        "fontFamily": "Outfit-SemiBold",
+        "fontSize": 16,
+        "marginBottom": 4,
+      }
+    }
+  >
+    No transactions
+  </Text>
+  <Text
+    style={
+      {
+        "color": "#636366",
+        "fontSize": 13,
+        "lineHeight": 18,
+        "paddingHorizontal": 32,
+        "textAlign": "center",
+      }
+    }
+  >
+    Add your first transaction to get started
+  </Text>
+</View>
+`;

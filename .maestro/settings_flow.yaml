@@ -1,0 +1,40 @@
+appId: com.honeydo.app
+name: Settings Screen Flow
+---
+- launchApp
+
+# ── Navigate to Settings ──────────────────────────────────────────────────────
+- tapOn:
+    text: "Settings"
+- assertVisible:
+    text: "Settings"
+    timeout: 3000
+
+# ── Verify key sections are present ───────────────────────────────────────────
+- assertVisible: "Banking"
+- assertVisible: "Budget Alerts"
+- assertVisible: "Sign Out"
+
+# ── Copy invite code ──────────────────────────────────────────────────────────
+- tapOn:
+    text: "Copy"
+- assertVisible:
+    text: "Copied"
+    timeout: 2000
+
+# ── Toggle Budget Alerts ──────────────────────────────────────────────────────
+- tapOn:
+    text: "Budget Alerts"
+# Just verify no crash after toggle — actual state depends on current value
+- assertVisible:
+    text: "Budget Alerts"
+    timeout: 1000
+
+# ── Navigate to Accounts & Bill Pay ───────────────────────────────────────────
+- tapOn:
+    text: "Accounts & Bill Pay"
+- assertVisible:
+    text: "Accounts"
+    timeout: 3000
+- tapOn:
+    id: "back-button"

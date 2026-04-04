@@ -1,0 +1,42 @@
+appId: com.honeydo.app
+name: Tab Navigation Flow
+---
+- launchApp
+
+# ── Start on Dashboard (Home) ─────────────────────────────────────────────────
+- assertVisible: "Home"
+
+# ── Navigate to Budget tab ────────────────────────────────────────────────────
+- tapOn:
+    text: "Budget"
+- assertVisible:
+    text: "Budget"
+    timeout: 3000
+
+# ── Navigate to Lists tab ─────────────────────────────────────────────────────
+- tapOn:
+    text: "Lists"
+- assertVisible:
+    text: "Lists"
+    timeout: 3000
+
+# ── Navigate to Goals tab ─────────────────────────────────────────────────────
+- tapOn:
+    text: "Goals"
+- assertVisible:
+    text: "Goals"
+    timeout: 3000
+
+# ── Navigate to Settings tab ──────────────────────────────────────────────────
+- tapOn:
+    text: "Settings"
+- assertVisible:
+    text: "Settings"
+    timeout: 3000
+
+# ── Navigate back to Home tab ─────────────────────────────────────────────────
+- tapOn:
+    text: "Home"
+- assertVisible:
+    text: "Home"
+    timeout: 3000

@@ -1,0 +1,41 @@
+appId: com.honeydo.app
+name: Budget — Add Category Flow
+---
+- launchApp
+
+# ── Navigate to Budget tab ────────────────────────────────────────────────────
+- tapOn:
+    text: "Budget"
+- assertVisible:
+    text: "Budget"
+    timeout: 3000
+
+# ── Open Add Category modal ───────────────────────────────────────────────────
+- tapOn:
+    text: "Add Category"
+- assertVisible:
+    text: "New Category"
+    timeout: 3000
+
+# ── Enter category name ───────────────────────────────────────────────────────
+- tapOn:
+    text: "Category name"
+- inputText: "Streaming Services"
+
+# ── Enter monthly limit ───────────────────────────────────────────────────────
+- tapOn:
+    text: "Monthly limit"
+- inputText: "50"
+
+# ── Select an emoji ───────────────────────────────────────────────────────────
+- tapOn:
+    text: "📺"
+
+# ── Save the category ─────────────────────────────────────────────────────────
+- tapOn:
+    text: "Save"
+
+# ── Verify category appears in Budget screen ──────────────────────────────────
+- assertVisible:
+    text: "Streaming Services"
+    timeout: 3000

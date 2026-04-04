@@ -1,5 +1,38 @@
 import "@testing-library/jest-native/extend-expect";
 
+// ─── Mock react-native-mmkv ────────────────────────────────────────────────
+jest.mock("react-native-mmkv", () => {
+  // One shared in-memory store, cleared by tests that need isolation.
+  const stores: Record<string, Record<string, unknown>> = {};
+
+  function getStore(id: string) {
+    if (!stores[id]) stores[id] = {};
+    return stores[id];
+  }
+
+  const MMKV = jest.fn().mockImplementation(({ id = "default" } = {}) => {
+    const s = getStore(id);
+    const instance = {
+      _id: id,
+      set: jest.fn((key: string, value: unknown) => { s[key] = value; }),
+      getString: jest.fn((key: string) => (typeof s[key] === "string" ? (s[key] as string) : undefined)),
+      getBoolean: jest.fn((key: string) => (typeof s[key] === "boolean" ? (s[key] as boolean) : undefined)),
+      getNumber: jest.fn((key: string) => (typeof s[key] === "number" ? (s[key] as number) : undefined)),
+      delete: jest.fn((key: string) => { delete s[key]; }),
+      contains: jest.fn((key: string) => key in s),
+      getAllKeys: jest.fn(() => Object.keys(s)),
+      clearAll: jest.fn(() => { Object.keys(s).forEach((k) => delete s[k]); }),
+      addOnValueChangedListener: jest.fn(() => ({ remove: jest.fn() })),
+    };
+    // Track returned instances so tests can access them
+    (MMKV as jest.Mock)._instances = (MMKV as jest.Mock)._instances || {};
+    (MMKV as jest.Mock)._instances[id] = instance;
+    return instance;
+  });
+
+  return { MMKV };
+});
+
 // ─── Mock expo modules ─────────────────────────────────────────────────────
 jest.mock("expo-router", () => ({
   router: { replace: jest.fn(), push: jest.fn(), back: jest.fn() },

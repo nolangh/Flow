@@ -1,0 +1,29 @@
+appId: com.honeydo.app
+name: Month Navigation on Dashboard
+---
+- launchApp
+
+# ── Start on Dashboard ────────────────────────────────────────────────────────
+- assertVisible: "Home"
+
+# ── Navigate to previous month ────────────────────────────────────────────────
+- tapOn:
+    id: "prev-month-button"
+- assertVisible:
+    text: "February"
+    timeout: 2000
+
+# ── Navigate back to current month ────────────────────────────────────────────
+- tapOn:
+    id: "next-month-button"
+- assertVisible:
+    text: "March"
+    timeout: 2000
+
+# ── Navigate to next month (if allowed) ──────────────────────────────────────
+- tapOn:
+    id: "next-month-button"
+# Verify the month label updates
+- assertVisible:
+    text: "April"
+    timeout: 2000

@@ -1,0 +1,45 @@
+appId: com.honeydo.app
+name: Form Validation — Add Transaction
+---
+- launchApp
+
+# ── Navigate to Budget tab ────────────────────────────────────────────────────
+- tapOn:
+    text: "Budget"
+- assertVisible: "Budget"
+
+# ── Open Add Transaction modal ────────────────────────────────────────────────
+- tapOn:
+    text: "Add Transaction"
+- assertVisible: "Add Transaction"
+
+# ── Attempt to save with empty form (should show validation error) ────────────
+- tapOn:
+    text: "Save"
+- assertVisible:
+    text: "required"
+    timeout: 2000
+
+# ── Fill in transaction name ──────────────────────────────────────────────────
+- tapOn:
+    id: "transaction-name-input"
+- inputText: "Coffee"
+
+# ── Attempt to save with missing amount ───────────────────────────────────────
+- tapOn:
+    text: "Save"
+- assertVisible:
+    text: "required"
+    timeout: 2000
+
+# ── Fill in valid amount ──────────────────────────────────────────────────────
+- tapOn:
+    id: "transaction-amount-input"
+- inputText: "4.50"
+
+# ── Save valid form ───────────────────────────────────────────────────────────
+- tapOn:
+    text: "Save"
+- assertVisible:
+    text: "Coffee"
+    timeout: 3000

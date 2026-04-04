@@ -1,15 +1,26 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { usePreferencesStore } from "@/store/preferencesStore";
+
+// MMKV is mocked globally in jest.setup.ts.
+const { MMKV } = require("react-native-mmkv");
+
+function getMmkvInstance() {
+  return (MMKV as jest.Mock & { _instances?: Record<string, unknown> })._instances?.["preferences-store"];
+}
 
 const STORAGE_KEY = "honeydo-prefs-v1";
 
-beforeEach(async () => {
+beforeEach(() => {
   usePreferencesStore.setState({
     morningBriefingEnabled: true,
     morningBriefingHour: 8,
     loaded: false,
   });
-  await AsyncStorage.clear();
+  const inst = getMmkvInstance() as Record<string, jest.Mock> | undefined;
+  if (inst) {
+    inst.getString.mockReset();
+    inst.set.mockReset();
+    inst.getString.mockReturnValue(undefined);
+  }
   jest.clearAllMocks();
 });
 
@@ -33,20 +44,20 @@ describe("setMorningBriefing", () => {
     expect(usePreferencesStore.getState().morningBriefingEnabled).toBe(false);
   });
 
-  it("persists the updated value to AsyncStorage", async () => {
+  it("persists the updated value via MMKV", () => {
+    const inst = getMmkvInstance();
     usePreferencesStore.getState().setMorningBriefing(false);
-    await Promise.resolve();
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+    expect(inst.set).toHaveBeenCalledWith(
       STORAGE_KEY,
       expect.stringContaining('"morningBriefingEnabled":false')
     );
   });
 
-  it("persists the current hour alongside the new enabled value", async () => {
+  it("persists the current hour alongside the new enabled value", () => {
+    const inst = getMmkvInstance();
     usePreferencesStore.setState({ morningBriefingHour: 7 });
     usePreferencesStore.getState().setMorningBriefing(false);
-    await Promise.resolve();
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+    expect(inst.set).toHaveBeenCalledWith(
       STORAGE_KEY,
       expect.stringContaining('"morningBriefingHour":7')
     );
@@ -59,20 +70,20 @@ describe("setMorningBriefingHour", () => {
     expect(usePreferencesStore.getState().morningBriefingHour).toBe(6);
   });
 
-  it("persists the updated hour to AsyncStorage", async () => {
+  it("persists the updated hour via MMKV", () => {
+    const inst = getMmkvInstance();
     usePreferencesStore.getState().setMorningBriefingHour(9);
-    await Promise.resolve();
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+    expect(inst.set).toHaveBeenCalledWith(
       STORAGE_KEY,
       expect.stringContaining('"morningBriefingHour":9')
     );
   });
 
-  it("includes current enabled state in the persisted value", async () => {
+  it("includes current enabled state in the persisted value", () => {
+    const inst = getMmkvInstance();
     usePreferencesStore.setState({ morningBriefingEnabled: false });
     usePreferencesStore.getState().setMorningBriefingHour(10);
-    await Promise.resolve();
-    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+    expect(inst.set).toHaveBeenCalledWith(
       STORAGE_KEY,
       expect.stringContaining('"morningBriefingEnabled":false')
     );
@@ -81,35 +92,40 @@ describe("setMorningBriefingHour", () => {
 
 describe("loadPreferences", () => {
   it("sets loaded=true after completing", async () => {
-    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
+    const inst = getMmkvInstance();
+    inst.getString.mockReturnValue(undefined);
     await usePreferencesStore.getState().loadPreferences();
     expect(usePreferencesStore.getState().loaded).toBe(true);
   });
 
-  it("restores saved preferences", async () => {
+  it("restores saved preferences from MMKV", async () => {
+    const inst = getMmkvInstance();
     const saved = JSON.stringify({ morningBriefingEnabled: false, morningBriefingHour: 6 });
-    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(saved);
+    inst.getString.mockReturnValue(saved);
     await usePreferencesStore.getState().loadPreferences();
     expect(usePreferencesStore.getState().morningBriefingEnabled).toBe(false);
     expect(usePreferencesStore.getState().morningBriefingHour).toBe(6);
   });
 
   it("uses defaults when nothing is stored", async () => {
-    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
+    const inst = getMmkvInstance();
+    inst.getString.mockReturnValue(undefined);
     await usePreferencesStore.getState().loadPreferences();
     expect(usePreferencesStore.getState().morningBriefingEnabled).toBe(true);
     expect(usePreferencesStore.getState().morningBriefingHour).toBe(8);
   });
 
   it("uses defaults when stored JSON is malformed", async () => {
-    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce("{invalid}");
+    const inst = getMmkvInstance();
+    inst.getString.mockReturnValue("{invalid json}");
     await usePreferencesStore.getState().loadPreferences();
     expect(usePreferencesStore.getState().loaded).toBe(true);
     expect(usePreferencesStore.getState().morningBriefingHour).toBe(8);
   });
 
-  it("sets loaded=true even when AsyncStorage throws", async () => {
-    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(new Error("storage error"));
+  it("sets loaded=true even when getString throws", async () => {
+    const inst = getMmkvInstance();
+    inst.getString.mockImplementation(() => { throw new Error("storage error"); });
     await usePreferencesStore.getState().loadPreferences();
     expect(usePreferencesStore.getState().loaded).toBe(true);
   });

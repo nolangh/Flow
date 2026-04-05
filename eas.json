@@ -11,21 +11,24 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_BETTERSTACK_TOKEN": ""
+        "EXPO_PUBLIC_BETTERSTACK_TOKEN": "",
+        "EXPO_PUBLIC_SENTRY_DSN": ""
       }
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
       "env": {
-        "EXPO_PUBLIC_BETTERSTACK_TOKEN": ""
+        "EXPO_PUBLIC_BETTERSTACK_TOKEN": "",
+        "EXPO_PUBLIC_SENTRY_DSN": ""
       }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "EXPO_PUBLIC_BETTERSTACK_TOKEN": ""
+        "EXPO_PUBLIC_BETTERSTACK_TOKEN": "",
+        "EXPO_PUBLIC_SENTRY_DSN": ""
       }
     }
   },

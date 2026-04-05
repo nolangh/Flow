@@ -12,29 +12,60 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
+
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.honeydo.app",
+      "deploymentTarget": "16.0",
       "infoPlist": {
         "NSCameraUsageDescription": "Used for profile photos",
-        "NSFaceIDUsageDescription": "Used for secure authentication"
+        "NSFaceIDUsageDescription": "Used for secure biometric authentication",
+        "NSMicrophoneUsageDescription": "Not used by this app",
+
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        },
+
+        "UIFileSharingEnabled": false,
+        "LSSupportsOpeningDocumentsInPlace": false,
+
+        "NSPrivacyUsageDescription": "Honeydo uses your data only to provide budgeting and household management features."
       }
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.honeydo.app"
+      "package": "com.honeydo.app",
+      "minSdkVersion": 26,
+      "targetSdkVersion": 35,
+      "compileSdkVersion": 35,
+      "allowBackup": false,
+      "jsEngine": "hermes",
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.READ_CALL_LOG",
+        "android.permission.PROCESS_OUTGOING_CALLS",
+        "android.permission.READ_SMS",
+        "android.permission.RECEIVE_SMS",
+        "android.permission.SEND_SMS"
+      ]
     },
+
     "web": {
       "bundler": "metro",
       "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
       "expo-router",
       "expo-secure-store",
+
       [
         "@sentry/react-native/expo",
         {
@@ -42,6 +73,29 @@
           "project": "YOUR_SENTRY_PROJECT"
         }
       ],
+
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResources": true,
+            "proguardRulesFile": "./proguard-rules.pro",
+            "minSdkVersion": 26,
+            "targetSdkVersion": 35,
+            "compileSdkVersion": 35
+          },
+          "ios": {
+            "deploymentTarget": "16.0",
+            "useFrameworks": "static"
+          }
+        }
+      ],
+
+      "./plugins/withAndroidNetworkSecurity",
+      "./plugins/withAndroidFlagSecure",
+      "./plugins/withIosPrivacyManifest",
+
       [
         "expo-notifications",
         {
@@ -63,6 +117,7 @@
       "expo-web-browser",
       "expo-updates"
     ],
+
     "experiments": {
       "typedRoutes": true
     },

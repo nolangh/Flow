@@ -1,5 +1,4 @@
 import React from "react";
-import { action } from "@storybook/addon-ondevice-actions";
 import type { Meta, StoryObj } from "@storybook/react-native";
 import TransactionItem from "./TransactionItem";
 import type { Transaction } from "@/types";
@@ -7,7 +6,7 @@ import type { Transaction } from "@/types";
 const baseCategory = {
   id: "cat-1", household_id: "hh1", name: "Groceries", emoji: "🛒",
   monthly_limit: 600, color: null, is_income: false, is_fixed: false,
-  fixed_day_of_month: null, created_at: "", updated_at: "",
+  fixed_day_of_month: null, alert_threshold: null, created_at: "", updated_at: "",
 };
 
 const base: Transaction = {
@@ -22,7 +21,7 @@ const base: Transaction = {
 const meta = {
   title: "Dashboard/TransactionItem",
   component: TransactionItem,
-  args: { onPress: action("onPress") },
+  args: { onPress: () => {} },
 } satisfies Meta<typeof TransactionItem>;
 
 export default meta;

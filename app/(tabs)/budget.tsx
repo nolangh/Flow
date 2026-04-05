@@ -79,7 +79,7 @@ export default function BudgetScreen() {
     try {
       const txWithCat = transactions.map((t) => ({
         ...t,
-        category_name: categories.find((c) => c.id === t.category_id)?.name ?? "Uncategorized",
+        category_name: categories.find((c) => c.id === t.budget_category_id)?.name ?? "Uncategorized",
       }));
       const csv = buildTransactionCsv(txWithCat);
       await exportCsvFile(`flow-transactions-${currentMonth}.csv`, csv);

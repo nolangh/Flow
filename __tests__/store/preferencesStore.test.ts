@@ -1,10 +1,18 @@
 import { usePreferencesStore } from "@/store/preferencesStore";
 
-// MMKV is mocked globally in jest.setup.ts.
-const { MMKV } = require("react-native-mmkv");
+// createMMKV is mocked globally in jest.setup.ts.
+// Instances are tracked in global.__mmkvInstances by store id.
+type MockMMKVInstance = {
+  getString: jest.Mock;
+  set: jest.Mock;
+  getBoolean: jest.Mock;
+  getNumber: jest.Mock;
+  delete: jest.Mock;
+  clearAll: jest.Mock;
+};
 
-function getMmkvInstance() {
-  return (MMKV as jest.Mock & { _instances?: Record<string, unknown> })._instances?.["preferences-store"];
+function getMmkvInstance(): MockMMKVInstance {
+  return ((global as Record<string, unknown>).__mmkvInstances as Record<string, MockMMKVInstance>)["preferences-store"];
 }
 
 const STORAGE_KEY = "honeydo-prefs-v1";
@@ -15,7 +23,7 @@ beforeEach(() => {
     morningBriefingHour: 8,
     loaded: false,
   });
-  const inst = getMmkvInstance() as Record<string, jest.Mock> | undefined;
+  const inst = getMmkvInstance();
   if (inst) {
     inst.getString.mockReset();
     inst.set.mockReset();

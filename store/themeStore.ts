@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { MMKV } from "react-native-mmkv";
+import { createMMKV } from "react-native-mmkv";
 import type { ThemeKey } from "@/constants/themes";
 
-const storage = new MMKV({ id: "theme-store" });
+const storage = createMMKV({ id: "theme-store" });
 const STORAGE_KEY = "flow-theme-v1";
 
 interface ThemeState {

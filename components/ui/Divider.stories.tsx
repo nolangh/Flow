@@ -18,7 +18,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {},
-  render: (args) => (
+  render: (args: React.ComponentProps<typeof Divider>) => (
     <View>
       <Text style={{ color: "#fff" }}>Above divider</Text>
       <Divider {...args} />
@@ -29,7 +29,7 @@ export const Default: Story = {
 
 export const WithMargins: Story = {
   args: { mt: 16, mb: 16 },
-  render: (args) => (
+  render: (args: React.ComponentProps<typeof Divider>) => (
     <View>
       <Text style={{ color: "#fff" }}>Section A</Text>
       <Divider {...args} />

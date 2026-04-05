@@ -6,7 +6,7 @@ import type { BudgetCategory } from "@/types";
 const expense: BudgetCategory = {
   id: "c1", household_id: "hh1", name: "Groceries", emoji: "🛒",
   monthly_limit: 500, color: null, is_income: false, is_fixed: false,
-  fixed_day_of_month: null, spent: 250, remaining: 250, created_at: "", updated_at: "",
+  fixed_day_of_month: null, alert_threshold: null, spent: 250, remaining: 250, created_at: "", updated_at: "",
 };
 
 const meta = {

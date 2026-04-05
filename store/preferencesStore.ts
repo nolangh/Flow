@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { MMKV } from "react-native-mmkv";
+import { createMMKV } from "react-native-mmkv";
 
-const storage = new MMKV({ id: "preferences-store" });
+const storage = createMMKV({ id: "preferences-store" });
 const STORAGE_KEY = "honeydo-prefs-v1";
 
 interface PreferencesState {

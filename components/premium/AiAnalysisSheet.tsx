@@ -57,7 +57,7 @@ export default function AiAnalysisSheet({ onApplySuggestion, onApplyAll }: Props
       const catData = categories.map((c) => ({
         name: c.name,
         monthly_limit: c.monthly_limit,
-        spent: monthlyBudget.find((m) => m.category_id === c.id)?.spent ?? 0,
+        spent: categories.find((cat) => cat.id === c.id)?.spent ?? 0,
         is_fixed: c.is_fixed ?? false,
         is_income: c.is_income ?? false,
       }));

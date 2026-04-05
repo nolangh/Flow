@@ -2,7 +2,7 @@
  * CSV import/export utilities for Honeydo budget data.
  */
 
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 
@@ -39,7 +39,7 @@ export function buildBudgetCsv(
     is_fixed: boolean;
     is_income: boolean;
     fixed_day_of_month?: number | null;
-    emoji?: string;
+    emoji?: string | null;
   }[]
 ): string {
   const header = "name,type,monthly_limit,fixed_day_of_month,emoji";

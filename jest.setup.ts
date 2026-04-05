@@ -1,18 +1,14 @@
 import "@testing-library/jest-native/extend-expect";
 
 // ─── Mock react-native-mmkv ────────────────────────────────────────────────
+// Stores use createMMKV({ id }) — we track instances by id so tests can inspect them.
 jest.mock("react-native-mmkv", () => {
-  // One shared in-memory store, cleared by tests that need isolation.
-  const stores: Record<string, Record<string, unknown>> = {};
+  // instances map lives inside the factory so it's not an out-of-scope variable
+  const instances: Record<string, Record<string, unknown>> = {};
 
-  function getStore(id: string) {
-    if (!stores[id]) stores[id] = {};
-    return stores[id];
-  }
-
-  const MMKV = jest.fn().mockImplementation(({ id = "default" } = {}) => {
-    const s = getStore(id);
-    const instance = {
+  function makeMock(id: string) {
+    const s: Record<string, unknown> = {};
+    const inst = {
       _id: id,
       set: jest.fn((key: string, value: unknown) => { s[key] = value; }),
       getString: jest.fn((key: string) => (typeof s[key] === "string" ? (s[key] as string) : undefined)),
@@ -24,13 +20,19 @@ jest.mock("react-native-mmkv", () => {
       clearAll: jest.fn(() => { Object.keys(s).forEach((k) => delete s[k]); }),
       addOnValueChangedListener: jest.fn(() => ({ remove: jest.fn() })),
     };
-    // Track returned instances so tests can access them
-    (MMKV as jest.Mock)._instances = (MMKV as jest.Mock)._instances || {};
-    (MMKV as jest.Mock)._instances[id] = instance;
-    return instance;
-  });
+    instances[id] = inst as unknown as Record<string, unknown>;
+    return inst;
+  }
 
-  return { MMKV };
+  // Expose instances on global so test files can inspect mocks by store id
+  (global as Record<string, unknown>).__mmkvInstances = instances;
+
+  return {
+    createMMKV: jest.fn(({ id = "default" }: { id?: string } = {}) => {
+      if (!instances[id]) makeMock(id);
+      return instances[id];
+    }),
+  };
 });
 
 // ─── Mock Sentry ───────────────────────────────────────────────────────────
@@ -92,6 +94,17 @@ jest.mock("expo-linear-gradient", () => ({
 
 jest.mock("expo-file-system", () => ({
   documentDirectory: "file:///documents/",
+  cacheDirectory: "file:///cache/",
+  writeAsStringAsync: jest.fn().mockResolvedValue(undefined),
+  readAsStringAsync: jest.fn().mockResolvedValue(""),
+  deleteAsync: jest.fn().mockResolvedValue(undefined),
+  getInfoAsync: jest.fn().mockResolvedValue({ exists: false }),
+  EncodingType: { UTF8: "utf8", Base64: "base64" },
+}));
+
+jest.mock("expo-file-system/legacy", () => ({
+  documentDirectory: "file:///documents/",
+  cacheDirectory: "file:///cache/",
   writeAsStringAsync: jest.fn().mockResolvedValue(undefined),
   readAsStringAsync: jest.fn().mockResolvedValue(""),
   deleteAsync: jest.fn().mockResolvedValue(undefined),

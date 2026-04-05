@@ -1,15 +1,23 @@
 import { useThemeStore } from "@/store/themeStore";
 
-// MMKV is mocked globally in jest.setup.ts.
-const { MMKV } = require("react-native-mmkv");
+// createMMKV is mocked globally in jest.setup.ts.
+// Instances are tracked in global.__mmkvInstances by store id.
+type MockMMKVInstance = {
+  getString: jest.Mock;
+  set: jest.Mock;
+  getBoolean: jest.Mock;
+  getNumber: jest.Mock;
+  delete: jest.Mock;
+  clearAll: jest.Mock;
+};
 
-function getMmkvInstance() {
-  return (MMKV as jest.Mock & { _instances?: Record<string, unknown> })._instances?.["theme-store"];
+function getMmkvInstance(): MockMMKVInstance {
+  return ((global as Record<string, unknown>).__mmkvInstances as Record<string, MockMMKVInstance>)["theme-store"];
 }
 
 beforeEach(() => {
   useThemeStore.setState({ theme: "midnight" });
-  const inst = getMmkvInstance() as Record<string, jest.Mock> | undefined;
+  const inst = getMmkvInstance();
   if (inst) {
     inst.getString.mockReset();
     inst.set.mockReset();

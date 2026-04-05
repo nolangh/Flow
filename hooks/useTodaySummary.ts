@@ -34,18 +34,17 @@ export function useTodaySummary(): TodaySummary {
   useEffect(() => {
     if (!household?.id) return;
     setEventsLoading(true);
-    supabase
+    void supabase
       .from("calendar_events")
       .select("*")
       .eq("household_id", household.id)
       .gte("start_at", `${today}T00:00:00`)
       .lt("start_at", `${today}T23:59:59`)
       .order("start_at")
-      .then(({ data }) => {
-        setTodayEvents((data as CalendarEvent[]) ?? []);
-        setEventsLoading(false);
-      })
-      .catch(() => setEventsLoading(false));
+      .then(
+        ({ data }) => { setTodayEvents((data as CalendarEvent[]) ?? []); setEventsLoading(false); },
+        () => setEventsLoading(false),
+      );
   }, [household?.id, today]);
 
   const members: Array<{ id: string; full_name: string | null }> =

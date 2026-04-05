@@ -272,14 +272,14 @@ export default function CategoryDetailScreen() {
 
   if (!category) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.default, alignItems: "center", justifyContent: "center" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app, alignItems: "center", justifyContent: "center" }}>
         <Text style={{ color: Colors.text.muted, fontFamily: Fonts.medium }}>Category not found</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.default }} edges={["top", "left", "right"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg.app }} edges={["top", "left", "right"]}>
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <View style={{
         flexDirection: "row", alignItems: "center",

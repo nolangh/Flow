@@ -1,5 +1,4 @@
 import React from "react";
-import { action } from "@storybook/addon-ondevice-actions";
 import type { Meta, StoryObj } from "@storybook/react-native";
 import BudgetAlertBanner from "./BudgetAlertBanner";
 
@@ -7,7 +6,7 @@ const meta = {
   title: "Budget/BudgetAlertBanner",
   component: BudgetAlertBanner,
   args: {
-    onDismiss: action("onDismiss"),
+    onDismiss: () => {},
   },
 } satisfies Meta<typeof BudgetAlertBanner>;
 

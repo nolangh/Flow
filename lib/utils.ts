@@ -66,7 +66,7 @@ export function isOverBudget(spent: number, limit: number): boolean {
 export function buildCumulativeSpendingData(
   transactions: { date: string; amount: number }[],
   daysInMonth: number
-): { day: number; cumulative: number }[] {
+): { day: number; cumulative: number; daily: number }[] {
   const daily: Record<number, number> = {};
 
   for (const tx of transactions) {
@@ -74,12 +74,13 @@ export function buildCumulativeSpendingData(
     daily[day] = (daily[day] ?? 0) + tx.amount;
   }
 
-  const points: { day: number; cumulative: number }[] = [];
+  const points: { day: number; cumulative: number; daily: number }[] = [];
   let cumulative = 0;
 
   for (let d = 1; d <= daysInMonth; d++) {
-    cumulative += daily[d] ?? 0;
-    points.push({ day: d, cumulative });
+    const dailyAmount = daily[d] ?? 0;
+    cumulative += dailyAmount;
+    points.push({ day: d, cumulative, daily: dailyAmount });
   }
 
   return points;

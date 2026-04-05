@@ -21,7 +21,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: { padding: 16 },
-  render: (args) => (
+  render: (args: React.ComponentProps<typeof Card>) => (
     <Card {...args}>
       <Text style={{ color: "#fff" }}>Card content goes here</Text>
     </Card>
@@ -30,7 +30,7 @@ export const Default: Story = {
 
 export const GreenGlow: Story = {
   args: { glow: "green", padding: 16 },
-  render: (args) => (
+  render: (args: React.ComponentProps<typeof Card>) => (
     <Card {...args}>
       <Text style={{ color: "#00D632" }}>Under budget</Text>
     </Card>
@@ -39,7 +39,7 @@ export const GreenGlow: Story = {
 
 export const PinkGlow: Story = {
   args: { glow: "pink", padding: 16 },
-  render: (args) => (
+  render: (args: React.ComponentProps<typeof Card>) => (
     <Card {...args}>
       <Text style={{ color: "#FF453A" }}>Over budget!</Text>
     </Card>
@@ -48,7 +48,7 @@ export const PinkGlow: Story = {
 
 export const LargePadding: Story = {
   args: { padding: 32 },
-  render: (args) => (
+  render: (args: React.ComponentProps<typeof Card>) => (
     <Card {...args}>
       <Text style={{ color: "#fff" }}>Spacious card</Text>
     </Card>

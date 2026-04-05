@@ -9,6 +9,7 @@ import {
   authenticateWithBiometric,
   loadCredentials,
 } from "@/lib/biometrics";
+import { logger } from "@/lib/logger";
 import type { AuthState, User, Household } from "@/types";
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -42,8 +43,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // DB tables may not be set up yet; fall back to auth data
       }
 
+      const resolvedUser = profile ?? fallbackUser;
       set({
-        user: profile ?? fallbackUser,
+        user: resolvedUser,
         household,
         session: {
           access_token: data.session.access_token,
@@ -51,6 +53,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         },
         isLoading: false,
       });
+      logger.setUser({ id: resolvedUser.id, email: resolvedUser.email ?? undefined });
     } catch (err: unknown) {
       set({ error: (err as Error).message, isLoading: false });
       throw err; // let the screen show the error and not navigate
@@ -263,6 +266,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     await supabase.auth.signOut();
+    logger.setUser(null);
     set({ user: null, household: null, session: null });
   },
 

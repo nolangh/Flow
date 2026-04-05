@@ -22,7 +22,11 @@
     "lint": "eslint .",
     "lint:biome": "npx biome check .",
     "lint:biome:fix": "npx biome check --write .",
-    "typescript": "tsc --noEmit"
+    "typescript": "tsc --noEmit",
+    "security:audit": "npm audit --audit-level=high",
+    "security:snyk": "npx snyk test --severity-threshold=high",
+    "security:snyk:monitor": "npx snyk monitor",
+    "security:all": "npm run security:audit && npm run security:snyk"
   },
   "dependencies": {
     "@expo-google-fonts/outfit": "^0.4.3",
@@ -34,6 +38,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-navigation/native": "^7.0.14",
+    "@sentry/react-native": "^8.7.0",
     "@supabase/supabase-js": "^2.50.0",
     "@trigger.dev/sdk": "^3.3.17",
     "ajv": "^8.18.0",

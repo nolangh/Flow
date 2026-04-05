@@ -36,6 +36,13 @@
       "expo-router",
       "expo-secure-store",
       [
+        "@sentry/react-native/expo",
+        {
+          "organization": "YOUR_SENTRY_ORG",
+          "project": "YOUR_SENTRY_PROJECT"
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",

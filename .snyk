@@ -1,0 +1,12 @@
+# Snyk policy file — https://snyk.io
+# Run `npx snyk test` to check for vulnerabilities.
+# Run `npx snyk monitor` in CI to track the project over time.
+
+version: v1.25.0
+
+# Ignore specific vulnerabilities that are:
+#   a) only in devDependencies and not shipped in the app bundle, OR
+#   b) have no fix available and low exploitability in this context
+ignore: {}
+
+patch: {}

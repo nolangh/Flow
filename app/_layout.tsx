@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { Text } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useNavigationContainerRef } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
+import * as Sentry from "@sentry/react-native";
 import {
   Outfit_300Light,
   Outfit_400Regular,
@@ -25,11 +26,47 @@ import { useAuthStore } from "@/store/authStore";
 import { useThemeStore } from "@/store/themeStore";
 import { THEMES } from "@/constants/themes";
 import { logger } from "@/lib/logger";
+import { runSecurityChecks } from "@/lib/security";
 import "../global.css";
+
+// ─── Sentry — initialise before any component renders ────────────────────────
+const navigationIntegration = Sentry.reactNavigationIntegration({ enableTimeToInitialDisplay: true });
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  enabled: !!process.env.EXPO_PUBLIC_SENTRY_DSN,
+
+  // Performance: sample 20% of transactions in prod, 100% in dev
+  tracesSampleRate: __DEV__ ? 1.0 : 0.2,
+
+  // Session replay: only capture on crashes in prod (privacy-conscious default)
+  replaysSessionSampleRate: 0,
+  replaysOnErrorSampleRate: __DEV__ ? 1.0 : 0.5,
+
+  integrations: [
+    navigationIntegration,
+    Sentry.mobileReplayIntegration({
+      // Mask all text and images by default — important for a fintech app
+      maskAllText: true,
+      maskAllImages: true,
+    }),
+  ],
+
+  // Don't send PII — strip user IPs from events
+  sendDefaultPii: false,
+
+  environment: __DEV__ ? "development" : "production",
+
+  beforeSend(event) {
+    // Drop events with no stack trace in production (likely noise)
+    if (!__DEV__ && !event.exception?.values?.[0]?.stacktrace) return null;
+    return event;
+  },
+});
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// Global unhandled JS error → BetterStack
+// Global unhandled JS error → Sentry + BetterStack
 if (typeof ErrorUtils !== "undefined") {
   const previousHandler = ErrorUtils.getGlobalHandler();
   ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
@@ -46,6 +83,14 @@ export default function RootLayout() {
   const { refreshSession } = useAuthStore();
   const { theme, loadTheme } = useThemeStore();
   const C = THEMES[theme] ?? THEMES.midnight;
+
+  // Register the navigation container with Sentry for screen tracking
+  const navigationRef = useNavigationContainerRef();
+  useEffect(() => {
+    if (navigationRef?.isReady()) {
+      navigationIntegration.registerNavigationContainer(navigationRef);
+    }
+  }, [navigationRef]);
 
   // Update Text.defaultProps whenever theme changes so fallback font matches
   useEffect(() => {
@@ -83,6 +128,7 @@ export default function RootLayout() {
       Promise.race([refreshSession().catch(() => {}), timeoutPromise]),
       loadEverything().catch(() => {}),
       loadTheme().catch(() => {}),
+      runSecurityChecks().catch(() => {}),
     ]).finally(() => {
       clearTimeout(safetyTimer);
       hideSplash();

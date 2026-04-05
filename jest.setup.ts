@@ -33,6 +33,31 @@ jest.mock("react-native-mmkv", () => {
   return { MMKV };
 });
 
+// ─── Mock Sentry ───────────────────────────────────────────────────────────
+jest.mock("@sentry/react-native", () => ({
+  init: jest.fn(),
+  wrap: jest.fn((c: unknown) => c),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  setUser: jest.fn(),
+  setContext: jest.fn(),
+  setTag: jest.fn(),
+  addBreadcrumb: jest.fn(),
+  withScope: jest.fn((fn: (scope: unknown) => void) => fn({})),
+  reactNavigationIntegration: jest.fn(() => ({
+    registerNavigationContainer: jest.fn(),
+  })),
+  mobileReplayIntegration: jest.fn(() => ({})),
+  ReactNavigationInstrumentation: jest.fn(),
+}));
+
+// ─── Mock expo-application ─────────────────────────────────────────────────
+jest.mock("expo-application", () => ({
+  applicationId: "com.honeydo.app",
+  nativeApplicationVersion: "1.0.0",
+  nativeBuildVersion: "1",
+}));
+
 // ─── Mock expo modules ─────────────────────────────────────────────────────
 jest.mock("expo-router", () => ({
   router: { replace: jest.fn(), push: jest.fn(), back: jest.fn() },

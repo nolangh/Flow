@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Text } from "react-native";
+import { Text, Platform, Appearance } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -26,6 +26,14 @@ import { useThemeStore } from "@/store/themeStore";
 import { THEMES } from "@/constants/themes";
 import "../global.css";
 
+// Web: Replit's UI toggles a `dark` class on <html>, which triggers Expo's
+// MutationObserver and tries to call Appearance.setColorScheme(). Web blocks
+// that call with an unhandled error. We use our own theme system, so patch it
+// to a no-op on web to prevent the crash.
+if (Platform.OS === "web") {
+  try { (Appearance as any).setColorScheme = () => {}; } catch {}
+}
+
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function hideSplash() {
@@ -37,12 +45,11 @@ export default function RootLayout() {
   const { theme, loadTheme } = useThemeStore();
   const C = THEMES[theme] ?? THEMES.midnight;
 
-  // Update Text.defaultProps whenever theme changes so fallback font matches
   useEffect(() => {
-    const fontFamily = theme === "fresh" ? "SpaceGrotesk-Regular" : "Outfit-Regular";
-    (Text as any).defaultProps = {
-      style: [{ fontFamily }],
-    };
+    const fontFamily = theme === "fresh" || theme === "garden"
+      ? "SpaceGrotesk-Regular"
+      : "Outfit-Regular";
+    (Text as any).defaultProps = { style: [{ fontFamily }] };
   }, [theme]);
 
   useEffect(() => {
@@ -83,7 +90,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: C.bg.app }}>
-      <StatusBar style={theme === "fresh" ? "dark" : "light"} backgroundColor={C.bg.app} />
+      <StatusBar style={theme === "midnight" ? "light" : "dark"} backgroundColor={C.bg.app} />
       <Stack
         screenOptions={{
           headerShown: false,

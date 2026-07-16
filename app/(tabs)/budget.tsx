@@ -671,14 +671,20 @@ export default function BudgetScreen() {
             backgroundColor: Colors.bg.raised,
             borderTopLeftRadius: 28, borderTopRightRadius: 28,
             borderTopWidth: 1, borderColor: Colors.border.subtle,
-            padding: 24, paddingBottom: Platform.OS === "ios" ? 44 : 28,
-            maxHeight: "90%",
+            height: "88%",
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: Platform.OS === "ios" ? 44 : 28,
           }}>
-            <View style={{ alignItems: "center", marginBottom: 12 }}>
+            {/* Drag handle */}
+            <View style={{ alignItems: "center", marginBottom: 14 }}>
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border.subtle }} />
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <View />
+            {/* Header row */}
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <Text style={{ color: Colors.text.primary, fontSize: 18, fontFamily: Fonts.bold }}>
+                AI Optimize
+              </Text>
               <TouchableOpacity onPress={() => setShowAiSheet(false)}>
                 <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.bg.overlay, alignItems: "center", justifyContent: "center" }}>
                   <Ionicons name="close" size={14} color={Colors.text.muted} />

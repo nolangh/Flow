@@ -16,7 +16,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const MISTRAL_KEY = Deno.env.get("MISTRAL_KEY") ?? "";
 const MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions";
-const MODEL = "open-mistral-nemo";
+const MODEL = "ministral-3b-latest";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
